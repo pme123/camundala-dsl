@@ -43,14 +43,14 @@ trait HasTaskImplementation[T]:
   def external(topic: String): T =
     implementation(ExternalTask(topic))
 
-trait HasMaybeForm[T]:
+trait HasForm[T]:
   def bpmnForm: Option[BpmnForm]
 
   def form(form: BpmnForm): T
 
-  def embeddedForm(formKey: String): T = form(EmbeddedForm(formKey))
+  def form(formKey: String): T = form(EmbeddedForm(formKey))
 
-  def generatedForm(fields: FormField*): T = form(GeneratedForm(Seq(fields: _*)))
+  def form(fields: FormField*): T = form(GeneratedForm(Seq(fields: _*)))
 
 case class Activity(ident: Ident)
   extends HasIdent
@@ -106,7 +106,7 @@ object ServiceTask:
 case class UserTask(task: Task,
                     bpmnForm: Option[BpmnForm] = None)
   extends HasTask
-    with HasMaybeForm[UserTask]
+    with HasForm[UserTask]
     with ProcessElement :
   val elemType = NodeKey.userTasks
   def form(form: BpmnForm): UserTask = copy(bpmnForm = Some(form))

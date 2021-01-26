@@ -1,5 +1,6 @@
 package camundala.model
 
+import camundala.model.Constraint._
 import camundala.model.GeneratedForm.FormField
 
 
@@ -9,159 +10,139 @@ case class EmbeddedForm(formRef: Ident)
   extends BpmnForm
 
 case class GeneratedForm(fields: Seq[FormField] = Seq.empty)
-  extends BpmnForm {
+  extends BpmnForm :
   def fields(fld: FormField, flds: FormField*): GeneratedForm = copy(fields = (fields :+ fld) ++ flds)
 
-}
 
-object GeneratedForm {
+object GeneratedForm:
 
   import FormFieldType._
 
-  def textField(id: Ident): SimpleField =
-    SimpleField(id)
+  def textField(id: Ident): FormField =
+    FormField(id)
 
-  def booleanField(id: Ident): SimpleField =
-    SimpleField(id, `type` = BooleanType)
+  def booleanField(id: Ident): FormField =
+    FormField(id)
+      .fieldType(BooleanType)
 
-  def longField(id: Ident): SimpleField =
-    SimpleField(id, `type` = LongType)
+  def longField(id: Ident): FormField =
+    FormField(id)
+      .fieldType(LongType)
 
-  def dateField(id: Ident): SimpleField =
-    SimpleField(id, `type` = DateType)
+  def dateField(id: Ident): FormField =
+    FormField(id)
+      .fieldType(DateType)
 
-  def enumField(id: Ident): EnumField =
-    EnumField(id)
+  def enumField(id: Ident): FormField =
+    FormField(id)
+      .fieldType(EnumType)
 
+  case class FormField(id: Ident,
+                       label: String = "",
+                       `type`: FormFieldType = StringType,
+                       defaultValue: String = "",
+                       values: EnumValues = EnumValues.none,
+                       constraints: Constraints = Constraints.none,
+                       properties: Properties = Properties.none):
 
-  sealed trait FormField
+    def fieldType(fieldType: FormFieldType): FormField = copy(`type` = fieldType)
 
-  case class SimpleField(id: Ident,
-                         label: String = "",
-                         `type`: FormFieldType = StringType,
-                         defaultValue: String = "",
-                         constraints: Constraints = Constraints.none,
-                         properties: Properties = Properties.none)
-    extends FormField {
+    def label(l: String): FormField = copy(label = l)
 
-    def fieldType(fieldType: FormFieldType): SimpleField = copy(`type` = fieldType)
+    def default(d: String): FormField = copy(defaultValue = d)
 
-    def label(l: String): SimpleField = copy(label = l)
+    def value(key: Ident, value: String): FormField = copy(values = values :+ EnumValue(key, value))
 
-    def default(d: String): SimpleField = copy(defaultValue = d)
+    def prop(key: Ident, value: String): FormField = copy(properties = properties :+ Property(key, value))
 
-  }
+    def constraint(constraint: Constraint): FormField =
+      copy(constraints = constraints :+ constraint)
 
-  case class EnumField(simpleField: SimpleField,
-                       values: EnumValues = EnumValues.none
-                      )
-    extends FormField {
-    val `type`: FormFieldType = EnumType
+    def readonly: FormField =  constraint (Readonly)
 
-    def label(l: String): EnumField = copy(simpleField = simpleField.label(l))
+    def required: FormField =  constraint (Required)
 
-    def default(d: String): EnumField = copy(simpleField = simpleField.default(d))
+    def minlength(value: Int): FormField =  constraint (Minlength(value))
 
-    def value(key: Ident, value: String): EnumField = copy(values = values :+ EnumValue(key, value))
-  }
+    def maxlength(value: Int): FormField =  constraint (Maxlength(value))
 
-  object EnumField {
-    def apply(id: Ident): EnumField =
-      EnumField(SimpleField(id))
-  }
+    def min(value: Int): FormField =  constraint (Min(value))
 
-  case class EnumValues(enums: Seq[EnumValue]) {
+    def max(value: Int): FormField =  constraint (Max(value))
+
+    def custom(name: Ident, config: Option[String]): FormField =  constraint (Custom(name, config))
+
+  case class EnumValues(enums: Seq[EnumValue]):
 
     def :+(value: EnumValue): EnumValues = copy(enums :+ value)
 
-  }
 
-  object EnumValues {
+  object EnumValues:
     def none: EnumValues = EnumValues(Seq.empty)
-  }
 
   case class EnumValue(key: Ident, label: String)
 
 
-  sealed trait FormFieldType {
+  sealed trait FormFieldType:
     def name: String
-  }
 
-  object FormFieldType {
+  object FormFieldType:
 
-    case object StringType extends FormFieldType {
+    case object StringType extends FormFieldType :
       val name = "string"
-    }
 
-    case object BooleanType extends FormFieldType {
+    case object BooleanType extends FormFieldType :
       val name = "boolean"
-    }
 
-    case object EnumType extends FormFieldType {
+    case object EnumType extends FormFieldType :
       val name = "enum"
-    }
 
-    case object LongType extends FormFieldType {
+    case object LongType extends FormFieldType :
       val name = "long"
-    }
 
-    case object DateType extends FormFieldType {
+    case object DateType extends FormFieldType :
       val name = "date"
-    }
 
-  }
+case class Constraints(constraints: Seq[Constraint]):
+  def :+(constraint: Constraint): Constraints = copy(constraints = constraints :+ constraint)
 
-}
-
-case class Constraints(constraints: Seq[Constraint])
-
-object Constraints {
+object Constraints:
   def none = Constraints(Seq.empty)
-}
 
-sealed trait Constraint {
+sealed trait Constraint:
   def name: Ident
 
   def config: Option[String]
-}
 
-object Constraint {
+object Constraint:
 
   case class Custom(name: Ident, config: Option[String]) extends Constraint
 
-  case object Required extends Constraint {
+  case object Required extends Constraint :
     val name: Ident = "required"
 
     val config: Option[String] = None
-  }
 
-  case object Readonly extends Constraint {
+  case object Readonly extends Constraint :
     val name: Ident = "readonly"
 
     val config: Option[String] = None
-  }
 
-  sealed trait MinMax extends Constraint {
+  sealed trait MinMax extends Constraint :
 
     def value: Int
 
     val config: Option[String] = Some(s"$value")
-  }
 
-  case class Minlength(value: Int) extends MinMax {
+  case class Minlength(value: Int)extends MinMax :
     val name: Ident = "minlength"
-  }
 
-  case class Maxlength(value: Int) extends MinMax {
+  case class Maxlength(value: Int)extends MinMax :
     val name: Ident = "maxlength"
-  }
 
-  case class Min(value: Int) extends MinMax {
+  case class Min(value: Int)extends MinMax :
     val name: Ident = "min"
-  }
 
-  case class Max(value: Int) extends MinMax {
+  case class Max(value: Int)extends MinMax :
     val name: Ident = "max"
-  }
 
-}

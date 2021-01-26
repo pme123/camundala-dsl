@@ -7,15 +7,15 @@
   <bpmn2:process id="testDslProcess" name="Test DSL Process" isExecutable="true" camunda:candidateStarterGroups="hkj" camunda:candidateStarterUsers="kklk">
     <bpmn2:exclusiveGateway id="gatewayFork" name="Fork">
       <bpmn2:incoming>flow2</bpmn2:incoming>
-      <bpmn2:outgoing>flow3</bpmn2:outgoing>
-      <bpmn2:outgoing>flow4</bpmn2:outgoing>
+      <bpmn2:outgoing>flowIsNotBar</bpmn2:outgoing>
+      <bpmn2:outgoing>flowIsBar</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:userTask id="userTaskA" name="User Task A" camunda:candidateGroups="management, accounting">
-      <bpmn2:incoming>flow3</bpmn2:incoming>
+      <bpmn2:incoming>flowIsNotBar</bpmn2:incoming>
       <bpmn2:outgoing>flow5</bpmn2:outgoing>
     </bpmn2:userTask>
     <bpmn2:userTask id="userTaskB" name="User Task B" camunda:assignee="demo">
-      <bpmn2:incoming>flow4</bpmn2:incoming>
+      <bpmn2:incoming>flowIsBar</bpmn2:incoming>
       <bpmn2:outgoing>flow6</bpmn2:outgoing>
     </bpmn2:userTask>
     <bpmn2:exclusiveGateway id="gatewayJoin" name="Join">
@@ -33,12 +33,8 @@
     <bpmn2:sequenceFlow id="flow7" name="" sourceRef="gatewayJoin" targetRef="scriptTask" />
     <bpmn2:sequenceFlow id="flow5" name="" sourceRef="userTaskA" targetRef="gatewayJoin" />
     <bpmn2:sequenceFlow id="flow6" name="" sourceRef="userTaskB" targetRef="gatewayJoin" />
-    <bpmn2:sequenceFlow id="flow4" name="is Bar" sourceRef="gatewayFork" targetRef="userTaskB">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${foo == 'bar'}</bpmn2:conditionExpression>
-    </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="flow3" name="is NOT bar" sourceRef="gatewayFork" targetRef="userTaskA">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${foo != 'bar'}</bpmn2:conditionExpression>
-    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="flowIsBar" name="is Bar" sourceRef="gatewayFork" targetRef="userTaskB" />
+    <bpmn2:sequenceFlow id="flowIsNotBar" name="is NOT bar" sourceRef="gatewayFork" targetRef="userTaskA" />
     <bpmn2:sequenceFlow id="flow2" name="" sourceRef="serviceTask" targetRef="gatewayFork" />
     <bpmn2:sequenceFlow id="flow1" name="" sourceRef="startEvent" targetRef="serviceTask" />
     <bpmn2:serviceTask id="serviceTask" name="Service Task" camunda:asyncBefore="true" camunda:exclusive="false">
@@ -107,7 +103,7 @@ DSL:
         <di:waypoint x="532" y="219" />
         <di:waypoint x="582" y="219" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="flow3" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_2">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="flowIsNotBar" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_2">
         <di:waypoint x="607" y="194" />
         <di:waypoint x="607" y="122" />
         <di:waypoint x="686" y="122" />
@@ -115,7 +111,7 @@ DSL:
           <dc:Bounds x="613" y="173" width="54" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="flow4" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_3">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="flowIsBar" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_3">
         <di:waypoint x="607" y="244" />
         <di:waypoint x="607" y="314" />
         <di:waypoint x="686" y="314" />

@@ -1,31 +1,32 @@
 package camundala.bpmn
 
+import camundala.model.Condition._
+import camundala.model.Constraint.Minlength
 import camundala.model.GeneratedForm.FormFieldType.StringType
-import camundala.model.GeneratedForm.{EnumField, FormFieldType, SimpleField, enumField}
+import camundala.model.GeneratedForm.{EnumValue, FormField, FormFieldType, enumField}
 import camundala.model.ScriptImplementation.{ExternalScript, InlineScript}
 import camundala.model._
 import camundala.model.TaskImplementation._
 import org.camunda.bpm.model.bpmn.builder._
 import org.camunda.bpm.model.bpmn.impl.instance.ExtensionElementsImpl
 import org.camunda.bpm.model.bpmn.impl.instance.camunda.CamundaFormFieldImpl
-import org.camunda.bpm.model.bpmn.instance.{BpmnModelElementInstance, Script}
-import org.camunda.bpm.model.bpmn.instance.camunda.CamundaFormData
+import org.camunda.bpm.model.bpmn.instance.{BpmnModelElementInstance, ConditionExpression, Script}
+import org.camunda.bpm.model.bpmn.instance.camunda.{CamundaConstraint, CamundaFormData, CamundaFormField, CamundaProperties, CamundaProperty, CamundaValidation, CamundaValue}
 import org.camunda.bpm.model.xml.instance.ModelElementInstance
 import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn => BpmnCamunda, instance => camunda}
 
 import scala.jdk.CollectionConverters._
 import java.io.File
 
-
 extension (bpmn: Bpmn)
   def toCamunda(outputPath: BpmnPath): Unit =
-    val modelInstance = BpmnCamunda.readModelFromStream(this.getClass.getClassLoader.getResourceAsStream(bpmn.bpmnPath))
-    bpmn.processes.map(_.toCamunda(modelInstance))
-    BpmnCamunda.writeModelToFile(new File(outputPath), modelInstance)
+    given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.bpmnPath) )
+    bpmn.processes.map (_.toCamunda)
+    BpmnCamunda.writeModelToFile (new File (outputPath), modelInstance)
 
 extension (process: BpmnProcess)
-  def toCamunda(modelInstance: BpmnModelInstance): Unit = 
-    process.elements.foreach((e: ProcessElement) => e.toCamunda(modelInstance))
+  def toCamunda(using modelInstance: BpmnModelInstance): Unit =
+    process.elements.foreach((e: ProcessElement) => e.toCamunda)
     val cProcess: camunda.Process = modelInstance.getModelElementById(process.ident)
     val groups = process.starterGroups.groups.map(_.ident)
     cProcess.setCamundaCandidateStarterGroupsList(groups.asJava)
@@ -33,7 +34,7 @@ extension (process: BpmnProcess)
     cProcess.setCamundaCandidateStarterUsersList(users.asJava)
 
 extension (postElement: ProcessElement)
-  def toCamunda(modelInstance: BpmnModelInstance): Unit = 
+  def toCamunda(using modelInstance: BpmnModelInstance): Unit =
     postElement match
       case pe: StartEvent =>
         val elem: camunda.StartEvent = modelInstance.getModelElementById(pe.ident)
@@ -47,18 +48,17 @@ extension (postElement: ProcessElement)
       case pe: ScriptTask =>
         val elem: camunda.ScriptTask = modelInstance.getModelElementById(pe.ident)
         pe.merge(elem)
+      case pe: SequenceFlow =>
+        val elem: camunda.SequenceFlow = modelInstance.getModelElementById(pe.ident)
+        pe.merge(elem)
 
-trait ToCamundaElem[T]:
-  extension[E <: ModelElementInstance] (t: T)
-    def merge(elem: E): T
-
-given ToCamundaElem[ServiceTask] with
-  extension[E <: camunda.ServiceTask] (task: ServiceTask) def merge(elem: E): Unit =
+extension (task: ServiceTask)
+  def merge(elem: camunda.ServiceTask): Unit =
     task.taskImplementation
       .merge(elem)
 
-given ToCamundaElem[TaskImplementation] with
-  extension [E <: camunda.ServiceTask] (task: TaskImplementation) def merge(elem: E): Unit =
+extension (task: TaskImplementation)
+  def merge(elem: camunda.ServiceTask): Unit =
     task match
       case Expression(expresssion, resultVariable) =>
         elem.setCamundaExpression(expresssion)
@@ -70,82 +70,91 @@ given ToCamundaElem[TaskImplementation] with
       case ExternalTask(topic) =>
         elem.setCamundaTopic(topic)
 
-given ToCamundaElem[StartEvent] with
-  extension [E <: camunda.StartEvent] (event: StartEvent) def merge(elem: E): Unit =
-    val eventBuilder: StartEventBuilder = elem.builder()
-    mergeForm(event, 
-      formRef => eventBuilder.camundaFormKey(formRef),
-      (id: Ident,
-       label: String,
-       fieldType: FormFieldType,
-       defaultValue: String,
-       constraints: Constraints,
-       properties: Properties) =>
-        eventBuilder
-          .camundaFormField()
-          .camundaId(id)
-          .camundaLabel(label)
-          .camundaType(fieldType.name)
-          .getElement
-    )
-
-given ToCamundaElem[UserTask] with
-  extension [E <: camunda.UserTask](task: UserTask) def merge(elem: E): Unit =
-    val eventBuilder: UserTaskBuilder = elem.builder()
-    mergeForm(task, 
-      formRef => eventBuilder.camundaFormKey(formRef),
-      (id: Ident,
-       label: String,
-       fieldType: FormFieldType,
-       defaultValue: String,
-       constraints: Constraints,
-       properties: Properties) =>
-        eventBuilder
-          .camundaFormField()
-          .camundaId(id)
-          .camundaLabel(label)
-          .camundaType(fieldType.name)
-          .getElement
-    )
-
-given ToCamundaElem[ScriptTask] with
-  extension [E <: camunda.ScriptTask](task: ScriptTask) 
-    def merge(elem: E): Unit =
-      val builder: ScriptTaskBuilder = elem.builder()
-      task.scriptImplementation.foreach {
-        case InlineScript(lang, script) =>
-          builder
-            .scriptFormat(lang.toString)
-            .scriptText(script)
-        case ExternalScript(lang, resource) =>
-          
-      }
-      task.resultVariable.foreach(
-        builder
-          .camundaResultVariable
-      )
-
-// quite complex - because there is no generic Form Builder on Camunda
-def mergeForm(hasMaybeForm: HasMaybeForm[_],
-              formKeyMerge: Ident => Unit,
-              formFieldMerge: (id: Ident,
-                               label: String,
-                               fieldType: FormFieldType,
-                               defaultValue: String,
-                               constraints: Constraints,
-                               properties: Properties) => Unit) = {
-
-    hasMaybeForm.bpmnForm.foreach {
+extension (event: StartEvent)
+  def merge(elem: camunda.StartEvent)(using modelInstance: BpmnModelInstance): Unit =
+    val builder: StartEventBuilder = elem.builder()
+    event.bpmnForm.foreach {
       case EmbeddedForm(formRef) =>
-        formKeyMerge(formRef)
+        builder.camundaFormKey(formRef)
       case GeneratedForm(fields) =>
         fields.foreach {
-          case SimpleField(id, label, fieldType, defaultValue, constraints, properties) =>
-            formFieldMerge(id, label, fieldType, defaultValue, constraints, properties)
-          case EnumField(SimpleField(id, label, fieldType, defaultValue, constraints, properties), values) =>
-            val enumField = formFieldMerge(id, label, fieldType, defaultValue, constraints, properties)
-            () //TODO
+          createFormField(_, builder.camundaFormField().getElement)
         }
+    }
+
+extension (task: UserTask)
+  def merge(elem: camunda.UserTask)(using modelInstance: BpmnModelInstance): Unit =
+    val builder: UserTaskBuilder = elem.builder()
+    task.bpmnForm.foreach {
+      case EmbeddedForm(formRef) =>
+        builder.camundaFormKey(formRef)
+      case GeneratedForm(fields) =>
+        fields.foreach {
+          createFormField(_, builder.camundaFormField().getElement)
+        }
+    }
+
+extension (task: ScriptTask)
+  def merge(elem: camunda.ScriptTask): Unit =
+    val builder: ScriptTaskBuilder = elem.builder()
+    task.scriptImplementation.foreach {
+      case InlineScript(lang, script) =>
+        builder
+          .scriptFormat(lang.toString)
+          .scriptText(script)
+      case ExternalScript(lang, resource) =>
 
     }
-}
+    task.resultVariable.foreach(
+      builder
+        .camundaResultVariable
+    )
+
+extension (flow: SequenceFlow)
+  def merge(elem: camunda.SequenceFlow)(using modelInstance: BpmnModelInstance): Unit =
+    val expression = modelInstance.newInstance(classOf[ConditionExpression])
+    elem.setConditionExpression(expression)
+    flow.condition.foreach {
+      case ExpressionCond(expr) =>
+        expression.setTextContent(expr)
+      case ScriptCond(resource, format) =>
+        expression.setLanguage(format.toString)
+        expression.setCamundaResource(resource)
+        expression.setType("bpmn2:tFormalExpression")
+      case InlineScriptCond(script, format) =>
+        expression.setLanguage(format.toString)
+        expression.setTextContent(script)
+        expression.setType("bpmn2:tFormalExpression")
+    }
+
+private def createFormField(formField: FormField, cff: CamundaFormField)(using modelInstance: BpmnModelInstance) =
+  val FormField(id, label, fieldType, defaultValue, values, constraints, properties) = formField
+  cff.setCamundaId(id)
+  cff.setCamundaLabel(label)
+  cff.setCamundaType(fieldType.name)
+  cff.getCamundaValues
+    .addAll(values.enums.map { case EnumValue(k, v) =>
+      val cv = modelInstance.newInstance(classOf[CamundaValue])
+      cv.setCamundaId(k)
+      cv.setCamundaName(v)
+      cv
+    }.asJava)
+  val cvd = modelInstance.newInstance(classOf[CamundaValidation])
+  cff.setCamundaValidation(cvd)
+  cvd.getCamundaConstraints
+    .addAll(constraints.constraints.map { c =>
+      val cc = modelInstance.newInstance(classOf[CamundaConstraint])
+      cc.setCamundaName(c.name)
+      c.config.foreach(cc.setCamundaConfig)
+      cc
+    }.asJava)
+  val cps = modelInstance.newInstance(classOf[CamundaProperties])
+  cff.setCamundaProperties(cps)
+  cps
+    .getCamundaProperties
+    .addAll(properties.properties.map { case Property(k, v) =>
+      val cv = modelInstance.newInstance(classOf[CamundaProperty])
+      cv.setCamundaId(k)
+      cv.setCamundaValue(v)
+      cv
+    }.asJava)

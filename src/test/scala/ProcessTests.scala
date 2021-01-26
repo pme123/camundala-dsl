@@ -6,9 +6,8 @@ import org.camunda.bpm.model.bpmn.{instance => camunda}
 import org.camunda.bpm.model.xml.instance.ModelElementInstance
 import org.junit.Test
 import org.junit.Assert._
-import camundala.bpmn.{_, given}
-
-import camundala.model.GeneratedForm.textField
+import camundala.bpmn._
+import camundala.model.GeneratedForm.{enumField, longField, textField}
 
 import java.io.File
 import scala.jdk.CollectionConverters._
@@ -17,7 +16,7 @@ class ProcessTests:
 
   @Test def loadProcess(): Unit =
     val fooVar: ProcessVarString = ProcessVarString("fooVar")
-    
+
     val bpmn = Bpmn("process.bpmn")
       .processes(
         BpmnProcess("testDslProcess")
@@ -26,26 +25,51 @@ class ProcessTests:
           .elements(
             StartEvent("startEvent")
               .form(
-                GeneratedForm()
-                  .fields(
-                    textField(fooVar.ident)
-                  )
+                textField(fooVar.ident)
+                  .prop("myProp", "helothere")
               ),
             ServiceTask("serviceTask")
               .implementation(
                 fooVar.expression
                   .resultVariable("foo")
               ),
-            UserTask("userTaskA"),
-            UserTask("userTaskB"),
+            UserTask("userTaskA")
+              .form(
+                enumField("myField")
+                  .label("MY FIELD")
+                  .value("k1", "blau")
+                  .value("k2", "grau")
+                  .readonly
+                  .required,
+                textField("textField")
+                  .label("hello")
+                  .default("Peter")
+                  .required
+                  .minlength(3)
+                  .maxlength(12),
+                longField("numberField")
+                  .label("My Number")
+                  .default("10")
+                  .min(3)
+                  .max(12)
+              ),
+            UserTask("userTaskB")
+              .form("MyFormKey"),
             ScriptTask("scriptTask")
-              .inlineGroovy("println 'hello Scala world'")
-              .resultVariable("scriptResult")
+              .inlineGroovy(s"println 'hello Scala world'")
+              .resultVariable("scriptResult"),
+            SequenceFlow("flowIsBar")
+              .inlineGroovy(s"println 'hello'\n$fooVar == 'bar'"),
+            // .expression(s"$${$fooVar == 'bar'}"),
+            SequenceFlow("flowIsNotBar")
+              .groovy("script/asdf.groovy")
+            // .expression(s"$${$fooVar != 'bar'}"),
+
           )
       ).toCamunda("generatedBpmn.bpmn")
-      
 
-    //BpmnCamunda.writeModelToFile(new File("generatedBpmn.bpmn"), modelInstance)
+
+//BpmnCamunda.writeModelToFile(new File("generatedBpmn.bpmn"), modelInstance)
 
     
 
