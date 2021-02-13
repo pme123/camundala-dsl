@@ -15,6 +15,6 @@ case class SequenceFlow(ident: Ident,
 
   def expression(expr: String) = copy(condition = Some(ExpressionCond(expr)))
 
-  def groovy(scriptPath: ScriptPath) = copy(condition = Some(ScriptCond(scriptPath)))
+  def groovy(scriptPath: ScriptPath) = copy(condition = Some(ScriptCond(s"$scriptPath.groovy")))
 
   def inlineGroovy(script: String) = copy(condition = Some(InlineScriptCond(script)))

@@ -16,7 +16,7 @@ case class ScriptTask(task: Task,
 
   def groovy(scriptPath: ScriptPath): ScriptTask =
     copy(scriptImplementation = Some(ExternalScript(ScriptLanguage.Groovy,
-      scriptPath)))
+      s"$scriptPath.groovy")))
 
   def inlineGroovy(script: String): ScriptTask =
     copy(scriptImplementation = Some(InlineScript(ScriptLanguage.Groovy,
@@ -43,7 +43,8 @@ object ScriptImplementation:
 
   case class ExternalScript(language: ScriptLanguage,
                             resource: ScriptPath,
-                           ) extends ScriptImplementation
+                           )extends ScriptImplementation :
+    val deployResource = s"deployment://$resource"
 
 
 // Extension methods define opaque types' public APIs

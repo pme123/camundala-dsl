@@ -62,7 +62,7 @@ class ProcessTests:
               .inlineGroovy(s"println 'hello'\n$fooVar == 'bar'"),
             // .expression(s"$${$fooVar == 'bar'}"),
             SequenceFlow("flowIsNotBar")
-              .groovy("script/asdf.groovy")
+              .groovy("script/asdf")
             // .expression(s"$${$fooVar != 'bar'}"),
 
           )

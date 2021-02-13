@@ -102,8 +102,9 @@ extension (task: ScriptTask)
         builder
           .scriptFormat(lang.toString)
           .scriptText(script)
-      case ExternalScript(lang, resource) =>
-
+      case es@ExternalScript(lang, _) =>
+        elem.setCamundaResource(es.deployResource)
+        elem.setScriptFormat(lang.toString)
     }
     task.resultVariable.foreach(
       builder
@@ -117,9 +118,9 @@ extension (flow: SequenceFlow)
     flow.condition.foreach {
       case ExpressionCond(expr) =>
         expression.setTextContent(expr)
-      case ScriptCond(resource, format) =>
+      case sc@ScriptCond(_, format) =>
         expression.setLanguage(format.toString)
-        expression.setCamundaResource(resource)
+        expression.setCamundaResource(sc.deployResource)
         expression.setType("bpmn2:tFormalExpression")
       case InlineScriptCond(script, format) =>
         expression.setLanguage(format.toString)
