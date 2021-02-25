@@ -1,9 +1,9 @@
 package camundala.model
 
-import camundala.model.GeneratedForm.{EnumValue, EnumValues}
+trait FieldAttr
 
 // Camunda Extension
-case class Property(key: Ident, value: String)
+case class Property(key: Ident, value: String) extends FieldAttr
 
 case class Properties(properties: Seq[Property] = Seq.empty):
   

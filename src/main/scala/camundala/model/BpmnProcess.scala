@@ -2,99 +2,51 @@ package camundala.model
 
 import camundala.model.BpmnProcess.NodeKey
 
+case class BpmnProcesses(processes: Seq[BpmnProcess])
+  extends HasStringify :
 
-trait ProcessElement:
+  def stringify(intent: Int): String =
+    stringifyWrap(intent, "processes", processes)
+
+case class ProcessElements(elements: Seq[ProcessElement])
+  extends HasStringify :
+  
+  def stringify(intent: Int): String =
+    stringifyWrap(intent, "elements", elements)
+    
+object ProcessElements:
+
+  val none = ProcessElements(Nil)
+
+trait ProcessElement
+  extends HasStringify :
+
   def elemType: NodeKey
 
   def ident: Ident
+
 
 case class BpmnProcess(
                         ident: Ident,
                         starterGroups: CandidateGroups = CandidateGroups.none,
                         starterUsers: CandidateUsers = CandidateUsers.none,
-                        elements: Seq[ProcessElement] = Seq.empty
+                        elements: ProcessElements = ProcessElements.none
                       )
-  extends HasGroups[BpmnProcess] :
+  extends HasGroups[BpmnProcess]
+    with HasStringify :
 
-  def canStart(group: BpmnGroup, groups: BpmnGroup*): BpmnProcess =
-    copy(starterGroups = (starterGroups :+ group) ++ groups)
-
-  def canStart(user: BpmnUser, users: BpmnUser*): BpmnProcess =
-    copy(starterUsers = (starterUsers :+ user) ++ users)
-
-  def elements(elem: ProcessElement, elems: ProcessElement*): BpmnProcess =
-    copy(elements = (elements :+ elem) ++ elems)
-
-  def userTasks(task: UserTask, tasks: UserTask*): BpmnProcess =
-      copy(elements = (elements :+ task) ++ tasks)
-
-  def ---(task: UserTask, tasks: UserTask*): BpmnProcess =
-    userTasks(task, tasks: _*)
-
-  def serviceTasks(task: ServiceTask, tasks: ServiceTask*): BpmnProcess =
-    copy(elements = (elements :+ task) ++ tasks)
-
-  def ---(task: ServiceTask, tasks: ServiceTask*): BpmnProcess =
-    serviceTasks(task, tasks: _*)
-/*
-  def sendTasks(task: SendTask, tasks: SendTask*): BpmnProcess =
-    copy(sendTasks = (sendTasks :+ task) ++ tasks)
-
-  def ---(task: SendTask, tasks: SendTask*): BpmnProcess =
-    sendTasks(task, tasks: _*)
-
-  def businessRuleTasks(
-                         task: BusinessRuleTask,
-                         tasks: BusinessRuleTask*
-                       ): BpmnProcess =
-    copy(businessRuleTasks = (businessRuleTasks :+ task) ++ tasks)
-
-  def ---(task: BusinessRuleTask, tasks: BusinessRuleTask*): BpmnProcess =
-    businessRuleTasks(task, tasks: _*)
-
-  def callActivities(
-                      activity: CallActivity,
-                      activities: CallActivity*
-                    ): BpmnProcess =
-    copy(callActivities = (callActivities :+ activity) ++ activities)
-
-  def ---(activity: CallActivity, activities: CallActivity*): BpmnProcess =
-    callActivities(activity, activities: _*)
-
-  def startEvents(event: StartEvent, events: StartEvent*): BpmnProcess =
-    copy(startEvents = (startEvents :+ event) ++ events)
-
-  def ---(event: StartEvent, events: StartEvent*): BpmnProcess =
-    startEvents(event, events: _*)
-
-  def endEvents(event: EndEvent, events: EndEvent*): BpmnProcess =
-    copy(endEvents = (endEvents :+ event) ++ events)
-
-  def ---(event: EndEvent, events: EndEvent*): BpmnProcess =
-    endEvents(event, events: _*)
-
-  def sequenceFlows(flow: SequenceFlow, flows: SequenceFlow*): BpmnProcess =
-    copy(sequenceFlows = (sequenceFlows :+ flow) ++ flows)
-
-  def ---(flow: SequenceFlow, flows: SequenceFlow*): BpmnProcess =
-    sequenceFlows(flow, flows: _*)
-*/
-  /**
-   * create an ordered list of all nodes, grouped by there names
-   */
-  val allNodes: Seq[(NodeKey, Seq[ProcessElement])] =
-    elements
-      .groupBy(_.elemType)
-      .toSeq
-      .sortBy { (k, _) => k.order }
+  def stringify(intent: Int): String =
+    s"""${intentStr(intent)}process(
+       |${
+      Seq(ident.stringify(intent + 1),
+        stringifyWrap(intent + 1, "starterGroups", starterGroups),
+        stringifyWrap(intent + 1, "starterUsers", starterUsers),
+        elements.stringify(intent + 1)
+      ).mkString(",\n")
+    }
+       |${intentStr(intent)})""".stripMargin
 
 object BpmnProcess:
-  private val process =
-    BpmnProcess("dummy")
-  val allNodeKeys: Seq[NodeKey] =
-    process.allNodes.map(_._1)
-  val emptyAllNodes: Map[NodeKey, Seq[ProcessElement]] =
-    allNodeKeys.map(_ -> Seq.empty[ProcessElement]).toMap
 
   sealed trait NodeKey:
     def name: String

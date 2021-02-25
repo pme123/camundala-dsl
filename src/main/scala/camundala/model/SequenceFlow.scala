@@ -8,6 +8,7 @@ case class SequenceFlow(ident: Ident,
                         condition: Option[Condition] = None,
                         //  properties: Properties = Properties.none
                        )extends ProcessElement :
+  def stringify(intent: Int):String = "sequenceFlow----"
 
   def elemType: NodeKey = NodeKey.sequenceFlows
 
@@ -18,3 +19,5 @@ case class SequenceFlow(ident: Ident,
   def groovy(scriptPath: ScriptPath) = copy(condition = Some(ScriptCond(s"$scriptPath.groovy")))
 
   def inlineGroovy(script: String) = copy(condition = Some(InlineScriptCond(script)))
+
+  

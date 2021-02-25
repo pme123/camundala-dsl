@@ -1,5 +1,4 @@
-import org.camunda.bpm.model.bpmn.Bpmn
-import org.camunda.bpm.model.bpmn.impl.BpmnParser
+import camundala.model._
 
 object Main:
 
@@ -9,3 +8,4 @@ object Main:
 
   val msg: String = 
     "I was compiled by dotty :)"
+

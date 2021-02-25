@@ -3,7 +3,7 @@ package camundala.bpmn
 import camundala.model.Condition._
 import camundala.model.Constraint.Minlength
 import camundala.model.GeneratedForm.FormFieldType.StringType
-import camundala.model.GeneratedForm.{EnumValue, FormField, FormFieldType, enumField}
+import camundala.model.GeneratedForm._
 import camundala.model.ScriptImplementation.{ExternalScript, InlineScript}
 import camundala.model._
 import camundala.model.TaskImplementation._
@@ -17,20 +17,22 @@ import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn => BpmnCamunda, insta
 
 import scala.jdk.CollectionConverters._
 import java.io.File
+import camundala.dsl.DSL.Implicits.given
+import scala.language.implicitConversions
 
 extension (bpmn: Bpmn)
   def toCamunda(outputPath: BpmnPath): Unit =
     given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.bpmnPath) )
-    bpmn.processes.map (_.toCamunda)
+    bpmn.processes.processes.map (_.toCamunda)
     BpmnCamunda.writeModelToFile (new File (outputPath), modelInstance)
 
 extension (process: BpmnProcess)
   def toCamunda(using modelInstance: BpmnModelInstance): Unit =
-    process.elements.foreach((e: ProcessElement) => e.toCamunda)
+    process.elements.elements.foreach((e: ProcessElement) => e.toCamunda)
     val cProcess: camunda.Process = modelInstance.getModelElementById(process.ident)
-    val groups = process.starterGroups.groups.map(_.ident)
+    val groups = process.starterGroups.groups.map(_.toString)
     cProcess.setCamundaCandidateStarterGroupsList(groups.asJava)
-    val users = process.starterUsers.users.map(_.username)
+    val users = process.starterUsers.users.map(_.toString)
     cProcess.setCamundaCandidateStarterUsersList(users.asJava)
 
 extension (postElement: ProcessElement)

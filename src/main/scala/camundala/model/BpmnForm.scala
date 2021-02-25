@@ -1,41 +1,40 @@
 package camundala.model
 
+import camundala.model._
 import camundala.model.Constraint._
 import camundala.model.GeneratedForm.FormField
 
 
-sealed trait BpmnForm
+sealed trait BpmnForm extends HasStringify
 
-case class EmbeddedForm(formRef: Ident)
-  extends BpmnForm
+case class EmbeddedForm(formKey: FormKey)
+  extends BpmnForm:
+  
+  def stringify(intent: Int):String =
+    s"""${intentStr(intent)}form(
+       |${formKey.stringify(intent + 1)}
+       |${intentStr(intent)})""".stripMargin
+
+opaque type FormKey = String
+
+object FormKey:
+  def apply(formKey: String): FormKey = formKey
+
+  extension (formKey: FormKey)
+    def stringify(intent: Int): String = s"""${intentStr(intent)}formKey("$formKey")"""
 
 case class GeneratedForm(fields: Seq[FormField] = Seq.empty)
   extends BpmnForm :
   def fields(fld: FormField, flds: FormField*): GeneratedForm = copy(fields = (fields :+ fld) ++ flds)
 
-
+  def stringify(intent: Int):String =
+    s"""${intentStr(intent)}form(
+       |----fields
+       |${intentStr(intent)})""".stripMargin
+       
 object GeneratedForm:
 
   import FormFieldType._
-
-  def textField(id: Ident): FormField =
-    FormField(id)
-
-  def booleanField(id: Ident): FormField =
-    FormField(id)
-      .fieldType(BooleanType)
-
-  def longField(id: Ident): FormField =
-    FormField(id)
-      .fieldType(LongType)
-
-  def dateField(id: Ident): FormField =
-    FormField(id)
-      .fieldType(DateType)
-
-  def enumField(id: Ident): FormField =
-    FormField(id)
-      .fieldType(EnumType)
 
   case class FormField(id: Ident,
                        label: String = "",
@@ -55,22 +54,6 @@ object GeneratedForm:
 
     def prop(key: Ident, value: String): FormField = copy(properties = properties :+ Property(key, value))
 
-    def constraint(constraint: Constraint): FormField =
-      copy(constraints = constraints :+ constraint)
-
-    def readonly: FormField =  constraint (Readonly)
-
-    def required: FormField =  constraint (Required)
-
-    def minlength(value: Int): FormField =  constraint (Minlength(value))
-
-    def maxlength(value: Int): FormField =  constraint (Maxlength(value))
-
-    def min(value: Int): FormField =  constraint (Min(value))
-
-    def max(value: Int): FormField =  constraint (Max(value))
-
-    def custom(name: Ident, config: Option[String]): FormField =  constraint (Custom(name, config))
 
   case class EnumValues(enums: Seq[EnumValue]):
 
@@ -109,7 +92,7 @@ case class Constraints(constraints: Seq[Constraint]):
 object Constraints:
   def none = Constraints(Seq.empty)
 
-sealed trait Constraint:
+sealed trait Constraint extends FieldAttr:
   def name: Ident
 
   def config: Option[String]
@@ -119,12 +102,12 @@ object Constraint:
   case class Custom(name: Ident, config: Option[String]) extends Constraint
 
   case object Required extends Constraint :
-    val name: Ident = "required"
+    val name: Ident = Ident("required")
 
     val config: Option[String] = None
 
   case object Readonly extends Constraint :
-    val name: Ident = "readonly"
+    val name: Ident = Ident("readonly")
 
     val config: Option[String] = None
 
@@ -135,14 +118,14 @@ object Constraint:
     val config: Option[String] = Some(s"$value")
 
   case class Minlength(value: Int)extends MinMax :
-    val name: Ident = "minlength"
+    val name: Ident = Ident("minlength")
 
   case class Maxlength(value: Int)extends MinMax :
-    val name: Ident = "maxlength"
+    val name: Ident = Ident("maxlength")
 
   case class Min(value: Int)extends MinMax :
-    val name: Ident = "min"
+    val name: Ident = Ident("min")
 
   case class Max(value: Int)extends MinMax :
-    val name: Ident = "max"
+    val name: Ident = Ident("max")
 

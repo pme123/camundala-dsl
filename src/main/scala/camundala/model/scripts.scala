@@ -10,6 +10,8 @@ case class ScriptTask(task: Task,
   extends HasTask
     with ProcessElement :
   val elemType = NodeKey.userTasks
+  
+  def stringify(intent: Int):String = "scriptTask----"
 
   def script(scriptImplementation: ScriptImplementation): ScriptTask =
     copy(scriptImplementation = Some(scriptImplementation))

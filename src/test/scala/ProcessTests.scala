@@ -7,7 +7,6 @@ import org.camunda.bpm.model.xml.instance.ModelElementInstance
 import org.junit.Test
 import org.junit.Assert._
 import camundala.bpmn._
-import camundala.model.GeneratedForm.{enumField, longField, textField}
 
 import java.io.File
 import scala.jdk.CollectionConverters._
@@ -16,7 +15,7 @@ class ProcessTests:
 
   @Test def loadProcess(): Unit =
     val fooVar: ProcessVarString = ProcessVarString("fooVar")
-
+/*
     val bpmn = Bpmn("process.bpmn")
       .processes(
         BpmnProcess("testDslProcess")
@@ -68,7 +67,7 @@ class ProcessTests:
           )
       ).toCamunda("generatedBpmn.bpmn")
 
-
+*/
 //BpmnCamunda.writeModelToFile(new File("generatedBpmn.bpmn"), modelInstance)
 
     
