@@ -23,7 +23,7 @@ def stringifyElements(intent: Int, name: String, elements: String*): String =
   s"""${intentStr(intent)}$name(
      |${elements.map(e => intentStr(intent + 1) + e).mkString(",\n")}
      |${intentStr(intent)})""".stripMargin
-     
+
 trait HasStringify:
   def stringify(intent: Int): String
 
@@ -71,37 +71,31 @@ trait HasTask
 
   lazy val activity = task.activity
 
-trait HasTaskImplementation[T]:
+trait HasTaskImplementation:
+  def elemType: NodeKey
+  def task:Task
   def taskImplementation: TaskImplementation
 
-  def implementation(impl: TaskImplementation): T
-
-  def delegate(expression: String): T =
-    implementation(DelegateExpression(expression))
-
-  def expression(expr: String): T =
-    implementation(Expression(expr))
-
-  def javaClass(className: String): T =
-    implementation(JavaClass(className))
-
-  def external(topic: String): T =
-    implementation(ExternalTask(topic))
-
+  def stringify(intent: Int): String =
+    s"""${intentStr(intent)}${elemType.name}(
+       |${task.stringify(intent + 1)},
+       |${taskImplementation.stringify(intent + 1)}
+       |${intentStr(intent)})""".stripMargin
+       
 trait HasForm[T]:
   def bpmnForm: Option[BpmnForm]
 
 case class Activity(ident: Ident)
   extends HasIdent
-    with HasStringify:
+    with HasStringify :
 
-  def stringify(intent: Int): String = s"""${intentStr(intent)}ident("$ident")"""
+  def stringify(intent: Int): String = ident.stringify(intent)
 
 case class Task(activity: Activity)
   extends HasActivity
-    with HasStringify:
+    with HasStringify :
 
-  def stringify(intent: Int): String = s"""${activity.stringify(intent)}"""
+  def stringify(intent: Int): String = activity.stringify(intent)
 
 object Task {
 
@@ -111,45 +105,46 @@ object Task {
 }
 
 sealed trait TaskImplementation
+  extends HasStringify
 
 object TaskImplementation:
 
-  case class Expression(private val expression: String, resultVariable: Option[String] = None)
-    extends TaskImplementation {
+  case class Expression(expression: String, resultVariable: Option[String] = None)
+    extends TaskImplementation :
 
-    def resultVariable(resultVariable: String): Expression =
-      copy(resultVariable = Some(resultVariable))
-  }
-
-  object Expression {
-    def apply(expr: String): Expression =
-      new Expression(s"$${$expr}")
-  }
-
+      def stringify(intent: Int): String = s"""${intentStr(intent)}expression("$expression"${resultVariable.map(v => s""", "$v"""").getOrElse("")})"""
+  
   case class DelegateExpression(expresssion: String)
-    extends TaskImplementation
+    extends TaskImplementation :
+    def stringify(intent: Int): String = s"""${intentStr(intent)}delegateExpression("$expresssion")"""
 
   case class JavaClass(className: String)
-    extends TaskImplementation
+    extends TaskImplementation :
+    def stringify(intent: Int): String = s"""${intentStr(intent)}javaClass("$className")"""
 
   case class ExternalTask(topic: String)
-    extends TaskImplementation
+    extends TaskImplementation :
+    def stringify(intent: Int): String = s"""${intentStr(intent)}externalTask("$topic")"""
 
 case class ServiceTask(task: Task,
                        taskImplementation: TaskImplementation)
   extends HasTask
-    with HasTaskImplementation[ServiceTask]
+    with HasTaskImplementation
     with ProcessElement :
   val elemType: NodeKey = NodeKey.serviceTasks
-
-  def stringify(intent: Int): String = "serviceTask----"
-
-  def implementation(impl: TaskImplementation) = copy(taskImplementation = impl)
 
 object ServiceTask:
 
   def apply(ident: Ident): ServiceTask =
     ServiceTask(Task(ident), ExternalTask("my-topic"))
+
+case class SendTask(task: Task,
+                       taskImplementation: TaskImplementation)
+  extends HasTask
+    with HasTaskImplementation
+    with ProcessElement :
+  val elemType: NodeKey = NodeKey.sendTasks
+
 
 case class UserTask(task: Task,
                     bpmnForm: Option[BpmnForm] = None)
@@ -160,8 +155,7 @@ case class UserTask(task: Task,
   def stringify(intent: Int): String =
     s"""${intentStr(intent)}userTask(
        |${
-      task.stringify(intent + 1)
-      (Seq(ident.stringify(intent + 1)) ++
+      (Seq(task.stringify(intent + 1)) ++
         bpmnForm.map(_.stringify(intent + 1)).toSeq).mkString(",\n")
     }
        |${intentStr(intent)})""".stripMargin

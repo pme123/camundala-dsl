@@ -20,11 +20,14 @@ trait forms:
       constraints = Constraints(fieldAttrs.collect { case c: Constraint => c }),
       properties = Properties(fieldAttrs.collect { case p: Property => p }),
       values = EnumValues(fieldAttrs.collect { case v: EnumValue => v }),
-      defaultValue = fieldAttrs.collect { case v: DefaultValue => v }.headOption, // this works as it is the only opaque type
+      defaultValue = fieldAttrs.collect { case v: String => DefaultValue(v) }.headOption, // this works as it is the only opaque type
       `type` = fieldType
     )
 
   def textField(id: Ident, fieldAttrs: FieldAttr*): FormField =
+    formField(id, StringType, fieldAttrs: _*)
+
+  def stringField(id: Ident, fieldAttrs: FieldAttr*): FormField =
     formField(id, StringType, fieldAttrs: _*)
 
   def booleanField(id: Ident, fieldAttrs: FieldAttr*): FormField =

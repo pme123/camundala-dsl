@@ -21,6 +21,7 @@ trait DSL
     with forms.constraints
     with props
     with serviceTasks
+    with sendTasks
     with taskImplementations
     with userTasks :
 

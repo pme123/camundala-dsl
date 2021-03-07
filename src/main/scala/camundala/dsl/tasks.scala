@@ -8,13 +8,19 @@ trait serviceTasks:
                   taskImplementation: TaskImplementation) =
     ServiceTask(Task(ident), taskImplementation)
 
+trait sendTasks:
+  def sendTask(ident: Ident,
+                  taskImplementation: TaskImplementation) =
+    SendTask(Task(ident), taskImplementation)
+
 trait taskImplementations:
+  
   def expression(expr: String) =
     Expression(expr)
 
   def expression(expr: String, resultVariable: String) =
     Expression(expr, Some(resultVariable))
-
+  
   def delegateExpression(expr: String) =
     DelegateExpression(expr)
 
