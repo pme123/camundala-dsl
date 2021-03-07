@@ -1,9 +1,9 @@
 package camundala.model
 
-trait FieldAttr
+import camundala.dsl.forms.FieldAttr
 
 // Camunda Extension
-case class Property(key: Ident, value: String) extends FieldAttr
+case class Property(key: Ident, value: String)
 
 case class Properties(properties: Seq[Property] = Seq.empty):
   

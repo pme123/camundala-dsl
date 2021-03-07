@@ -1,19 +1,18 @@
 package camundala.model
 
-import camundala.model._
-import camundala.model.Constraint._
-import camundala.model.GeneratedForm.FormField
-
+import camundala.dsl.forms.{EnumFieldAttr, FieldAttr}
+import camundala.model.*
+import camundala.model.Constraint.*
+import camundala.model.GeneratedForm.*
+import DefaultValue.*
 
 sealed trait BpmnForm extends HasStringify
 
 case class EmbeddedForm(formKey: FormKey)
-  extends BpmnForm:
-  
-  def stringify(intent: Int):String =
-    s"""${intentStr(intent)}form(
-       |${formKey.stringify(intent + 1)}
-       |${intentStr(intent)})""".stripMargin
+  extends BpmnForm :
+
+  def stringify(intent: Int): String =
+    stringifyElements(intent, "form", formKey.stringify(1))
 
 opaque type FormKey = String
 
@@ -25,13 +24,10 @@ object FormKey:
 
 case class GeneratedForm(fields: Seq[FormField] = Seq.empty)
   extends BpmnForm :
-  def fields(fld: FormField, flds: FormField*): GeneratedForm = copy(fields = (fields :+ fld) ++ flds)
 
-  def stringify(intent: Int):String =
-    s"""${intentStr(intent)}form(
-       |----fields
-       |${intentStr(intent)})""".stripMargin
-       
+  def stringify(intent: Int): String =
+    stringifyWrap(intent, "form", fields)
+
 object GeneratedForm:
 
   import FormFieldType._
@@ -39,31 +35,32 @@ object GeneratedForm:
   case class FormField(id: Ident,
                        label: String = "",
                        `type`: FormFieldType = StringType,
-                       defaultValue: String = "",
+                       defaultValue: Option[DefaultValue] = None,
                        values: EnumValues = EnumValues.none,
                        constraints: Constraints = Constraints.none,
-                       properties: Properties = Properties.none):
+                       properties: Properties = Properties.none)
+    extends HasStringify :
 
-    def fieldType(fieldType: FormFieldType): FormField = copy(`type` = fieldType)
+    def stringify(intent: Int): String =
+      stringifyElements(intent + 1, `type`.name + "Field",
+        Seq(id.stringify(1)) ++
+          constraints.constraints.map(_.stringify(1)) ++
+          defaultValue.map(_.stringify(1)).toSeq: _*)
 
-    def label(l: String): FormField = copy(label = l)
+  opaque type DefaultValue = String
 
-    def default(d: String): FormField = copy(defaultValue = d)
+  object DefaultValue:
+    def apply(value: String): DefaultValue = value
 
-    def value(key: Ident, value: String): FormField = copy(values = values :+ EnumValue(key, value))
+    extension (value: DefaultValue)
+      def stringify(intent: Int): String = s"""${intentStr(intent)}defaultValue("$value")"""
 
-    def prop(key: Ident, value: String): FormField = copy(properties = properties :+ Property(key, value))
-
-
-  case class EnumValues(enums: Seq[EnumValue]):
-
-    def :+(value: EnumValue): EnumValues = copy(enums :+ value)
-
+  case class EnumValues(enums: Seq[EnumValue])
 
   object EnumValues:
     def none: EnumValues = EnumValues(Seq.empty)
 
-  case class EnumValue(key: Ident, label: String)
+  case class EnumValue(id: Ident, name: Name)
 
 
   sealed trait FormFieldType:
@@ -86,36 +83,49 @@ object GeneratedForm:
     case object DateType extends FormFieldType :
       val name = "date"
 
-case class Constraints(constraints: Seq[Constraint]):
-  def :+(constraint: Constraint): Constraints = copy(constraints = constraints :+ constraint)
+case class Constraints(constraints: Seq[Constraint])
 
 object Constraints:
   def none = Constraints(Seq.empty)
 
-sealed trait Constraint extends FieldAttr:
+sealed trait Constraint
+  extends HasStringify :
   def name: Ident
 
   def config: Option[String]
 
 object Constraint:
 
-  case class Custom(name: Ident, config: Option[String]) extends Constraint
+  case class Custom(name: Ident, config: Option[String] = None)
+    extends Constraint :
+
+    def stringify(intent: Int): String = config match {
+      case None => s"""${intentStr(intent)}custom(${name.stringify(0)})"""
+      case Some(value) => s"""${intentStr(intent)}custom(${name.stringify(0)}, "$value")"""
+    }
 
   case object Required extends Constraint :
     val name: Ident = Ident("required")
 
     val config: Option[String] = None
 
+    def stringify(intent: Int): String = s"${intentStr(intent)}required"
+
+
   case object Readonly extends Constraint :
     val name: Ident = Ident("readonly")
 
     val config: Option[String] = None
+
+    def stringify(intent: Int): String = s"${intentStr(intent)}readonly"
 
   sealed trait MinMax extends Constraint :
 
     def value: Int
 
     val config: Option[String] = Some(s"$value")
+
+    def stringify(intent: Int): String = s"${intentStr(intent)}$name($value)"
 
   case class Minlength(value: Int)extends MinMax :
     val name: Ident = Ident("minlength")

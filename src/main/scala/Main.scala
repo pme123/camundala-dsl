@@ -1,11 +1,77 @@
+import camundala.dsl.DSL
+import camundala.dsl.DSL._
 import camundala.model._
 
-object Main:
+object Main extends App with DSL :
 
-  def main(args: Array[String]): Unit = 
-    println("Hello world!")
-    println(msg)
 
-  val msg: String = 
-    "I was compiled by dotty :)"
+  val adminGroup = group(ident("admin"), name("Administrator"), groupType("MyGROUP"))
 
+  private val testUser: BpmnUser = user(
+    username("pme123"),
+    name("Muster"),
+    firstName("Pascal"),
+    email("pascal@muster.ch"),
+    groupRefs(
+      adminGroup.ref
+    )
+  )
+  private val bpmnExample =
+    bpmn(
+      path("myPath"),
+      process(
+        ident("myIdent"),
+        starterGroups(
+          adminGroup.ref
+        ),
+        starterUsers(
+          testUser.ref
+        ),
+        elements(
+          startEvent(
+            ident("LetsStart"),
+            form(formKey("MyForm"))
+          ),
+          serviceTask(
+            ident("ExpressionService"),
+            expression("${myVar as String}", "myVar")
+          ),
+          serviceTask(
+            ident("ExternalTask"),
+            externalTask("my-topic")
+          ),
+          userTask(
+            ident("MyUserTask"),
+            form(
+              textField(
+                ident("textField1"),
+                required,
+                minlength(12),
+                maxlength(33),
+                prop(
+                  ident("width"), "12")
+              ),
+              booleanField(
+                ident("booleanField1"),
+                defaultValue("true")
+              ),
+              longField(ident("longField1"),
+                max(12),
+                custom(ident("special1")),
+                custom(ident("special2"), "hello")),
+              enumField(ident("enumField1"),
+                enumValue(ident("de"), name("Deutsch")),
+                enumValue(ident("fr"), name("Französisch"))
+              )
+            ))
+        )),
+      process(ident("process2"))
+    )
+
+  println(
+    bpmnsConfig(
+      users(testUser),
+      groups(adminGroup),
+      bpmns(bpmnExample)
+    ).stringify()
+  )

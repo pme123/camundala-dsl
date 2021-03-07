@@ -1,6 +1,6 @@
 package camundala.dsl
 
-import camundala.model._
+import camundala.model.*
 
 trait bpmns:
   type BpmnsConfigAttributes = Bpmns | BpmnUsers | BpmnGroups

@@ -77,7 +77,7 @@ extension (event: StartEvent)
     val builder: StartEventBuilder = elem.builder()
     event.bpmnForm.foreach {
       case EmbeddedForm(formRef) =>
-        builder.camundaFormKey(formRef)
+        builder.camundaFormKey(formRef.toString)
       case GeneratedForm(fields) =>
         fields.foreach {
           createFormField(_, builder.camundaFormField().getElement)
@@ -89,7 +89,7 @@ extension (task: UserTask)
     val builder: UserTaskBuilder = elem.builder()
     task.bpmnForm.foreach {
       case EmbeddedForm(formRef) =>
-        builder.camundaFormKey(formRef)
+        builder.camundaFormKey(formRef.toString)
       case GeneratedForm(fields) =>
         fields.foreach {
           createFormField(_, builder.camundaFormField().getElement)

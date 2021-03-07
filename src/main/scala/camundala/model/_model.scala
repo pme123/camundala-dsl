@@ -19,6 +19,11 @@ def stringifyWrap(intent: Int, name: String, entries: Seq[_ <: HasStringify]): S
      |${entries.map(_.stringify(intent + 1)).mkString(",\n")}
      |${intentStr(intent)})""".stripMargin
 
+def stringifyElements(intent: Int, name: String, elements: String*): String =
+  s"""${intentStr(intent)}$name(
+     |${elements.map(e => intentStr(intent + 1) + e).mkString(",\n")}
+     |${intentStr(intent)})""".stripMargin
+     
 trait HasStringify:
   def stringify(intent: Int): String
 
@@ -88,10 +93,15 @@ trait HasForm[T]:
 
 case class Activity(ident: Ident)
   extends HasIdent
+    with HasStringify:
+
+  def stringify(intent: Int): String = s"""${intentStr(intent)}ident("$ident")"""
 
 case class Task(activity: Activity)
   extends HasActivity
     with HasStringify:
+
+  def stringify(intent: Int): String = s"""${activity.stringify(intent)}"""
 
 object Task {
 
