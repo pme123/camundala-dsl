@@ -20,8 +20,7 @@ trait DSL
     with forms
     with forms.constraints
     with props
-    with serviceTasks
-    with sendTasks
+    with tasks
     with taskImplementations
     with userTasks :
 
@@ -33,6 +32,9 @@ trait DSL
 
   def name(name: String): Name =
     Name(name)
+
+  def tenantId(ti: String): TenantId =
+    TenantId(ti)
 
 object DSL extends DSL :
 

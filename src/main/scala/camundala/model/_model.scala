@@ -56,6 +56,14 @@ object Name:
   extension (name: Name)
     def stringify(intent: Int): String = s"""${intentStr(intent)}name("$name")"""
 
+opaque type TenantId = String
+
+object TenantId:
+  def apply(tenantId: String): TenantId = tenantId
+
+  extension (tenantId: TenantId)
+    def stringify(intent: Int): String = s"""${intentStr(intent)}tenantId("$tenantId")"""
+
 trait HasIdent:
   def ident: Ident
 
@@ -73,7 +81,9 @@ trait HasTask
 
 trait HasTaskImplementation:
   def elemType: NodeKey
-  def task:Task
+
+  def task: Task
+
   def taskImplementation: TaskImplementation
 
   def stringify(intent: Int): String =
@@ -81,7 +91,7 @@ trait HasTaskImplementation:
        |${task.stringify(intent + 1)},
        |${taskImplementation.stringify(intent + 1)}
        |${intentStr(intent)})""".stripMargin
-       
+
 trait HasForm[T]:
   def bpmnForm: Option[BpmnForm]
 
@@ -112,8 +122,8 @@ object TaskImplementation:
   case class Expression(expression: String, resultVariable: Option[String] = None)
     extends TaskImplementation :
 
-      def stringify(intent: Int): String = s"""${intentStr(intent)}expression("$expression"${resultVariable.map(v => s""", "$v"""").getOrElse("")})"""
-  
+    def stringify(intent: Int): String = s"""${intentStr(intent)}expression("$expression"${resultVariable.map(v => s""", "$v"""").getOrElse("")})"""
+
   case class DelegateExpression(expresssion: String)
     extends TaskImplementation :
     def stringify(intent: Int): String = s"""${intentStr(intent)}delegateExpression("$expresssion")"""
@@ -125,6 +135,82 @@ object TaskImplementation:
   case class ExternalTask(topic: String)
     extends TaskImplementation :
     def stringify(intent: Int): String = s"""${intentStr(intent)}externalTask("$topic")"""
+
+sealed trait BusinessRuleTaskImpl
+  extends TaskImplementation
+
+object BusinessRuleTask:
+
+  opaque type DecisionRef = String
+
+  object DecisionRef:
+    def apply(ref: String): DecisionRef = ref
+
+  extension (ref: DecisionRef)
+    def stringify(intent: Int): String = s"""${intentStr(intent)}decisionRef("$ref")"""
+
+
+  case class Dmn(decisionRef: DecisionRef,
+                 binding: RefBinding,
+                 resultVariable: Option[ResultVariable],
+                 tenantId: Option[TenantId])
+    extends BusinessRuleTaskImpl :
+    def stringify(intent: Int): String =
+      s"""${intentStr(intent)}dmn(
+         |${decisionRef.stringify(intent + 1)},
+         |${
+        (Seq(binding.stringify(intent + 1)) ++
+          resultVariable.map(rv => rv.stringify(intent + 1)).toSeq ++
+          tenantId.map(ti => ti.stringify(intent + 1)).toSeq).mkString(",\n")
+      }
+         |${intentStr(intent)})""".stripMargin
+
+case class ResultVariable(name: Name, mapDecisionResult: MapDecisionResult):
+  def stringify(intent: Int): String =
+    s"""${intentStr(intent)}resultVariable(
+       |${name.stringify(intent + 1)},
+       |${mapDecisionResult.stringify(intent + 1)})""".stripMargin
+
+enum MapDecisionResult(val label: String):
+  def stringify(intent: Int): String = s"${intentStr(intent)}$label"
+
+  // TypedValue
+  case SingleEntry extends MapDecisionResult("singleEntry")
+
+  // Map[String, Object]
+  case SingleResult extends MapDecisionResult("singleResult")
+
+  // List[Object]
+  case CollectEntries extends MapDecisionResult("collectEntries")
+
+  // List[Map[String, Object]]
+  case ResultList extends MapDecisionResult("resultList")
+
+sealed trait RefBinding
+  extends HasStringify :
+  def binding: String
+
+  def stringify(intent: Int): String = s"${intentStr(intent)}binding($binding)"
+
+
+object RefBinding:
+
+  case object Latest
+    extends RefBinding :
+    val binding: String = "latest"
+
+  case object Deployment
+    extends RefBinding :
+    val binding: String = "latest"
+
+
+  case class Version(version: String)
+    extends RefBinding :
+    val binding: String = s"""version("$version")"""
+
+  case class VersionTag(tag: String)
+    extends RefBinding :
+    val binding: String = s"""versionTag("$tag")"""
 
 case class ServiceTask(task: Task,
                        taskImplementation: TaskImplementation)
@@ -139,12 +225,18 @@ object ServiceTask:
     ServiceTask(Task(ident), ExternalTask("my-topic"))
 
 case class SendTask(task: Task,
-                       taskImplementation: TaskImplementation)
+                    taskImplementation: TaskImplementation)
   extends HasTask
     with HasTaskImplementation
     with ProcessElement :
   val elemType: NodeKey = NodeKey.sendTasks
 
+case class BusinessRuleTask(task: Task,
+                            taskImplementation: BusinessRuleTaskImpl)
+  extends HasTask
+    with HasTaskImplementation
+    with ProcessElement :
+  val elemType: NodeKey = NodeKey.businessRuleTasks
 
 case class UserTask(task: Task,
                     bpmnForm: Option[BpmnForm] = None)

@@ -52,8 +52,8 @@ object GeneratedForm:
   object DefaultValue:
     def apply(value: String): DefaultValue = value
 
-    extension (value: DefaultValue)
-      def stringify(intent: Int): String = s"""${intentStr(intent)}defaultValue("$value")"""
+  extension (value: DefaultValue)
+    def stringify(intent: Int): String = s"""${intentStr(intent)}defaultValue("$value")"""
 
   case class EnumValues(enums: Seq[EnumValue])
 
