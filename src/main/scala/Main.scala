@@ -1,6 +1,7 @@
 import camundala.dsl.DSL
 import camundala.dsl.DSL._
 import camundala.model._
+import camundala.bpmn._
 
 object Main extends App with DSL :
 
@@ -83,11 +84,13 @@ object Main extends App with DSL :
       process(ident("process2"))
     )
 
+  private val config = bpmnsConfig(
+    users(testUser),
+    groups(adminGroup),
+    bpmns(bpmnExample)
+  )
+
   println(
-    bpmnsConfig(
-      users(testUser),
-      groups(adminGroup),
-      bpmns(bpmnExample)
-    ).stringify()
+    config.stringify()
   )
 

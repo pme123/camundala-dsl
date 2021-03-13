@@ -5,32 +5,13 @@ import camundala.model.ScriptImplementation.{ExternalScript, InlineScript, Scrip
 import camundala.model.TaskImplementation.Expression
 
 case class ScriptTask(task: Task,
-                      scriptImplementation: Option[ScriptImplementation] = None,
-                      resultVariable: Option[String] = None)
+                      scriptImplementation: ScriptImplementation,
+                      resultVariable: Option[Ident] = None)
   extends HasTask
     with ProcessElement :
   val elemType = NodeKey.userTasks
   
   def stringify(intent: Int):String = "scriptTask----"
-
-  def script(scriptImplementation: ScriptImplementation): ScriptTask =
-    copy(scriptImplementation = Some(scriptImplementation))
-
-  def groovy(scriptPath: ScriptPath): ScriptTask =
-    copy(scriptImplementation = Some(ExternalScript(ScriptLanguage.Groovy,
-      s"$scriptPath.groovy")))
-
-  def inlineGroovy(script: String): ScriptTask =
-    copy(scriptImplementation = Some(InlineScript(ScriptLanguage.Groovy,
-      script)))
-
-  def resultVariable(resultVariable: String): ScriptTask =
-    copy(resultVariable = Some(resultVariable))
-
-object ScriptTask:
-
-  def apply(ident: Ident): ScriptTask =
-    ScriptTask(Task(ident))
 
 sealed trait ScriptImplementation:
   def language: ScriptLanguage

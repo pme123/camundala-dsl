@@ -17,12 +17,13 @@ trait DSL
     with groups
     with users
     with events
+    with flows
     with forms
     with forms.constraints
     with props
     with tasks
-    with taskImplementations
-    with userTasks :
+    with scriptImplementations
+    with taskImplementations :
 
   def ident(id: String): Ident =
     Ident(id)

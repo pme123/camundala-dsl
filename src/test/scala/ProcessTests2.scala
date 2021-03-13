@@ -1,5 +1,6 @@
 import Main.getClass
-import camundala.bpmn._
+import camundala.bpmn.*
+import camundala.dsl.DSL
 import camundala.model.TaskImplementation._
 import camundala.model._
 import org.camunda.bpm.model.bpmn.{Bpmn => BpmnCamunda, instance => camunda}
@@ -11,68 +12,83 @@ import java.io.File
 import scala.jdk.CollectionConverters._
 import camundala.dsl.DSL._
 
-class ProcessTests2:
+class ProcessTests2 extends DSL :
 
   @Test def loadProcess(): Unit =
     val fooVar: ProcessVarString = ProcessVarString("fooVar")
 
-/*    val bpmnModel =
+    val bpmnModel: Bpmn =
       bpmn(
         path("process.bpmn"),
-        process()
-      )
-        .processes(
-          BpmnProcess("testDslProcess")
-            .canStart(BpmnUser("Darth.Vader"))
-            .canStart(BpmnGroup("admin"))
-            .elements(
-              StartEvent("startEvent")
-                .form(
-                  textField(fooVar.ident)
-                    .prop("myProp", "helothere")
+        process(
+          ident("testDslProcess"),
+          starterUsers(user("Darth.Vader")),
+          starterGroups(group("admin")),
+          elements(
+            startEvent(
+              ident("startEvent"),
+              form(
+                textField(
+                  ident(fooVar.toString),
+                  prop(
+                    ident("myProp"),
+                    "hello there"))
+              )
+            ),
+            serviceTask(
+              ident("serviceTask"),
+              expression("${myVar as String}", "myVar")
+            ),
+            userTask(
+              ident("userTaskA"),
+              form(
+                enumField(
+                  ident("myField"),
+                  label("MY FIELD"),
+                  enumValue(ident("k1"), name("blau")),
+                  enumValue(ident("k2"), name("grau")),
+                  readonly,
+                  required,
                 ),
-              ServiceTask("serviceTask")
-                .implementation(
-                  fooVar.expression
-                    .resultVariable("foo")
+                textField(
+                  ident("textField"),
+                  label("hello"),
+                  defaultValue("Peter"),
+                  required,
+                  minlength(3),
+                  maxlength(12)
                 ),
-              UserTask("userTaskA")
-                .form(
-                  enumField("myField")
-                    .label("MY FIELD")
-                    .value("k1", "blau")
-                    .value("k2", "grau")
-                    .readonly
-                    .required,
-                  textField("textField")
-                    .label("hello")
-                    .default("Peter")
-                    .required
-                    .minlength(3)
-                    .maxlength(12),
-                  longField("numberField")
-                    .label("My Number")
-                    .default("10")
-                    .min(3)
-                    .max(12)
-                ),
-              UserTask("userTaskB")
-                .form("MyFormKey"),
-              ScriptTask("scriptTask")
-                .inlineGroovy(s"println 'hello Scala world'")
-                .resultVariable("scriptResult"),
-              SequenceFlow("flowIsBar")
-                .inlineGroovy(s"println 'hello'\n$fooVar == 'bar'"),
-              // .expression(s"$${$fooVar == 'bar'}"),
-              SequenceFlow("flowIsNotBar")
-                .groovy("script/asdf")
-              // .expression(s"$${$fooVar != 'bar'}"),
-
+                longField(
+                  ident("numberField"),
+                  label("My Number"),
+                  defaultValue("10"),
+                  min(3),
+                  max(12)
+                )
+              )
+            ),
+            userTask(
+              ident("userTaskB"),
+              form(
+                formKey("MyFormKey")
+              )
+            ),
+            scriptTask(
+              ident("scriptTask"),
+              inlineGroovy(s"println 'hello Scala world'"),
+              resultVariable("scriptResult")
+            ),
+            sequenceFlow(
+              ident("flowIsBar"),
+              inlineGroovyCond(
+                s"""println 'hello'
+            $fooVar == 'bar'""")
             )
-        ).toCamunda("generatedBpmn.bpmn")
-
-*/
-//BpmnCamunda.writeModelToFile(new File("generatedBpmn.bpmn"), modelInstance)
+          )
+        )
+      )
+    println(bpmnModel)
+    bpmnModel.toCamunda(path("generatedBpmn.bpmn"))
 
     
 

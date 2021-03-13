@@ -266,8 +266,3 @@ opaque type ProcessVarString = Ident
 object ProcessVarString:
   def apply(variable: String): ProcessVarString = variable
 
-// Extension methods define opaque types' public APIs
-extension (p: ProcessVarString)
-// def ident: Ident = p
-
-  def expression: Expression = Expression(p)

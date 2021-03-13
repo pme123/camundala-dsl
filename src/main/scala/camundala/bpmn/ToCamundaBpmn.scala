@@ -19,7 +19,7 @@ import scala.jdk.CollectionConverters._
 import java.io.File
 import camundala.dsl.DSL.Implicits.given
 import scala.language.implicitConversions
-
+    
 extension (bpmn: Bpmn)
   def toCamunda(outputPath: BpmnPath): Unit =
     given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.bpmnPath) )
@@ -99,7 +99,7 @@ extension (task: UserTask)
 extension (task: ScriptTask)
   def merge(elem: camunda.ScriptTask): Unit =
     val builder: ScriptTaskBuilder = elem.builder()
-    task.scriptImplementation.foreach {
+    task.scriptImplementation match {
       case InlineScript(lang, script) =>
         builder
           .scriptFormat(lang.toString)
@@ -108,7 +108,7 @@ extension (task: ScriptTask)
         elem.setCamundaResource(es.deployResource)
         elem.setScriptFormat(lang.toString)
     }
-    task.resultVariable.foreach(
+    task.resultVariable.map(_.toString).foreach(
       builder
         .camundaResultVariable
     )
@@ -133,7 +133,7 @@ extension (flow: SequenceFlow)
 private def createFormField(formField: FormField, cff: CamundaFormField)(using modelInstance: BpmnModelInstance) =
   val FormField(id, label, fieldType, defaultValue, values, constraints, properties) = formField
   cff.setCamundaId(id)
-  cff.setCamundaLabel(label)
+  cff.setCamundaLabel(label.map(_.str).getOrElse(""))
   cff.setCamundaType(fieldType.name)
   cff.getCamundaValues
     .addAll(values.enums.map { case EnumValue(k, v) =>

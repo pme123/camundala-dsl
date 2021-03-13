@@ -3,7 +3,7 @@ package camundala.dsl
 import camundala.dsl.forms.{EnumFieldAttr, FieldAttr}
 import camundala.model.Constraint._
 import camundala.model.GeneratedForm.FormFieldType.{BooleanType, DateType, EnumType, LongType, StringType}
-import camundala.model.GeneratedForm.{DefaultValue, EnumValue, EnumValues, FormField, FormFieldType}
+import camundala.model.GeneratedForm.{DefaultValue, EnumValue, EnumValues, FormField, FormFieldType, Label}
 import camundala.model._
 
 trait forms:
@@ -20,6 +20,7 @@ trait forms:
       constraints = Constraints(fieldAttrs.collect { case c: Constraint => c }),
       properties = Properties(fieldAttrs.collect { case p: Property => p }),
       values = EnumValues(fieldAttrs.collect { case v: EnumValue => v }),
+      label = fieldAttrs.collect { case l: Label => l }.headOption, // this works as it is the only opaque type
       defaultValue = fieldAttrs.collect { case v: String => DefaultValue(v) }.headOption, // this works as it is the only opaque type
       `type` = fieldType
     )
@@ -48,9 +49,12 @@ trait forms:
   def defaultValue(value: String): DefaultValue =
     DefaultValue(value)
 
+  def label(value: String): Label =
+    Label(value)
+
 object forms:
 
-  type FieldAttr = Property | Constraint | DefaultValue
+  type FieldAttr = Property | Constraint | DefaultValue | Label
 
   type EnumFieldAttr = FieldAttr | EnumValue
 

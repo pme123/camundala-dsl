@@ -4,7 +4,7 @@ val scala3Version = "3.0.0-RC1"
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "scala3-cross",
+    name := "camundala-dsl",
     version := "0.1.0",
 
     libraryDependencies += "org.camunda.bpm.model" % "camunda-bpmn-model" % "7.14.0",

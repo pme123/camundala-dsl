@@ -4,7 +4,6 @@ import camundala.dsl.forms.{EnumFieldAttr, FieldAttr}
 import camundala.model.*
 import camundala.model.Constraint.*
 import camundala.model.GeneratedForm.*
-import DefaultValue.*
 
 sealed trait BpmnForm extends HasStringify
 
@@ -33,7 +32,7 @@ object GeneratedForm:
   import FormFieldType._
 
   case class FormField(id: Ident,
-                       label: String = "",
+                       label: Option[Label] = None,
                        `type`: FormFieldType = StringType,
                        defaultValue: Option[DefaultValue] = None,
                        values: EnumValues = EnumValues.none,
@@ -45,7 +44,11 @@ object GeneratedForm:
       stringifyElements(intent + 1, `type`.name + "Field",
         Seq(id.stringify(1)) ++
           constraints.constraints.map(_.stringify(1)) ++
+          label.map(_.stringify(1)).toSeq ++
           defaultValue.map(_.stringify(1)).toSeq: _*)
+
+  case class Label(str: String):
+    def stringify(intent: Int): String = s"""${intentStr(intent)}label("$str")"""
 
   opaque type DefaultValue = String
 

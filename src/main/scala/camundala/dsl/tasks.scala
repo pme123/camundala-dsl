@@ -1,8 +1,9 @@
 package camundala.dsl
 
 import camundala.model.BusinessRuleTask.{DecisionRef, Dmn}
+import camundala.model.ScriptImplementation.*
 import camundala.model.TaskImplementation.{DelegateExpression, Expression, ExternalTask, JavaClass}
-import camundala.model._
+import camundala.model.*
 
 trait tasks:
   def serviceTask(ident: Ident,
@@ -13,12 +14,35 @@ trait tasks:
                taskImplementation: TaskImplementation) =
     SendTask(Task(ident), taskImplementation)
 
+  def scriptTask(ident: Ident,
+               scriptImplementation: ScriptImplementation,
+               resultVariable: Option[Ident] = None) =
+    ScriptTask(Task(ident),scriptImplementation,resultVariable)
+
   def businessRuleTask(ident: Ident,
                        taskImplementation: BusinessRuleTaskImpl) =
     BusinessRuleTask(Task(ident), taskImplementation)
 
+  def userTask(ident: Ident) =
+    UserTask(ident)
 
-trait taskImplementations:
+  def userTask(ident: Ident, form: BpmnForm) =
+    UserTask(Task(ident), Some(form))
+
+trait scriptImplementations :
+
+  def groovy(scriptPath: ScriptPath): ScriptImplementation =
+    ExternalScript(ScriptLanguage.Groovy,
+      s"$scriptPath.groovy")
+
+  def inlineGroovy(script: String): ScriptImplementation =
+    InlineScript(ScriptLanguage.Groovy,
+      script)
+
+  def resultVariable(resultVariable: String): Option[Ident] =
+    Some(Ident(resultVariable))
+    
+trait taskImplementations :
 
   def expression(expr: String) =
     Expression(expr)
@@ -70,9 +94,4 @@ trait taskImplementations:
 
   def resultList = MapDecisionResult.ResultList
 
-trait userTasks:
-  def userTask(ident: Ident) =
-    UserTask(ident)
 
-  def userTask(ident: Ident, form: BpmnForm) =
-    UserTask(Task(ident), Some(form))
