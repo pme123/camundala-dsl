@@ -6,28 +6,42 @@ import camundala.model.TaskImplementation.{DelegateExpression, Expression, Exter
 import camundala.model.*
 
 trait tasks:
-  def serviceTask(ident: Ident,
-                  taskImplementation: TaskImplementation) =
-    ServiceTask(Task(ident), taskImplementation)
 
-  def sendTask(ident: Ident,
-               taskImplementation: TaskImplementation) =
-    SendTask(Task(ident), taskImplementation)
+  extension[T] (hasTaskImpl: HasTaskImplementation[T])
+    def expression(expr: String) =
+      hasTaskImpl.taskImplementation(Expression(expr))
+
+    def expression(expr: String, resultVariable: String) =
+      hasTaskImpl.taskImplementation(Expression(expr, Some(resultVariable)))
+
+    def delegateExpression(expr: String) =
+      hasTaskImpl.taskImplementation(DelegateExpression(expr))
+
+    def javaClass(className: String) =
+      hasTaskImpl.taskImplementation(JavaClass(className))
+
+    def externalTask(topic: String) =
+      hasTaskImpl.taskImplementation(ExternalTask(topic: String))
+
+  def serviceTask(ident: String) =
+    ServiceTask(Ident(ident))
+
+  def sendTask(ident: String) =
+    SendTask(Task(Ident(ident)))
 
   def scriptTask(ident: Ident,
                scriptImplementation: ScriptImplementation,
                resultVariable: Option[Ident] = None) =
     ScriptTask(Task(ident),scriptImplementation,resultVariable)
 
-  def businessRuleTask(ident: Ident,
-                       taskImplementation: BusinessRuleTaskImpl) =
-    BusinessRuleTask(Task(ident), taskImplementation)
+  def businessRuleTask(ident: String) =
+    BusinessRuleTask(Task(Ident(ident)))
 
-  def userTask(ident: Ident) =
-    UserTask(ident)
+  extension (brTask: BusinessRuleTask)
+    def impl(d: Dmn) = brTask.copy(taskImplementation = d)
 
-  def userTask(ident: Ident, form: BpmnForm) =
-    UserTask(Task(ident), Some(form))
+  def userTask(ident: String) =
+    UserTask(Ident(ident))
 
 trait scriptImplementations :
 
@@ -59,39 +73,40 @@ trait taskImplementations :
   def externalTask(topic: String) =
     ExternalTask(topic: String)
 
-  type DmnAttr = RefBinding | ResultVariable | TenantId
+  def dmn(decisionRef: String) =
+    Dmn(DecisionRef(decisionRef))
+  
+  extension (dmn: Dmn)
 
-  def dmn(decisionRef: DecisionRef,
-          attrs: DmnAttr*) =
-    Dmn(decisionRef,
-      binding = attrs.collect { case rb: RefBinding => rb }.headOption.getOrElse(latest),
-      resultVariable = attrs.collect { case rv: ResultVariable => rv }.headOption,
-      tenantId = attrs.collect { case ti: String => TenantId(ti) }.headOption
-    )
+    def binding(refBinding: RefBinding): Dmn =
+       dmn.copy(binding =  refBinding)
 
-  def decisionRef(ref: String) =
-    DecisionRef(ref)
+    def latest: Dmn = 
+       dmn.copy(binding =  RefBinding.Latest)
 
-  def binding(refBinding: RefBinding) =
-    refBinding
+    def deployment: Dmn = 
+       dmn.copy(binding =  RefBinding.Deployment)
 
-  def latest: RefBinding = RefBinding.Latest
+    def tenantId(id: String): Dmn = 
+       dmn.copy(tenantId = Some(TenantId(id)))
 
-  def deployment: RefBinding = RefBinding.Deployment
+    def version(v: String): Dmn = dmn.copy(binding =  RefBinding.Version(v))
 
-  def version(v: String): RefBinding = RefBinding.Version(v)
+    def versionTag(tag: String): Dmn = dmn.copy(binding =  RefBinding.VersionTag(tag))
 
-  def versionTag(tag: String): RefBinding = RefBinding.VersionTag(tag)
+    def resultVariable(name: String, mapDecisionResult: MapDecisionResult) = 
+      dmn.copy(resultVariable = Some(ResultVariable(Name(name), mapDecisionResult)))
 
-  def resultVariable(name: Name, mapDecisionResult: MapDecisionResult = resultList) =
-    ResultVariable(name, mapDecisionResult)
+    def singleEntry(name: String): Dmn = 
+      resultVariable(name, MapDecisionResult.SingleEntry)
 
-  def singleEntry = MapDecisionResult.SingleEntry
+    def singleResult(name: String):Dmn = 
+      resultVariable(name, MapDecisionResult.SingleResult)
 
-  def singleResult = MapDecisionResult.SingleResult
+    def collectEntries(name: String):Dmn = 
+            resultVariable(name, MapDecisionResult.CollectEntries)
 
-  def collectEntries = MapDecisionResult.CollectEntries
-
-  def resultList = MapDecisionResult.ResultList
+    def resultList(name: String):Dmn = 
+            resultVariable(name, MapDecisionResult.ResultList)
 
 

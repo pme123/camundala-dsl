@@ -3,5 +3,7 @@ package camundala.dsl
 import camundala.model._
 
 trait props :
-  def prop(key: Ident, value: String) =
-    Property(key, value)
+  
+  extension[T] (hasProperty: HasProperties[T])
+    def prop(key: String, value: String) =
+     hasProperty.prop(Property(Ident(key), value))

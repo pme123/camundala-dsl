@@ -36,7 +36,7 @@ opaque type BpmnPath = String
 
 object BpmnPath:
   def apply(path: String): BpmnPath = path
-
+  
   extension (path: BpmnPath)
     def stringify(intent: Int): String = s"""${intentStr(intent)}path("$path")"""
 
@@ -79,12 +79,14 @@ trait HasTask
 
   lazy val activity = task.activity
 
-trait HasTaskImplementation:
+trait HasTaskImplementation[T]:
   def elemType: NodeKey
 
   def task: Task
 
   def taskImplementation: TaskImplementation
+
+  def taskImplementation(taskImplementation: TaskImplementation): T
 
   def stringify(intent: Int): String =
     s"""${intentStr(intent)}${elemType.name}(
@@ -94,6 +96,11 @@ trait HasTaskImplementation:
 
 trait HasForm[T]:
   def bpmnForm: Option[BpmnForm]
+  def form(form:BpmnForm): T
+
+trait HasProperties[T]:
+  def properties: Properties
+  def prop(prop: Property): T
 
 case class Activity(ident: Ident)
   extends HasIdent
@@ -120,20 +127,24 @@ sealed trait TaskImplementation
 object TaskImplementation:
 
   case class Expression(expression: String, resultVariable: Option[String] = None)
-    extends TaskImplementation :
+    extends TaskImplementation 
+    with BusinessRuleTaskImpl:
 
     def stringify(intent: Int): String = s"""${intentStr(intent)}expression("$expression"${resultVariable.map(v => s""", "$v"""").getOrElse("")})"""
 
   case class DelegateExpression(expresssion: String)
-    extends TaskImplementation :
+    extends TaskImplementation
+    with BusinessRuleTaskImpl :
     def stringify(intent: Int): String = s"""${intentStr(intent)}delegateExpression("$expresssion")"""
 
   case class JavaClass(className: String)
-    extends TaskImplementation :
+    extends TaskImplementation 
+    with BusinessRuleTaskImpl:
     def stringify(intent: Int): String = s"""${intentStr(intent)}javaClass("$className")"""
 
   case class ExternalTask(topic: String)
-    extends TaskImplementation :
+    extends TaskImplementation 
+    with BusinessRuleTaskImpl:
     def stringify(intent: Int): String = s"""${intentStr(intent)}externalTask("$topic")"""
 
 sealed trait BusinessRuleTaskImpl
@@ -151,9 +162,9 @@ object BusinessRuleTask:
 
 
   case class Dmn(decisionRef: DecisionRef,
-                 binding: RefBinding,
-                 resultVariable: Option[ResultVariable],
-                 tenantId: Option[TenantId])
+                 binding: RefBinding = RefBinding.Latest,
+                 resultVariable: Option[ResultVariable] = None,
+                 tenantId: Option[TenantId] = None)
     extends BusinessRuleTaskImpl :
     def stringify(intent: Int): String =
       s"""${intentStr(intent)}dmn(
@@ -215,9 +226,10 @@ object RefBinding:
 case class ServiceTask(task: Task,
                        taskImplementation: TaskImplementation)
   extends HasTask
-    with HasTaskImplementation
+    with HasTaskImplementation[ServiceTask]
     with ProcessElement :
   val elemType: NodeKey = NodeKey.serviceTasks
+  def taskImplementation(taskImplementation: TaskImplementation): ServiceTask = copy(taskImplementation = taskImplementation)
 
 object ServiceTask:
 
@@ -225,18 +237,21 @@ object ServiceTask:
     ServiceTask(Task(ident), ExternalTask("my-topic"))
 
 case class SendTask(task: Task,
-                    taskImplementation: TaskImplementation)
+                    taskImplementation: TaskImplementation = Expression(""))
   extends HasTask
-    with HasTaskImplementation
+    with HasTaskImplementation[SendTask]
     with ProcessElement :
   val elemType: NodeKey = NodeKey.sendTasks
+  def taskImplementation(taskImplementation: TaskImplementation): SendTask = copy(taskImplementation = taskImplementation)
 
 case class BusinessRuleTask(task: Task,
-                            taskImplementation: BusinessRuleTaskImpl)
+                            taskImplementation: BusinessRuleTaskImpl = Expression(""))
   extends HasTask
-    with HasTaskImplementation
+  //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
     with ProcessElement :
   val elemType: NodeKey = NodeKey.businessRuleTasks
+  def taskImplementation(taskImplementation: TaskImplementation): BusinessRuleTask = this //TODO copy(taskImplementation = taskImplementation)
+  def stringify(intent: Int): String = "----BusinessRuleTask"
 
 case class UserTask(task: Task,
                     bpmnForm: Option[BpmnForm] = None)

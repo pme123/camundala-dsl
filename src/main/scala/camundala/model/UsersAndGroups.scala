@@ -6,9 +6,14 @@ import camundala.model.BpmnUser.{Email, FirstName, Username}
 case class BpmnUsers(users: Seq[BpmnUser])
   extends HasStringify :
 
+  def :+(user: BpmnUser): BpmnUsers = BpmnUsers(users :+ user) 
+
   def stringify(intent: Int): String =
     stringifyWrap(intent, "users", users)
-    
+  
+object BpmnUsers :
+  def none = BpmnUsers(Nil)    
+
 case class BpmnUser(username: Username, 
                     maybeName: Option[Name] = None, 
                     maybeFirstName: Option[FirstName] = None, 
@@ -85,8 +90,13 @@ object GroupRefs:
 case class BpmnGroups(groups: Seq[BpmnGroup])
   extends HasStringify :
 
+  def :+(group: BpmnGroup): BpmnGroups = BpmnGroups(groups :+ group)    
+
   def stringify(intent: Int): String =
     stringifyWrap(intent, "groups", groups)
+
+object BpmnGroups :
+  def none = BpmnGroups(Nil)
     
 case class BpmnGroup(ident: Ident, maybeName: Option[Name] = None, `type`: GroupType = BpmnGroup.Camundala)
   extends HasStringify:
@@ -104,6 +114,7 @@ case class BpmnGroup(ident: Ident, maybeName: Option[Name] = None, `type`: Group
 
 
 object BpmnGroup:
+
   val Camundala: GroupType = GroupType("Camundala")
        
   opaque type GroupType = String

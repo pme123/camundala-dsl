@@ -18,5 +18,7 @@ case class StartEvent(ident: Ident,
        |${intentStr(intent)})""".stripMargin
 
   def elemType = NodeKey.startEvents
-  
+    
+  def form(form: BpmnForm): StartEvent = copy(bpmnForm = Some(form))
+
 

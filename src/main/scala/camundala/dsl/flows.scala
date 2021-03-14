@@ -7,8 +7,7 @@ import camundala.model.ScriptImplementation.ScriptPath
 trait flows:
 
   type FlowAttr = Condition
-
-
+  
   def sequenceFlow(ident: Ident,
                    flowAttrs: FlowAttr*) =
     SequenceFlow(ident,

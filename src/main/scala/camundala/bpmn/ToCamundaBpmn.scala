@@ -22,7 +22,7 @@ import scala.language.implicitConversions
     
 extension (bpmn: Bpmn)
   def toCamunda(outputPath: BpmnPath): Unit =
-    given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.bpmnPath) )
+    given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.path) )
     bpmn.processes.processes.map (_.toCamunda)
     BpmnCamunda.writeModelToFile (new File (outputPath), modelInstance)
 

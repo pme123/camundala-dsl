@@ -3,21 +3,23 @@ package camundala.dsl
 import camundala.model.*
 
 trait bpmns:
-  type BpmnsConfigAttributes = Bpmns | BpmnUsers | BpmnGroups
 
-  def bpmnsConfig(attributes: BpmnsConfigAttributes*) =
-    BpmnsConfig(
-      Bpmns(attributes.collect { case Bpmns(x) => x }.flatten),
-      BpmnGroups(attributes.collect { case BpmnGroups(x) => x }.flatten),
-      BpmnUsers(attributes.collect { case BpmnUsers(x) => x }.flatten)
-    )
+  def bpmnsConfig =  BpmnsConfig.none
 
-  def bpmns(bpmns: Bpmn*): Bpmns = Bpmns(bpmns)
-      
+  extension (bpmnsConfig: BpmnsConfig)
+    def bpmns(bpmns: Bpmn*) =
+      bpmnsConfig.copy(bpmns = Bpmns(bpmns))
+
+    def groups(groups: BpmnGroup*) =
+      bpmnsConfig.copy(groups = BpmnGroups(groups))
+
+    def users(users: BpmnUser*) =
+      bpmnsConfig.copy(users = BpmnUsers(users))   
+
   type BpmnAttributes = BpmnProcess
 
-  def bpmn(bpmnPath: BpmnPath,
-           attributes: BpmnAttributes*): Bpmn =
-    Bpmn(bpmnPath,
-      BpmnProcesses(attributes.collect { case x: BpmnProcess => x })
-    )
+  def bpmn(path: String): Bpmn = Bpmn(BpmnPath(path), BpmnProcesses.none)
+
+  extension (bpmn: Bpmn)
+    def processes(processes: BpmnProcess*): Bpmn =
+      bpmn.copy(processes = BpmnProcesses(processes))

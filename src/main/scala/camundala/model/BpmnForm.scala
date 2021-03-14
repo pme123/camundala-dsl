@@ -38,7 +38,8 @@ object GeneratedForm:
                        values: EnumValues = EnumValues.none,
                        constraints: Constraints = Constraints.none,
                        properties: Properties = Properties.none)
-    extends HasStringify :
+    extends HasStringify 
+    with HasProperties[FormField]:
 
     def stringify(intent: Int): String =
       stringifyElements(intent + 1, `type`.name + "Field",
@@ -46,6 +47,10 @@ object GeneratedForm:
           constraints.constraints.map(_.stringify(1)) ++
           label.map(_.stringify(1)).toSeq ++
           defaultValue.map(_.stringify(1)).toSeq: _*)
+
+    def prop(prop: Property): FormField =
+      copy(properties = properties :+ prop)
+
 
   case class Label(str: String):
     def stringify(intent: Int): String = s"""${intentStr(intent)}label("$str")"""
@@ -58,7 +63,8 @@ object GeneratedForm:
   extension (value: DefaultValue)
     def stringify(intent: Int): String = s"""${intentStr(intent)}defaultValue("$value")"""
 
-  case class EnumValues(enums: Seq[EnumValue])
+  case class EnumValues(enums: Seq[EnumValue]) :
+    def :+ (value: EnumValue) = EnumValues(enums :+ value)
 
   object EnumValues:
     def none: EnumValues = EnumValues(Seq.empty)
@@ -86,7 +92,8 @@ object GeneratedForm:
     case object DateType extends FormFieldType :
       val name = "date"
 
-case class Constraints(constraints: Seq[Constraint])
+case class Constraints(constraints: Seq[Constraint]) :
+  def :+ (constraint: Constraint) = Constraints(constraints :+ constraint)
 
 object Constraints:
   def none = Constraints(Seq.empty)

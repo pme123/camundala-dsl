@@ -8,23 +8,10 @@ case class BpmnProcesses(processes: Seq[BpmnProcess])
   def stringify(intent: Int): String =
     stringifyWrap(intent, "processes", processes)
 
-case class ProcessElements(elements: Seq[ProcessElement])
-  extends HasStringify :
-  
-  def stringify(intent: Int): String =
-    stringifyWrap(intent, "elements", elements)
-    
-object ProcessElements:
+  def :+(process: BpmnProcess): BpmnProcesses = BpmnProcesses(processes :+ process)
 
-  val none = ProcessElements(Nil)
-
-trait ProcessElement
-  extends HasStringify :
-
-  def elemType: NodeKey
-
-  def ident: Ident
-
+object BpmnProcesses:
+  def none = BpmnProcesses(Nil)
 
 case class BpmnProcess(
                         ident: Ident,
@@ -115,3 +102,20 @@ object BpmnProcess:
       val order = 9
 
       override def toString: String = "sequenceFlows"
+
+case class ProcessElements(elements: Seq[ProcessElement])
+  extends HasStringify :
+
+  def stringify(intent: Int): String =
+    stringifyWrap(intent, "elements", elements)
+
+object ProcessElements:
+
+  val none = ProcessElements(Nil)
+
+trait ProcessElement
+  extends HasStringify :
+
+  def elemType: NodeKey
+
+  def ident: Ident
