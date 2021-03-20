@@ -23,13 +23,12 @@ case class BpmnProcess(
     with HasStringify :
 
   def stringify(intent: Int): String =
-    s"""${intentStr(intent)}process(
-       |${
-      Seq(ident.stringify(intent + 1),
-        stringifyWrap(intent + 1, "starterGroups", starterGroups),
-        stringifyWrap(intent + 1, "starterUsers", starterUsers),
+    s"""${intentStr(intent)}process(${ident.stringify(0)})
+    |${
+      Seq(stringifyWrap(intent + 1, ".starterGroups", starterGroups),
+        stringifyWrap(intent + 1, ".starterUsers", starterUsers),
         elements.stringify(intent + 1)
-      ).mkString(",\n")
+      ).mkString(s"\n")
     }
        |${intentStr(intent)})""".stripMargin
 
@@ -107,7 +106,7 @@ case class ProcessElements(elements: Seq[ProcessElement])
   extends HasStringify :
 
   def stringify(intent: Int): String =
-    stringifyWrap(intent, "elements", elements)
+    stringifyWrap(intent, ".elements", elements)
 
 object ProcessElements:
 
@@ -119,3 +118,13 @@ trait ProcessElement
   def elemType: NodeKey
 
   def ident: Ident
+  
+  def ref: ProcessElementRef = ProcessElementRef(ident.toString)
+  
+opaque type ProcessElementRef = String
+
+extension (ref: ProcessElementRef)
+  def stringify(intent: Int = 0): String = s"""${intentStr(intent)}"$ref""""
+
+object ProcessElementRef:
+  def apply(ref: String): ProcessElementRef = ref

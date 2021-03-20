@@ -36,7 +36,5 @@ case class Bpmn(path: BpmnPath,
 
   def stringify(intent: Int = 0) =
     val inStr = intentStr(intent)
-    s"""${inStr}bpmn(
-       |${path.stringify(intent + 1)},
-       |${processes.processes.map(_.stringify(intent + 1)).mkString(",\n")}
-       |${inStr})""".stripMargin
+    s"""${inStr}bpmn(${path.stringify(0)})
+       |${stringifyWrap(intent + 1, ".processes", processes.processes)}""".stripMargin

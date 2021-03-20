@@ -5,21 +5,31 @@ import camundala.model.Condition.*
 import camundala.model.ScriptImplementation.ScriptPath
 
 trait flows:
-
-  type FlowAttr = Condition
   
-  def sequenceFlow(ident: Ident,
-                   flowAttrs: FlowAttr*) =
-    SequenceFlow(ident,
-      condition = flowAttrs.collect { case c: Condition => c }.headOption
-    )
+  def sequenceFlow(ident: String) =
+    SequenceFlow(Ident(ident))
 
-  def flow(ident: Ident,
-           flowAttrs: FlowAttr*) =
-    sequenceFlow(ident, flowAttrs:_*)
+  extension(flow: SequenceFlow)
 
-  def expressionCond(expr: String) = ExpressionCond(expr)
+    def condition(cond: Condition): SequenceFlow = 
+      flow.copy(condition = Some( cond))
+    
+    def expression(expr: String): SequenceFlow = 
+      condition( ExpressionCond(expr))
 
-  def groovyCond(scriptPath: ScriptPath) = ScriptCond(s"$scriptPath.groovy")
+    def groovy(scriptPath: ScriptPath): SequenceFlow = 
+      condition( ScriptCond(s"$scriptPath.groovy"))
 
-  def inlineGroovyCond(script: String) = InlineScriptCond(script)
+    def inlineGroovy(script: String): SequenceFlow = 
+      condition(InlineScriptCond(script))
+
+  def exclusiveGateway(ident: String) =
+    ExclusiveGateway(Ident(ident))
+    
+  extension (exclGateway: ExclusiveGateway)
+    def defaultFlow(ref: ProcessElementRef): ExclusiveGateway = 
+      exclGateway.copy(defaultFlow = Some(ref))
+
+  def parallelGateway(ident: String) = 
+    ExclusiveGateway(Ident(ident))    
+    

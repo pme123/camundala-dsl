@@ -29,10 +29,27 @@ trait tasks:
   def sendTask(ident: String) =
     SendTask(Task(Ident(ident)))
 
-  def scriptTask(ident: Ident,
-               scriptImplementation: ScriptImplementation,
-               resultVariable: Option[Ident] = None) =
-    ScriptTask(Task(ident),scriptImplementation,resultVariable)
+  def scriptTask(ident: String) =
+  //   scriptImplementation: ScriptImplementation,
+  // resultVariable: Option[Ident] = None) =
+    ScriptTask(Task(Ident(ident)))
+
+  extension (sTask: ScriptTask)
+
+    def groovyRef(scriptPath: ScriptPath): ScriptTask =
+      sTask.copy(scriptImplementation = ExternalScript(ScriptLanguage.Groovy, s"$scriptPath.groovy"))
+  
+    def inlineGroovy(script: String): ScriptTask =
+      sTask.copy(scriptImplementation = InlineScript(ScriptLanguage.Groovy, script))
+  
+    def javascriptRef(scriptPath: ScriptPath): ScriptTask =
+      sTask.copy(scriptImplementation = ExternalScript(ScriptLanguage.Javascript, s"$scriptPath.groovy"))
+  
+    def inlineJavascript(script: String): ScriptTask =
+      sTask.copy(scriptImplementation = InlineScript(ScriptLanguage.Javascript, script))
+  
+    def resultVariable(resultVariable: String): ScriptTask =
+      sTask.copy(resultVariable = Some(Ident(resultVariable)))
 
   def businessRuleTask(ident: String) =
     BusinessRuleTask(Task(Ident(ident)))
@@ -43,20 +60,8 @@ trait tasks:
   def userTask(ident: String) =
     UserTask(Ident(ident))
 
-trait scriptImplementations :
 
-  def groovy(scriptPath: ScriptPath): ScriptImplementation =
-    ExternalScript(ScriptLanguage.Groovy,
-      s"$scriptPath.groovy")
-
-  def inlineGroovy(script: String): ScriptImplementation =
-    InlineScript(ScriptLanguage.Groovy,
-      script)
-
-  def resultVariable(resultVariable: String): Option[Ident] =
-    Some(Ident(resultVariable))
-    
-trait taskImplementations :
+trait taskImplementations:
 
   def expression(expr: String) =
     Expression(expr)
@@ -75,38 +80,38 @@ trait taskImplementations :
 
   def dmn(decisionRef: String) =
     Dmn(DecisionRef(decisionRef))
-  
+
   extension (dmn: Dmn)
 
     def binding(refBinding: RefBinding): Dmn =
-       dmn.copy(binding =  refBinding)
+      dmn.copy(binding = refBinding)
 
-    def latest: Dmn = 
-       dmn.copy(binding =  RefBinding.Latest)
+    def latest: Dmn =
+      dmn.copy(binding = RefBinding.Latest)
 
-    def deployment: Dmn = 
-       dmn.copy(binding =  RefBinding.Deployment)
+    def deployment: Dmn =
+      dmn.copy(binding = RefBinding.Deployment)
 
-    def tenantId(id: String): Dmn = 
-       dmn.copy(tenantId = Some(TenantId(id)))
+    def tenantId(id: String): Dmn =
+      dmn.copy(tenantId = Some(TenantId(id)))
 
-    def version(v: String): Dmn = dmn.copy(binding =  RefBinding.Version(v))
+    def version(v: String): Dmn = dmn.copy(binding = RefBinding.Version(v))
 
-    def versionTag(tag: String): Dmn = dmn.copy(binding =  RefBinding.VersionTag(tag))
+    def versionTag(tag: String): Dmn = dmn.copy(binding = RefBinding.VersionTag(tag))
 
-    def resultVariable(name: String, mapDecisionResult: MapDecisionResult) = 
+    def resultVariable(name: String, mapDecisionResult: MapDecisionResult) =
       dmn.copy(resultVariable = Some(ResultVariable(Name(name), mapDecisionResult)))
 
-    def singleEntry(name: String): Dmn = 
+    def singleEntry(name: String): Dmn =
       resultVariable(name, MapDecisionResult.SingleEntry)
 
-    def singleResult(name: String):Dmn = 
+    def singleResult(name: String): Dmn =
       resultVariable(name, MapDecisionResult.SingleResult)
 
-    def collectEntries(name: String):Dmn = 
-            resultVariable(name, MapDecisionResult.CollectEntries)
+    def collectEntries(name: String): Dmn =
+      resultVariable(name, MapDecisionResult.CollectEntries)
 
-    def resultList(name: String):Dmn = 
-            resultVariable(name, MapDecisionResult.ResultList)
+    def resultList(name: String): Dmn =
+      resultVariable(name, MapDecisionResult.ResultList)
 
 

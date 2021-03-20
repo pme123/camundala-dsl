@@ -22,7 +22,6 @@ trait DSL
     with forms.constraints
     with props
     with tasks
-    with scriptImplementations
     with taskImplementations :
 
   def ident(id: String): Ident =

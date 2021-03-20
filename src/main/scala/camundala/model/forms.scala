@@ -11,7 +11,7 @@ case class EmbeddedForm(formKey: FormKey)
   extends BpmnForm :
 
   def stringify(intent: Int): String =
-    stringifyElements(intent, "form", formKey.stringify(1))
+    formKey.stringify(intent)
 
 opaque type FormKey = String
 
@@ -19,13 +19,13 @@ object FormKey:
   def apply(formKey: String): FormKey = formKey
 
   extension (formKey: FormKey)
-    def stringify(intent: Int): String = s"""${intentStr(intent)}formKey("$formKey")"""
+    def stringify(intent: Int): String = s"""${intentStr(intent)}.formKey("$formKey")"""
 
 case class GeneratedForm(fields: Seq[FormField] = Seq.empty)
   extends BpmnForm :
 
   def stringify(intent: Int): String =
-    stringifyWrap(intent, "form", fields)
+    stringifyWrap(intent, ".form", fields)
 
 object GeneratedForm:
 
@@ -42,11 +42,11 @@ object GeneratedForm:
     with HasProperties[FormField]:
 
     def stringify(intent: Int): String =
-      stringifyElements(intent + 1, `type`.name + "Field",
-        Seq(id.stringify(1)) ++
-          constraints.constraints.map(_.stringify(1)) ++
-          label.map(_.stringify(1)).toSeq ++
-          defaultValue.map(_.stringify(1)).toSeq: _*)
+      stringifyElements(intent + 1, `type`.name + s"Field(${id.stringify(0)})",
+        constraints.constraints.map(_.stringify(0)) ++
+          properties.properties.map(_.stringify()) ++
+          label.map(_.stringify(0)).toSeq ++
+          defaultValue.map(_.stringify(0)).toSeq: _*)
 
     def prop(prop: Property): FormField =
       copy(properties = properties :+ prop)
