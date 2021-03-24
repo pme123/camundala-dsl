@@ -1,13 +1,13 @@
 package camundala.bpmn
 
-import camundala.model.Condition._
+import camundala.model.Condition.*
 import camundala.model.Constraint.Minlength
 import camundala.model.GeneratedForm.FormFieldType.StringType
-import camundala.model.GeneratedForm._
+import camundala.model.GeneratedForm.*
 import camundala.model.ScriptImplementation.{ExternalScript, InlineScript}
-import camundala.model._
-import camundala.model.TaskImplementation._
-import org.camunda.bpm.model.bpmn.builder._
+import camundala.model.*
+import camundala.model.TaskImplementation.*
+import org.camunda.bpm.model.bpmn.builder.*
 import org.camunda.bpm.model.bpmn.impl.instance.ExtensionElementsImpl
 import org.camunda.bpm.model.bpmn.impl.instance.camunda.CamundaFormFieldImpl
 import org.camunda.bpm.model.bpmn.instance.{BpmnModelElementInstance, ConditionExpression, Script}
@@ -15,12 +15,12 @@ import org.camunda.bpm.model.bpmn.instance.camunda.{CamundaConstraint, CamundaFo
 import org.camunda.bpm.model.xml.instance.ModelElementInstance
 import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn => BpmnCamunda, instance => camunda}
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import java.io.File
 import camundala.dsl.DSL.Implicits.given
 import scala.language.implicitConversions
 
-object ToCamundaBpmn :
+trait ToCamundaBpmn :
   extension (bpmn: Bpmn)
     def toCamunda(outputPath: BpmnPath): Unit =
       given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.path) )
@@ -63,9 +63,9 @@ object ToCamundaBpmn :
       task.taskImplementation
         .merge(elem)
   
-  extension (task: TaskImplementation)
+  extension (taskImpl: TaskImplementation)
     def merge(elem: camunda.ServiceTask): Unit =
-      task match
+      taskImpl match
         case Expression(expresssion, resultVariable) =>
           elem.setCamundaExpression(expresssion)
           resultVariable.foreach(elem.setCamundaResultVariable)

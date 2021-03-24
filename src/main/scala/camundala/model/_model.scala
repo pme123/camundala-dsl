@@ -20,12 +20,12 @@ def stringifyWrapFluent(intent: Int, name: String, entries: Seq[_ <: HasStringif
      
 def stringifyWrap(intent: Int, name: String, entries: Seq[_ <: HasStringify]): String =
   s"""${intentStr(intent)}$name(
-     |${entries.map(_.stringify(intent + 1)).mkString(",\n")}
+     |${entries.map(_.stringify(intent + 1) + ",").mkString("\n").dropRight(1)}
      |${intentStr(intent)})""".stripMargin
 
-def stringifyElements(intent: Int, name: String, elements: String*): String =
-  s"""${intentStr(intent)}$name
-     |${intentStr(intent + 1)}.${elements.map(e =>  e).mkString(s"\n${intentStr(intent + 1)}.")}""".stripMargin
+def stringifyElements(intent: Int, name: String, elements: String*): String = {
+  s"""${intentStr(intent)}$name${elements.map(e =>  s"\n${intentStr(intent + 1)}.$e").mkString}""".stripMargin
+}
 
 trait HasStringify:
   def stringify(intent: Int): String

@@ -162,10 +162,8 @@ case class UserTask(task: Task,
     with ProcessElement :
 
   def stringify(intent: Int): String =
-    s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})
-       |${
-        bpmnForm.map(_.stringify(intent + 1)).toSeq.mkString(",\n")
-    }""".stripMargin
+    s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})${
+        bpmnForm.map(_.stringify(intent + 1)).toSeq.mkString(",\n")}""".stripMargin
 
   val elemType = NodeKey.userTasks
 

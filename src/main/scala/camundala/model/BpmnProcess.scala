@@ -29,8 +29,7 @@ case class BpmnProcess(
         stringifyWrap(intent + 1, ".starterUsers", starterUsers),
         elements.stringify(intent + 1)
       ).mkString(s"\n")
-    }
-       |${intentStr(intent)})""".stripMargin
+    }""".stripMargin
 
 object BpmnProcess:
 

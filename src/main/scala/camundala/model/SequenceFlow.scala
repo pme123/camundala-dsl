@@ -11,7 +11,7 @@ case class SequenceFlow(ident: Ident,
   extends ProcessElement 
   with HasProperties[SequenceFlow]:
   
-  def stringify(intent: Int):String = "sequenceFlow----"
+  def stringify(intent: Int):String = s"""${intentStr(intent)}sequenceFlow("${ident}")"""
   def prop(prop: Property): SequenceFlow = copy(properties = properties :+ prop)
 
   def elemType: NodeKey = NodeKey.sequenceFlows

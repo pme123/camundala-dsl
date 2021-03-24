@@ -1,6 +1,5 @@
 package camundala.bpmn
 
-import camundala.bpmn.ToCamundaBpmn.*
 import camundala.dsl.DSL
 import camundala.model.TaskImplementation.*
 import camundala.model.*
@@ -13,7 +12,9 @@ import java.io.File
 import scala.jdk.CollectionConverters._
 import camundala.dsl.DSL._
 
-class ToCamundaBpmnTest extends DSL :
+class ToCamundaBpmnTest
+  extends DSL
+    with ToCamundaBpmn :
 
   @Test def loadProcess(): Unit =
     val fooVar: ProcessVarString = ProcessVarString("fooVar")
@@ -58,30 +59,29 @@ class ToCamundaBpmnTest extends DSL :
                     .min(3)
                     .max(12)
                 )
-            ,
-          userTask("userTaskB")
-            .form(
-              formKey("MyFormKey")
-            )
-          ,
-          scriptTask("scriptTask")
-            .inlineGroovy(s"println 'hello Scala world'")
-            .resultVariable("scriptResult")
-          ,
-          sequenceFlow("flowIsBar")
-            .inlineGroovy(
-              s"""println 'hello'
+              ,
+              userTask("userTaskB")
+                .form(
+                  formKey("MyFormKey")
+                )
+              ,
+              scriptTask("scriptTask")
+                .inlineGroovy(s"println 'hello Scala world'")
+                .resultVariable("scriptResult")
+              ,
+              sequenceFlow("flowIsBar")
+                .inlineGroovy(
+                  s"""println 'hello'
             $fooVar == 'bar'""")
-            ,
-            sequenceFlowIsNotBar
-            ,
-            exclusiveGateway("gatewayFork")
-            .defaultFlow(sequenceFlowIsNotBar.ref)
-          )
+              ,
+              sequenceFlowIsNotBar
+              ,
+              exclusiveGateway("gatewayFork")
+                .defaultFlow(sequenceFlowIsNotBar.ref)
+            )
         )
 
     println(bpmnModel.stringify())
     bpmnModel.toCamunda(path("generatedBpmn.bpmn"))
 
-    
 
