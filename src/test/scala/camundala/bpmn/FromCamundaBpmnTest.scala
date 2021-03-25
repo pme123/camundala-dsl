@@ -8,7 +8,7 @@ class FromCamundaBpmnTest
   extends FromCamundaBpmn 
   with ToCamundaBpmn:
 
-  @Test def loadProcess(): Unit =
+  @Test def fromCamunda(): Unit =
     val bpmn: Bpmn = fromCamunda(path("process-cawemo.bpmn"), path("process-cawemo-generated.bpmn"))
     println(bpmn.stringify())
     

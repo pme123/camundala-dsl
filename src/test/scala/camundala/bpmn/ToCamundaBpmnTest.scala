@@ -16,7 +16,7 @@ class ToCamundaBpmnTest
   extends DSL
     with ToCamundaBpmn :
 
-  @Test def loadProcess(): Unit =
+  @Test def toCamunda(): Unit =
     val fooVar: ProcessVarString = ProcessVarString("fooVar")
 
     val sequenceFlowIsNotBar = sequenceFlow("flowIsNotBar")

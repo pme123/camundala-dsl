@@ -5,7 +5,7 @@ import camundala.model.*
 import org.camunda.bpm.model.bpmn.impl.instance.SequenceFlowImpl
 import org.camunda.bpm.model.bpmn.instance.FlowElement
 import org.camunda.bpm.model.{bpmn => camundaBpmn}
-import org.camunda.bpm.model.bpmn.{instance => camunda}
+import org.camunda.bpm.model.bpmn.{BpmnModelInstance, instance => camunda}
 
 import java.io.File
 import scala.language.implicitConversions
@@ -14,7 +14,10 @@ import scala.jdk.CollectionConverters._
 
 trait FromCamundaBpmn
   extends DSL
-    with DSL.Implicits :
+    with DSL.Givens :
+
+  // context function def f(using BpmnModelInstance): T
+  type FromCamundable[T] = BpmnModelInstance ?=> T
   
   def fromCamunda(bpmnPath: BpmnPath, outputPath: BpmnPath): Bpmn = 
     bpmn(bpmnPath)
@@ -32,7 +35,7 @@ trait FromCamundaBpmn
       bpmnModel
   
   extension (camundaProcess: camunda.Process)
-    def fromCamunda()(using modelInstance: camundaBpmn.BpmnModelInstance): BpmnProcess =
+    def fromCamunda(): FromCamundable[BpmnProcess] =
       process(camundaProcess.createIdent())
         .elements(
           createElements(classOf[camunda.ServiceTask], serviceTask) ++
@@ -45,9 +48,8 @@ trait FromCamundaBpmn
             : _*)
 
   def createElements[T <: camunda.FlowElement](clazz: Class[T], element: String => ProcessElement)
-                                              (using modelInstance: camundaBpmn.BpmnModelInstance)
-  : Seq[ProcessElement] =
-    modelInstance.getModelElementsByType(clazz).asScala.toSeq
+  : FromCamundable[Seq[ProcessElement]] =
+    summon[BpmnModelInstance].getModelElementsByType(clazz).asScala.toSeq
       .map(fe => element(fe.createIdent()))
   
   extension (process: camunda.Process)

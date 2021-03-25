@@ -38,7 +38,7 @@ trait DSL
 
 object DSL extends DSL :
 
-  trait Implicits:
+  trait Givens:
 
     given Conversion[Ident, String] = _.toString
 
@@ -52,6 +52,6 @@ object DSL extends DSL :
 
     given Conversion[String, Name] = name(_)
 
-  object Implicits extends Implicits
+  object Givens extends Givens
 
 

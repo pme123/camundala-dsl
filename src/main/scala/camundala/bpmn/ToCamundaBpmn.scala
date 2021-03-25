@@ -17,10 +17,14 @@ import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn => BpmnCamunda, insta
 
 import scala.jdk.CollectionConverters.*
 import java.io.File
-import camundala.dsl.DSL.Implicits.given
+import camundala.dsl.DSL.Givens.given
 import scala.language.implicitConversions
 
 trait ToCamundaBpmn :
+
+  // context function def f(using BpmnModelInstance): T
+  type ToCamundable[T] = BpmnModelInstance ?=> T
+
   extension (bpmn: Bpmn)
     def toCamunda(outputPath: BpmnPath): Unit =
       given modelInstance: BpmnModelInstance = BpmnCamunda.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.path) )
@@ -28,34 +32,34 @@ trait ToCamundaBpmn :
       BpmnCamunda.writeModelToFile (new File (outputPath), modelInstance)
   
   extension (process: BpmnProcess)
-    def toCamunda(using modelInstance: BpmnModelInstance): Unit =
+    def toCamunda: ToCamundable[Unit] =
       process.elements.elements.foreach((e: ProcessElement) => e.toCamunda)
-      val cProcess: camunda.Process = modelInstance.getModelElementById(process.ident)
+      val cProcess: camunda.Process = summon[BpmnModelInstance].getModelElementById(process.ident)
       val groups = process.starterGroups.groups.map(_.toString)
       cProcess.setCamundaCandidateStarterGroupsList(groups.asJava)
       val users = process.starterUsers.users.map(_.toString)
       cProcess.setCamundaCandidateStarterUsersList(users.asJava)
   
   extension (postElement: ProcessElement)
-    def toCamunda(using modelInstance: BpmnModelInstance): Unit =
+    def toCamunda: ToCamundable[Unit] =
       postElement match
         case pe: StartEvent =>
-          val elem: camunda.StartEvent = modelInstance.getModelElementById(pe.ident)
+          val elem: camunda.StartEvent = summon[BpmnModelInstance].getModelElementById(pe.ident)
           pe.merge(elem)
         case pe: ServiceTask =>
-          val elem: camunda.ServiceTask = modelInstance.getModelElementById(pe.ident)
+          val elem: camunda.ServiceTask = summon[BpmnModelInstance].getModelElementById(pe.ident)
           pe.merge(elem)
         case pe: UserTask =>
-          val elem: camunda.UserTask = modelInstance.getModelElementById(pe.ident)
+          val elem: camunda.UserTask = summon[BpmnModelInstance].getModelElementById(pe.ident)
           pe.merge(elem)
         case pe: ScriptTask =>
-          val elem: camunda.ScriptTask = modelInstance.getModelElementById(pe.ident)
+          val elem: camunda.ScriptTask = summon[BpmnModelInstance].getModelElementById(pe.ident)
           pe.merge(elem)
         case pe: SequenceFlow =>
-          val elem: camunda.SequenceFlow = modelInstance.getModelElementById(pe.ident)
+          val elem: camunda.SequenceFlow = summon[BpmnModelInstance].getModelElementById(pe.ident)
           pe.merge(elem)
         case eg: ExclusiveGateway =>
-          val elem: camunda.ExclusiveGateway = modelInstance.getModelElementById(eg.ident)
+          val elem: camunda.ExclusiveGateway = summon[BpmnModelInstance].getModelElementById(eg.ident)
           eg.merge(elem)
   
   extension (task: ServiceTask)
@@ -77,7 +81,7 @@ trait ToCamundaBpmn :
           elem.setCamundaTopic(topic)
   
   extension (event: StartEvent)
-    def merge(elem: camunda.StartEvent)(using modelInstance: BpmnModelInstance): Unit =
+    def merge(elem: camunda.StartEvent): ToCamundable[Unit] =
       val builder: StartEventBuilder = elem.builder()
       event.bpmnForm.foreach {
         case EmbeddedForm(formRef) =>
@@ -89,7 +93,7 @@ trait ToCamundaBpmn :
       }
   
   extension (task: UserTask)
-    def merge(elem: camunda.UserTask)(using modelInstance: BpmnModelInstance): Unit =
+    def merge(elem: camunda.UserTask): ToCamundable[Unit] =
       val builder: UserTaskBuilder = elem.builder()
       task.bpmnForm.foreach {
         case EmbeddedForm(formRef) =>
@@ -118,8 +122,8 @@ trait ToCamundaBpmn :
       )
   
   extension (flow: SequenceFlow)
-    def merge(elem: camunda.SequenceFlow)(using modelInstance: BpmnModelInstance): Unit =
-      val expression = modelInstance.newInstance(classOf[ConditionExpression])
+    def merge(elem: camunda.SequenceFlow): ToCamundable[Unit] =
+      val expression = summon[BpmnModelInstance].newInstance(classOf[ConditionExpression])
       elem.setConditionExpression(expression)
       flow.condition.foreach {
         case ExpressionCond(expr) =>
@@ -135,40 +139,40 @@ trait ToCamundaBpmn :
       }
   
   extension (gateway: ExclusiveGateway)
-    def merge(elem: camunda.ExclusiveGateway)(using modelInstance: BpmnModelInstance): Unit =
+    def merge(elem: camunda.ExclusiveGateway): ToCamundable[Unit] =
       gateway.defaultFlow
         .map { f =>
-          val flow: camunda.SequenceFlow = modelInstance.getModelElementById(f.toString)
+          val flow: camunda.SequenceFlow = summon[BpmnModelInstance].getModelElementById(f.toString)
           elem.setDefault(flow)
         }
   
-  private def createFormField(formField: FormField, cff: CamundaFormField)(using modelInstance: BpmnModelInstance) =
+  private def createFormField(formField: FormField, cff: CamundaFormField): ToCamundable[Unit] =
     val FormField(id, label, fieldType, defaultValue, values, constraints, properties) = formField
     cff.setCamundaId(id)
     cff.setCamundaLabel(label.map(_.str).getOrElse(""))
     cff.setCamundaType(fieldType.name)
     cff.getCamundaValues
       .addAll(values.enums.map { case EnumValue(k, v) =>
-        val cv = modelInstance.newInstance(classOf[CamundaValue])
+        val cv = summon[BpmnModelInstance].newInstance(classOf[CamundaValue])
         cv.setCamundaId(k)
         cv.setCamundaName(v)
         cv
       }.asJava)
-    val cvd = modelInstance.newInstance(classOf[CamundaValidation])
+    val cvd = summon[BpmnModelInstance].newInstance(classOf[CamundaValidation])
     cff.setCamundaValidation(cvd)
     cvd.getCamundaConstraints
       .addAll(constraints.constraints.map { c =>
-        val cc = modelInstance.newInstance(classOf[CamundaConstraint])
+        val cc = summon[BpmnModelInstance].newInstance(classOf[CamundaConstraint])
         cc.setCamundaName(c.name)
         c.config.foreach(cc.setCamundaConfig)
         cc
       }.asJava)
-    val cps = modelInstance.newInstance(classOf[CamundaProperties])
+    val cps = summon[BpmnModelInstance].newInstance(classOf[CamundaProperties])
     cff.setCamundaProperties(cps)
     cps
       .getCamundaProperties
       .addAll(properties.properties.map { case Property(k, v) =>
-        val cv = modelInstance.newInstance(classOf[CamundaProperty])
+        val cv = summon[BpmnModelInstance].newInstance(classOf[CamundaProperty])
         cv.setCamundaId(k)
         cv.setCamundaValue(v)
         cv

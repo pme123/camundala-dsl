@@ -50,7 +50,6 @@ object TaskImplementation:
     def stringify(intent: Int): String = s"""${intentStr(intent)}.externalTask("$topic")"""
 
 sealed trait BusinessRuleTaskImpl
-  extends TaskImplementation
 
 object BusinessRuleTask:
 
