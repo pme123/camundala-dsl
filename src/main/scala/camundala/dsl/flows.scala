@@ -5,9 +5,12 @@ import camundala.model.Condition.*
 import camundala.model.ScriptImplementation.ScriptPath
 
 trait flows:
-  
+
   def sequenceFlow(ident: String) =
     SequenceFlow(Ident(ident))
+
+  def flow(ident: String) =
+    sequenceFlow(ident)
 
   extension(flow: SequenceFlow)
 

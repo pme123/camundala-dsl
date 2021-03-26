@@ -67,6 +67,7 @@ object BusinessRuleTask:
                  resultVariable: Option[ResultVariable] = None,
                  tenantId: Option[TenantId] = None)
     extends BusinessRuleTaskImpl :
+      
     def stringify(intent: Int): String =
       s"""${intentStr(intent)}dmn(
          |${decisionRef.stringify(intent + 1)},

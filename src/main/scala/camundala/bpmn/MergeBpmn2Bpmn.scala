@@ -10,7 +10,6 @@ trait MergeBpmn2Bpmn
 
   extension (bpmn: Bpmn)
     def mergeWith(newBpmn: Bpmn): MergeAudit =
-      println(newBpmn.stringify())
       MergeAudit(
         Seq((bpmn.path == newBpmn.path) match
           case true => info(s"BPMN path match (${bpmn.path}).")
@@ -34,7 +33,22 @@ trait MergeBpmn2Bpmn
   extension (process: BpmnProcess)
     def mergeWith(newProcess: BpmnProcess): Seq[AuditEntry] = Seq(
       info(s"Process '${process.ident}' exists.")
-    )
+    ) ++
+      process.elements.mergeWith(newProcess.elements)
+  
+  extension (elements: ProcessElements)
+    def mergeWith(newElements: ProcessElements): Seq[AuditEntry] = 
+      elements.elements.collect {
+        case elem if newElements.elements.exists(_.ident == elem.ident) =>
+          info(s"'${elem.ident}' exists.")
+        case elem =>
+          warn(s"There is no '${elem.ident}' in the new BPMN.")
+      } ++
+      newElements.elements.collect {
+        case newElem if !elements.elements.exists(_.ident == newElem.ident) =>
+          warn(s"There is no '${newElem.ident}' in the existing BPMN.")
+      }
+  
 end MergeBpmn2Bpmn
 
 case class MergeAudit(entries: Seq[AuditEntry]):
@@ -46,7 +60,9 @@ case class MergeAudit(entries: Seq[AuditEntry]):
       .getOrElse(AuditLevel.INFO)
 
   def print() =
-    println(entries.sortBy(_.level.rank).map(_.print()))
+    println("** Merging Audit Log:     **")
+    entries.sortBy(_.level.rank).map(_.print())
+    println("** End Merging Audit Log: **")
 
 end MergeAudit
 
