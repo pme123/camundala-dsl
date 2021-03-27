@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="_8bKMYE5TEeSvRrSmPCK-VA" targetNamespace="http://camunda.org/examples" exporter="Camunda Modeler" exporterVersion="4.6.0" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="_8bKMYE5TEeSvRrSmPCK-VA" targetNamespace="http://camunda.org/examples" exporter="Camunda Modeler" exporterVersion="4.6.0" camunda:diagramRelationId="db7b011b-ae11-4804-a86a-60d63e08c976" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
   <bpmn2:collaboration id="Collaboration_1fhw5dw">
-    <bpmn2:participant id="Participant_006et1b" name="Test dsl Process" />
+    <bpmn2:documentation>This is just a test for Camundala</bpmn2:documentation>
+    <bpmn2:participant id="Participant_006et1b" name="Test DSL Process" processRef="testDslProcess" />
   </bpmn2:collaboration>
-  <bpmn2:process name="Test dsl Process" isExecutable="true">
+  <bpmn2:process id="testDslProcess" name="Test DSL Process" isExecutable="true" camunda:candidateStarterGroups="hkj" camunda:candidateStarterUsers="kklk">
     <bpmn2:exclusiveGateway id="gatewayFork" name="Fork">
       <bpmn2:incoming>flow2</bpmn2:incoming>
       <bpmn2:outgoing>flowIsNotBar</bpmn2:outgoing>

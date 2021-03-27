@@ -3,7 +3,7 @@ package camundala.bpmn
 import camundala.dsl.DSL
 import camundala.model.*
 
-trait MergeBpmn2Bpmn
+trait CompareBpmns
   extends DSL :
 
   import AuditEntry.*
@@ -49,7 +49,7 @@ trait MergeBpmn2Bpmn
           warn(s"There is no '${newElem.ident}' in the existing BPMN.")
       }
   
-end MergeBpmn2Bpmn
+end CompareBpmns
 
 case class MergeAudit(entries: Seq[AuditEntry]):
   def maxLevel() =

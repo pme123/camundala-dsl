@@ -20,3 +20,13 @@ case class StartEvent(ident: Ident,
   def form(form: BpmnForm): StartEvent = copy(bpmnForm = Some(form))
 
 
+case class EndEvent(ident: Ident)
+  extends HasStringify
+    with HasIdent
+    with ProcessElement :
+
+  def stringify(intent: Int): String =
+    s"""${intentStr(intent)}endEvent(${ident.stringify()})""".stripMargin
+
+  def elemType = NodeKey.endEvents
+    

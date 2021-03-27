@@ -5,8 +5,8 @@ import camundala.model.*
 import org.junit.Test
 import org.junit.Assert.*
 
-class MergeBpmn2BpmnTest
-  extends MergeBpmn2Bpmn :
+class CompareBpmnsTest
+  extends CompareBpmns :
 
   val bpmn1 =
     bpmn("myBpmn.bpmn")

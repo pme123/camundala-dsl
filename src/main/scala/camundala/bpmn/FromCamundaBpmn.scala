@@ -26,7 +26,7 @@ trait FromCamundaBpmn
   extension (bpmn: Bpmn)
     def fromCamunda(outputPath: BpmnPath): Bpmn =
       given modelInstance:camundaBpmn.BpmnModelInstance =
-        camundaBpmn.Bpmn.readModelFromStream (this.getClass.getClassLoader.getResourceAsStream (bpmn.path) )
+        camundaBpmn.Bpmn.readModelFromFile (new File (bpmn.path) )
   
       val cProcesses: Seq[camunda.Process] = modelInstance.getModelElementsByType (classOf[camunda.Process] ).asScala.toSeq
       val bpmnModel = bpmn.processes (cProcesses.map (p => p.fromCamunda () ):
@@ -38,12 +38,14 @@ trait FromCamundaBpmn
     def fromCamunda(): FromCamundable[BpmnProcess] =
       process(camundaProcess.createIdent())
         .elements(
-          createElements(classOf[camunda.ServiceTask], serviceTask) ++
+            createElements(classOf[camunda.StartEvent], startEvent) ++
+            createElements(classOf[camunda.UserTask], userTask) ++
             createElements(classOf[camunda.UserTask], userTask) ++
             createElements(classOf[camunda.ScriptTask], scriptTask) ++
             createElements(classOf[camunda.BusinessRuleTask], businessRuleTask) ++
             createElements(classOf[camunda.ExclusiveGateway], exclusiveGateway) ++
             createElements(classOf[camunda.ParallelGateway], parallelGateway) ++
+            createElements(classOf[camunda.EndEvent], endEvent) ++
             createElements(classOf[camunda.SequenceFlow], sequenceFlow)
             : _*)
 
@@ -76,7 +78,7 @@ trait FromCamundaBpmn
     val elemType = camObj.getElementType.getTypeName
     name match
       case Some(n) =>
-            s"${elemType}_${n.split(" ").map(_.capitalize).mkString}"
+            n.split(" ").map(_.capitalize).mkString
       case None => 
         import java.security.MessageDigest
         import java.math.BigInteger
