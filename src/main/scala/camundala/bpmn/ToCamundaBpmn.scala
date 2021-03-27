@@ -124,8 +124,8 @@ trait ToCamundaBpmn :
   extension (flow: SequenceFlow)
     def merge(elem: camunda.SequenceFlow): ToCamundable[Unit] =
       val expression = summon[BpmnModelInstance].newInstance(classOf[ConditionExpression])
-      elem.setConditionExpression(expression)
-      flow.condition.foreach {
+      flow.condition
+        .map {
         case ExpressionCond(expr) =>
           expression.setTextContent(expr)
         case sc@ScriptCond(_, format) =>
@@ -136,7 +136,7 @@ trait ToCamundaBpmn :
           expression.setLanguage(format.toString)
           expression.setTextContent(script)
           expression.setType("bpmn2:tFormalExpression")
-      }
+      }.foreach(_ => elem.setConditionExpression(expression))
   
   extension (gateway: ExclusiveGateway)
     def merge(elem: camunda.ExclusiveGateway): ToCamundable[Unit] =
@@ -151,6 +151,7 @@ trait ToCamundaBpmn :
     cff.setCamundaId(id)
     cff.setCamundaLabel(label.map(_.str).getOrElse(""))
     cff.setCamundaType(fieldType.name)
+    defaultValue.foreach(v => cff.setCamundaDefaultValue(v.toString))
     cff.getCamundaValues
       .addAll(values.enums.map { case EnumValue(k, v) =>
         val cv = summon[BpmnModelInstance].newInstance(classOf[CamundaValue])

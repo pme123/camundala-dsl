@@ -31,11 +31,13 @@ class ToCamundaBpmnTest
               startEvent("startEvent")
                 .form(
                   textField(fooVar.toString)
+                    .label("Add some Text")
+                    .defaultValue("YES WE DO THIS!")
                     .prop("myProp",
                       "hello there"))
               ,
               serviceTask("serviceTask")
-                .expression("${myVar as String}", "myVar")
+                .expression("${fooVar.toString()}", "myVar")
               ,
               userTask("userTaskA")
                 .form(
@@ -43,15 +45,14 @@ class ToCamundaBpmnTest
                     .label("MY FIELD")
                     .enumValue("k1", "blau")
                     .enumValue("k2", "grau")
-                    .readonly
                     .required
                   ,
                   textField("textField")
                     .label("hello")
                     .defaultValue("Peter")
-                    .required
-                    .minlength(3)
-                    .maxlength(12)
+                    .readonly
+                    //.minlength(3)
+                   // .maxlength(12)
                   ,
                   longField("numberField")
                     .label("My Number")
@@ -82,6 +83,6 @@ class ToCamundaBpmnTest
         )
 
     println(bpmnModel.stringify())
-    bpmnModel.toCamunda(path("generatedBpmn.bpmn"))
+    bpmnModel.toCamunda(path("camunda-demo/src/main/resources/generatedBpmn.bpmn"))
 
 

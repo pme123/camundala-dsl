@@ -26,3 +26,4 @@ meta.json
 /project/plugins.sbt
 /.vscode/settings.json
 /.vscode/launch.json
+/camunda-db.mv.db

@@ -24,20 +24,26 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.event.EventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SpringBootApplication
 @EnableProcessApplication
 public class WebappExampleProcessApplication {
 
-  @Autowired
-  private RuntimeService runtimeService;
+    @Autowired
+    private RuntimeService runtimeService;
 
-  public static void main(String... args) {
-    SpringApplication.run(WebappExampleProcessApplication.class, args);
-  }
+    public static void main(String... args) {
+        SpringApplication.run(WebappExampleProcessApplication.class, args);
+    }
 
-  @EventListener
-  private void processPostDeploy(PostDeployEvent event) {
-    runtimeService.startProcessInstanceByKey("loanApproval");
-  }
+    @EventListener
+    private void processPostDeploy(PostDeployEvent event) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("fooVar", "Started by Spring");
+        runtimeService
+                .startProcessInstanceByKey("testDslProcess", variables);
+    }
 
 }
