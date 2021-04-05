@@ -30,13 +30,14 @@ trait FromCamundaBpmn
       (for {
         modelInstance: camundaBpmn.BpmnModelInstance <- ZIO(camundaBpmn.Bpmn.readModelFromFile(new File(bpmn.path)))
         cProcesses <- ZIO(modelInstance.getModelElementsByType(classOf[camunda.Process]).asScala.toSeq)
-        processes <- ZIO.collect(cProcesses){
-          p => p.fromCamunda()(using modelInstance)
-            .mapError(Some(_))
+        processes <- ZIO.collect(cProcesses) {
+          p =>
+            p.fromCamunda()(using modelInstance)
+              .mapError(Some(_))
         }
         _ <- ZIO(camundaBpmn.Bpmn.writeModelToFile(new File(outputPath), modelInstance))
       } yield bpmn.processes(processes: _*))
-        .mapError{
+        .mapError {
           case Some(ex: FromCamundaException) => ex
           case t: Throwable => FromCamundaException(t.getMessage)
         }
@@ -113,13 +114,7 @@ trait FromCamundaBpmn
         case Some(n) =>
           n.split(" ").map(_.capitalize).mkString
         case None =>
-          import java.security.MessageDigest
-          import java.math.BigInteger
-          val md = MessageDigest.getInstance("MD5")
-          val digest = md.digest(camObj.toString.getBytes)
-          val bigInt = new BigInteger(1, digest)
-          val hashedString = bigInt.toString(16)
-          s"${elemType}_${hashedString.take(8)}"
+          camObj.getId
     ).mapError(ex => FromCamundaException(s"Could not create an Ident for $elemType / $name"))
 
 case class FromCamundaException(msg: String)

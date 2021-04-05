@@ -10,9 +10,8 @@ case class StartEvent(ident: Ident,
     with ProcessElement :
 
   def stringify(intent: Int): String =
-    s"""${intentStr(intent)}startEvent(${ident.stringify()})
-       |${
-        bpmnForm.map(_.stringify(intent + 1)).toSeq.mkString
+    s"""${intentStr(intent)}startEvent(${ident.stringify()})${
+        bpmnForm.map("\n" + _.stringify(intent + 1)).toSeq.mkString
     }""".stripMargin
 
   def elemType = NodeKey.startEvents
