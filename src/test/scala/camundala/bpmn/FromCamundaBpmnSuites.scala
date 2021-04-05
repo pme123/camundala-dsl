@@ -2,7 +2,6 @@ package camundala.bpmn
 
 import camundala.dsl.DSL
 import camundala.model.*
-import org.junit.Test
 import zio.test.*
 import zio.*
 import zio.test.Assertion.*
@@ -12,9 +11,7 @@ object FromCamundaBpmnSuites
     with FromCamundaBpmn
     with ToCamundaBpmn :
 
-  def spec = suite("All tests")(fromCamundaTest)
-
-  lazy val fromCamundaTest = suite("from Camunda")(
+  def spec = suite("FromCamundaBpmnSuites")(
     testM("creates BPMN from Camunda BPMN") {
       val bpmn = fromCamunda(path("bpmns/process-cawemo.bpmn"), path("bpmns/with-ids/process-cawemo.bpmn"))
       assertM(bpmn)(

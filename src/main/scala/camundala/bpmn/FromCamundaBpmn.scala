@@ -25,10 +25,10 @@ trait FromCamundaBpmn
     bpmn(bpmnPath)
       .fromCamunda(outputPath)
 
-  extension (bpmn: Bpmn)
+  extension (_bpmn: Bpmn)
     def fromCamunda(outputPath: BpmnPath): IO[FromCamundaException, Bpmn] = {
       (for {
-        modelInstance: camundaBpmn.BpmnModelInstance <- ZIO(camundaBpmn.Bpmn.readModelFromFile(new File(bpmn.path)))
+        modelInstance <- ZIO(camundaBpmn.Bpmn.readModelFromFile(new File(_bpmn.path)))
         cProcesses <- ZIO(modelInstance.getModelElementsByType(classOf[camunda.Process]).asScala.toSeq)
         processes <- ZIO.collect(cProcesses) {
           p =>
@@ -36,7 +36,7 @@ trait FromCamundaBpmn
               .mapError(Some(_))
         }
         _ <- ZIO(camundaBpmn.Bpmn.writeModelToFile(new File(outputPath), modelInstance))
-      } yield bpmn.processes(processes: _*))
+      } yield bpmn(outputPath.toString).processes(processes: _*))
         .mapError {
           case Some(ex: FromCamundaException) => ex
           case t: Throwable => FromCamundaException(t.getMessage)
@@ -80,7 +80,11 @@ trait FromCamundaBpmn
   }
 
   extension (process: camunda.Process)
-    def createIdent(): ZIdent = identString(Option(process.getName), process)
+    def createIdent(): ZIdent = 
+      for{
+        ident <- identString(Option(process.getName), process)
+        _ = process.setId(ident)
+      } yield ident
 
   extension (element: camunda.FlowElement)
     def generateIdent(): ZIdent =
@@ -103,8 +107,10 @@ trait FromCamundaBpmn
         ident <- element.generateIdent()
         sourceIdent <- element.getSource.generateIdent()
         targetIdent <- element.getTarget.generateIdent()
+        newIdent =  s"${ident}_${sourceIdent}-${targetIdent}"
+        _ = element.setId(newIdent)
       } yield
-        s"${ident}_${sourceIdent}-${targetIdent}"
+       newIdent
     }
 
   def identString(name: Option[String], camObj: camunda.BaseElement): ZIdent =

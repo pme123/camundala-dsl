@@ -19,12 +19,13 @@ object BpmnRunnerSuites
       val mockEnv: ULayer[Console] = (
         MockConsole.PutStrLn(equalTo(s"Start Bpmn Runner"), unit) ++
           MockConsole.PutStrLn(startsWithString("** Generated BPMN DSL:     **")) ++
-          MockConsole.PutStrLn(startsWithString("** Compare Audit Log:     **\n"))
+          MockConsole.PutStrLn(startsWithString("** Compare Audit Log:     **\n")) ++
+          MockConsole.PutStrLn(equalTo("Generated BPMN to bpmns/process-generated.bpmn"))
         )
       val result = BpmnRunner(RunnerConfig(
         path("bpmns/process-cawemo.bpmn"),
-        path("bpmns/with-ids/process-cawemo.bpmn"),
-        demoBpmn
+        demoBpmn,
+        path("bpmns/process-generated.bpmn")
       )).run()
         .provideLayer(mockEnv)
       assertM(result)(isUnit)

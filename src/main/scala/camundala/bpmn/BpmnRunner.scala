@@ -17,15 +17,18 @@ case class BpmnRunner(config: RunnerConfig)
       _ <- putStrLn(bpmn.print())
       audit <- UIO(config.workingBpmnDsl.compareWith(bpmn))
       _ <- putStrLn(audit.log(AuditLevel.WARN))
+      _ <- config.workingBpmnDsl.toCamunda(config.generatedBpmnPath)
+      _ <- putStrLn(s"Generated BPMN to ${config.generatedBpmnPath}")
     } yield ()
 
   def fromCamunda(): IO[FromCamundaException, Bpmn] =
-    fromCamunda(config.bpmnPath, config.withIdsBpmnPath)
+    fromCamunda(config.bpmnPath, config.workingBpmnDsl.path)
 
 case class RunnerConfig(
                          bpmnPath: BpmnPath,
-                         withIdsBpmnPath: BpmnPath,
-                         workingBpmnDsl: Bpmn)
+                         workingBpmnDsl: Bpmn,
+                         generatedBpmnPath: BpmnPath
+                       )
 
 object BpmnRunnerApp
   extends zio.App
@@ -38,8 +41,8 @@ object BpmnRunnerApp
     BpmnRunner(
       RunnerConfig(
         path("bpmns/process-cawemo.bpmn"),
-        path("bpmns/with-ids/process-cawemo.bpmn"),
-        demoBpmn
+        demoBpmn,
+        path("camunda-demo/src/main/resources/demo-process.bpmn")
       )).run()
 
   private val fooVar: ProcessVarString = ProcessVarString("fooVar")
@@ -47,7 +50,7 @@ object BpmnRunnerApp
   private val sequenceFlowIsNotBar = sequenceFlow("flowIsNotBar")
 
   val demoBpmn =
-    bpmn("bpmns/process-cawemo.bpmn")
+    bpmn("bpmns/with-ids/process-cawemo.bpmn")
       .processes(
         process("TestDSLProcess")
           .starterGroups(
