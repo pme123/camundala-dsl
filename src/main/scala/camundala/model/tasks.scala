@@ -28,12 +28,20 @@ sealed trait TaskImplementation
 
 object TaskImplementation:
 
-  case class Expression(expression: String, resultVariable: Option[String] = None)
+  case class Expression(private val expression: String, resultVariable: Option[String] = None)
     extends TaskImplementation 
     with BusinessRuleTaskImpl:
 
     def stringify(intent: Int): String = s"""${intentStr(intent)}.expression("$expression"${resultVariable.map(v => s""", "$v"""").getOrElse("")})"""
 
+  object Expression :
+    def apply(expr: String):Expression =
+      new Expression(
+        if(expr.startsWith("$"))
+          expr
+        else
+          s"$${$expr}"  
+      )
   case class DelegateExpression(expresssion: String)
     extends TaskImplementation
     with BusinessRuleTaskImpl :

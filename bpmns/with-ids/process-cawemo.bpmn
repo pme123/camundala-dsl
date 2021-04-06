@@ -53,7 +53,7 @@
           
     </bpmn2:endEvent>
         
-    <bpmn2:serviceTask completionQuantity="1" id="asdfg" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
+    <bpmn2:serviceTask completionQuantity="1" id="ServiceTask" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
             
       <bpmn2:incoming>flow1_StartProcess-ServiceTask</bpmn2:incoming>
             
@@ -75,9 +75,9 @@
           
     </bpmn2:scriptTask>
         
-    <bpmn2:sequenceFlow id="flow1_StartProcess-ServiceTask" name="" sourceRef="StartProcess" targetRef="asdfg"/>
+    <bpmn2:sequenceFlow id="flow1_StartProcess-ServiceTask" name="" sourceRef="StartProcess" targetRef="ServiceTask"/>
         
-    <bpmn2:sequenceFlow id="flow2_ServiceTask-Fork" name="" sourceRef="asdfg" targetRef="Fork"/>
+    <bpmn2:sequenceFlow id="flow2_ServiceTask-Fork" name="" sourceRef="ServiceTask" targetRef="Fork"/>
         
     <bpmn2:sequenceFlow id="IsNOTBar_Fork-UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA"/>
         
@@ -251,7 +251,7 @@
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="asdfg" id="_BPMNShape_ServiceTask_2">
+      <bpmndi:BPMNShape bpmnElement="ServiceTask" id="_BPMNShape_ServiceTask_2">
                 
         <dc:Bounds height="80" width="100" x="292" y="179"/>
               

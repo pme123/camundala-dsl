@@ -45,10 +45,7 @@ object BpmnRunnerApp
         path("camunda-demo/src/main/resources/demo-process.bpmn")
       )).run()
 
-  private val fooVar: ProcessVarString = ProcessVarString("fooVar")
-
-  private val sequenceFlowIsNotBar = sequenceFlow("flowIsNotBar")
-
+  val isBarVar = "isBar"
   val demoBpmn =
     bpmn("bpmns/with-ids/process-cawemo.bpmn")
       .processes(
@@ -61,17 +58,21 @@ object BpmnRunnerApp
           )
           .elements(
             startEvent("StartProcess"),
+            serviceTask("ServiceTask")
+              .expression(s"execution.setVariable('$isBarVar', true)"),
             userTask("UserTaskA"),
             userTask("UserTaskB"),
             scriptTask("ScriptTask")
-              .inlineGroovy(""""""),
+              .inlineGroovy("""println "hello there" """),
             exclusiveGateway("Fork"),
             exclusiveGateway("gatewayJoin"),
             endEvent("EndProcess"),
             sequenceFlow("flow1_StartProcess-ServiceTask"),
             sequenceFlow("flow2_ServiceTask-Fork"),
-            sequenceFlow("IsNOTBar_Fork-UserTaskA"),
-            sequenceFlow("IsBar_Fork-UserTaskB"),
+            sequenceFlow("IsNOTBar_Fork-UserTaskA")
+            .expression(s"!$isBarVar"),
+            sequenceFlow("IsBar_Fork-UserTaskB")
+            .inlineGroovy(isBarVar),
             sequenceFlow("flow6_UserTaskB-gatewayJoin"),
             sequenceFlow("flow5_UserTaskA-gatewayJoin"),
             sequenceFlow("flow7_gatewayJoin-ScriptTask"),

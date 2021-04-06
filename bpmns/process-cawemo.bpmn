@@ -26,7 +26,7 @@
     <bpmn2:endEvent id="rtztutzu" name="End Process">
       <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
     </bpmn2:endEvent>
-    <bpmn2:serviceTask id="asdfg" name="Service Task">
+    <bpmn2:serviceTask id="asdfgxx" name="Service Task">
       <bpmn2:incoming>flow1</bpmn2:incoming>
       <bpmn2:outgoing>flow2</bpmn2:outgoing>
     </bpmn2:serviceTask>
@@ -37,8 +37,8 @@
       <bpmn2:incoming>flow7</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_9</bpmn2:outgoing>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="flow1" name="" sourceRef="asdfsadfsa" targetRef="asdfg" />
-    <bpmn2:sequenceFlow id="flow2" name="" sourceRef="asdfg" targetRef="gatewayFork" />
+    <bpmn2:sequenceFlow id="flow1" name="" sourceRef="asdfsadfsa" targetRef="asdfgxx" />
+    <bpmn2:sequenceFlow id="flow2" name="" sourceRef="asdfgxx" targetRef="gatewayFork" />
     <bpmn2:sequenceFlow id="flowIsNotBar" name="is NOT bar" sourceRef="gatewayFork" targetRef="asdfdsf" />
     <bpmn2:sequenceFlow id="flowIsBar" name="is Bar" sourceRef="gatewayFork" targetRef="userTaskB" />
     <bpmn2:sequenceFlow id="flow6" name="" sourceRef="userTaskB" targetRef="gatewayJoin" />
@@ -125,7 +125,7 @@
           <dc:Bounds x="933" y="236" width="63" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_BPMNShape_ServiceTask_2" bpmnElement="asdfg">
+      <bpmndi:BPMNShape id="_BPMNShape_ServiceTask_2" bpmnElement="asdfgxx">
         <dc:Bounds x="292" y="179" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="asdfsadfsa">

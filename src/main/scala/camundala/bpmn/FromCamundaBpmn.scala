@@ -49,6 +49,7 @@ trait FromCamundaBpmn
         ident <- camundaProcess.createIdent()
         startEvents <- createElements(classOf[camunda.StartEvent], startEvent)
         userTasks <- createElements(classOf[camunda.UserTask], userTask)
+        serviceTasks <- createElements(classOf[camunda.ServiceTask], serviceTask)
         scriptTasks <- createElements(classOf[camunda.ScriptTask], scriptTask)
         businessRuleTasks <- createElements(classOf[camunda.BusinessRuleTask], businessRuleTask)
         exclusiveGateways <- createElements(classOf[camunda.ExclusiveGateway], exclusiveGateway)
@@ -60,6 +61,7 @@ trait FromCamundaBpmn
           .elements(
             startEvents ++
               userTasks ++
+              serviceTasks ++
               scriptTasks ++
               businessRuleTasks ++
               exclusiveGateways ++

@@ -45,7 +45,7 @@ trait ToCamundaBpmn:
         .mapError {
           case Some(ex: ToCamundaException) => ex
           case ex: ToCamundaException => ex
-          case t: Throwable => 
+          case t: Throwable =>
             ToCamundaException(t.getMessage)
         }
     }
@@ -55,7 +55,7 @@ trait ToCamundaBpmn:
       for {
         _ <- ZIO.collect(process.elements.elements) {
           e => e.toCamunda().mapError(Some(_))
-        } 
+        }
         cProcess <- ZIO(summon[BpmnModelInstance].getModelElementById(process.ident).asInstanceOf[camunda.Process])
           .mapError(ex => ToCamundaException(ex.getMessage()))
         groups <- UIO(process.starterGroups.groups.map(_.toString))
@@ -114,6 +114,8 @@ trait ToCamundaBpmn:
         case JavaClass(className) =>
           elem.setCamundaClass(className)
         case ExternalTask(topic) =>
+          println(s"EXTERNAL TASK $topic")
+          elem.setCamundaType("external")
           elem.setCamundaTopic(topic)
 
   extension (event: StartEvent)
@@ -129,7 +131,7 @@ trait ToCamundaBpmn:
       }
 
   extension (event: EndEvent)
-    def merge(elem: camunda.EndEvent): ToCamundable[Unit] = (/* nothing to do yet*/)
+    def merge(elem: camunda.EndEvent): ToCamundable[Unit] = ( /* nothing to do yet*/ )
 
   extension (task: UserTask)
     def merge(elem: camunda.UserTask): ToCamundable[Unit] =
