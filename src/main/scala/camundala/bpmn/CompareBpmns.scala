@@ -34,8 +34,9 @@ trait CompareBpmns
     def compareWith(newProcess: BpmnProcess): Seq[AuditEntry] = Seq(
       info(s"Process '${process.ident}' exists.")
     ) ++
-      process.elements.compareWith(newProcess.elements)
-
+      process.nodes.compareWith(newProcess.nodes) ++
+      process.flows.compareWith(newProcess.flows)
+  
   extension (elements: ProcessElements)
     def compareWith(newElements: ProcessElements): Seq[AuditEntry] =
       elements.elements.collect {

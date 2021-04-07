@@ -15,11 +15,13 @@ object CompareBpmnsSuites
     bpmn("myBpmn.bpmn")
       .processes(
         process("myProcess")
-          .elements(
+          .nodes(
             startEvent("LetsStart"),
             serviceTask("serviceTaskA"),
             userTask("userTaskA"),
-            businessRuleTask("Rulez"),
+            businessRuleTask("Rulez")
+          )
+          .flows(
             flow("no_1234_1234")
           )
       )
@@ -32,11 +34,13 @@ object CompareBpmnsSuites
     bpmn("myBpmn.bpmn")
       .processes(
         process("myProcess")
-          .elements(
+          .nodes(
             startEvent("LetsStart"),
             serviceTask("serviceTaskB"),
             userTask("userTaskA"),
-            businessRuleTask("Rulez"),
+            businessRuleTask("Rulez")
+          )
+          .flows(
             flow("no_1234_1234")
           )
       )
@@ -67,7 +71,7 @@ object CompareBpmnsSuites
       assert(audit.entries.head.msg)(equalTo("BPMN path match (myBpmn.bpmn).")) &&
         assert(audit.entries.drop(1).head.msg)(equalTo("Process 'myProcess' exists.")) &&
         assert(audit.entries.drop(3).head.msg)(equalTo("There is no 'serviceTaskA' in the new BPMN.")) &&
-        assert(audit.entries.drop(7).head.msg)(equalTo("There is no 'serviceTaskB' in the existing BPMN.")) &&
+        assert(audit.entries.drop(6).head.msg)(equalTo("There is no 'serviceTaskB' in the existing BPMN.")) &&
         assert(audit.entries.size)(equalTo(8)) &&
         assert(audit.maxLevel())(equalTo(AuditLevel.WARN))
     }

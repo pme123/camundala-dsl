@@ -14,5 +14,8 @@ trait processes:
     def starterUsers(users: UserRef*) =
       process.copy(starterUsers = CandidateUsers(users))
 
-    def elements(processElements: ProcessElement*) =
-      process.copy(elements = ProcessElements(processElements))
+    def nodes(processNodes: ProcessNode*) =
+      process.copy(nodes = ProcessNodes(processNodes))
+
+    def flows(processFlows: SequenceFlow*) =
+      process.copy(flows = SequenceFlows(processFlows))

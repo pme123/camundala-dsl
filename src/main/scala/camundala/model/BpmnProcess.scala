@@ -17,17 +17,19 @@ case class BpmnProcess(
                         ident: Ident,
                         starterGroups: CandidateGroups = CandidateGroups.none,
                         starterUsers: CandidateUsers = CandidateUsers.none,
-                        elements: ProcessElements = ProcessElements.none
+                        nodes: ProcessNodes = ProcessNodes.none,
+                        flows: SequenceFlows = SequenceFlows.none
                       )
   extends HasGroups[BpmnProcess]
     with HasStringify :
-
+  val elements = nodes.elements ++ flows.elements
   def stringify(intent: Int): String =
     s"""${intentStr(intent)}process(${ident.stringify(0)})
     |${
       Seq(stringifyWrap(intent + 1, ".starterGroups", starterGroups),
         stringifyWrap(intent + 1, ".starterUsers", starterUsers),
-        elements.stringify(intent + 1)
+        nodes.stringify(intent + 1),
+        flows.stringify(intent + 1)
       ).mkString(s"\n")
     }""".stripMargin
 
@@ -101,25 +103,32 @@ object BpmnProcess:
 
       override def toString: String = "sequenceFlows"
 
-case class ProcessElements(elements: Seq[ProcessElement])
-  extends HasStringify :
+trait ProcessElements 
+  extends HasStringify:
+  
+  def elements: Seq[ProcessElement]
 
+case class ProcessNodes(nodes: Seq[ProcessNode])
+  extends ProcessElements :
+  
+  val elements: Seq[ProcessElement] = nodes
+  
   def stringify(intent: Int): String =
-    stringifyWrap(intent, ".elements", elements)
+    stringifyWrap(intent, ".nodes", nodes)
 
-object ProcessElements:
+object ProcessNodes:
 
-  val none = ProcessElements(Nil)
+  val none = ProcessNodes(Nil)
 
 trait ProcessElement
   extends HasStringify :
-
+  
   def elemType: NodeKey
 
   def ident: Ident
-  
+
   def ref: ProcessElementRef = ProcessElementRef(ident.toString)
-  
+
 opaque type ProcessElementRef = String
 
 extension (ref: ProcessElementRef)
@@ -127,3 +136,9 @@ extension (ref: ProcessElementRef)
 
 object ProcessElementRef:
   def apply(ref: String): ProcessElementRef = ref
+
+trait ProcessNode
+  extends ProcessElement 
+  with HasAsyncBefore[ProcessNode]
+
+

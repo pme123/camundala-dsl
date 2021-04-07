@@ -134,11 +134,16 @@ object RefBinding:
     val binding: String = s"""versionTag("$tag")"""
 
 case class ServiceTask(task: Task,
-                       taskImplementation: TaskImplementation)
+                       taskImplementation: TaskImplementation,
+                       isAsyncBefore: Boolean = false
+                      )
   extends HasTask
     with HasTaskImplementation[ServiceTask]
-    with ProcessElement :
+    with ProcessNode :
   val elemType: NodeKey = NodeKey.serviceTasks
+  
+  def asyncBefore(): ServiceTask = copy(isAsyncBefore = true)
+
   def taskImplementation(taskImplementation: TaskImplementation): ServiceTask = copy(taskImplementation = taskImplementation)
 
 object ServiceTask:
@@ -147,33 +152,47 @@ object ServiceTask:
     ServiceTask(Task(ident), ExternalTask("my-topic"))
 
 case class SendTask(task: Task,
-                    taskImplementation: TaskImplementation = Expression(""))
+                    taskImplementation: TaskImplementation = Expression(""),
+                    isAsyncBefore: Boolean = false
+                   )
   extends HasTask
     with HasTaskImplementation[SendTask]
-    with ProcessElement :
+    with ProcessNode :
   val elemType: NodeKey = NodeKey.sendTasks
+  
+  def asyncBefore(): SendTask = copy(isAsyncBefore = true)
+
   def taskImplementation(taskImplementation: TaskImplementation): SendTask = copy(taskImplementation = taskImplementation)
 
 case class BusinessRuleTask(task: Task,
-                            taskImplementation: BusinessRuleTaskImpl = Expression(""))
+                            taskImplementation: BusinessRuleTaskImpl = Expression(""),
+                            isAsyncBefore: Boolean = false
+                           )
   extends HasTask
   //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
-    with ProcessElement :
+    with ProcessNode :
   val elemType: NodeKey = NodeKey.businessRuleTasks
+
+  def asyncBefore(): BusinessRuleTask = copy(isAsyncBefore = true)
+
   def taskImplementation(taskImplementation: TaskImplementation): BusinessRuleTask = this //TODO copy(taskImplementation = taskImplementation)
   def stringify(intent: Int): String = "----BusinessRuleTask"
 
 case class UserTask(task: Task,
-                    bpmnForm: Option[BpmnForm] = None)
+                    bpmnForm: Option[BpmnForm] = None,
+                    isAsyncBefore: Boolean = false
+                   )
   extends HasTask
     with HasForm[UserTask]
-    with ProcessElement :
+    with ProcessNode :
 
   def stringify(intent: Int): String =
     s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})${
         bpmnForm.map(_.stringify(intent + 1)).toSeq.mkString(",\n")}""".stripMargin
 
   val elemType = NodeKey.userTasks
+
+  def asyncBefore(): UserTask = copy(isAsyncBefore = true)
 
   def form(form: BpmnForm): UserTask = copy(bpmnForm = Some(form))
 

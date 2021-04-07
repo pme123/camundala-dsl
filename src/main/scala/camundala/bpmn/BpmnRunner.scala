@@ -56,7 +56,7 @@ object BpmnRunnerApp
           .starterUsers(
 
           )
-          .elements(
+          .nodes(
             startEvent("StartProcess"),
             serviceTask("ServiceTask")
               .expression(s"execution.setVariable('$isBarVar', true)"),
@@ -66,13 +66,15 @@ object BpmnRunnerApp
               .inlineGroovy("""println "hello there" """),
             exclusiveGateway("Fork"),
             exclusiveGateway("gatewayJoin"),
-            endEvent("EndProcess"),
+            endEvent("EndProcess")
+          )
+          .flows(
             sequenceFlow("flow1_StartProcess-ServiceTask"),
             sequenceFlow("flow2_ServiceTask-Fork"),
             sequenceFlow("IsNOTBar_Fork-UserTaskA")
-            .expression(s"!$isBarVar"),
+              .expression(s"!$isBarVar"),
             sequenceFlow("IsBar_Fork-UserTaskB")
-            .inlineGroovy(isBarVar),
+              .inlineGroovy(isBarVar),
             sequenceFlow("flow6_UserTaskB-gatewayJoin"),
             sequenceFlow("flow5_UserTaskA-gatewayJoin"),
             sequenceFlow("flow7_gatewayJoin-ScriptTask"),

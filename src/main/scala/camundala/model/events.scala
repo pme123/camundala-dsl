@@ -3,11 +3,13 @@ package camundala.model
 import camundala.model.BpmnProcess.NodeKey
 
 case class StartEvent(ident: Ident,
-                      bpmnForm: Option[BpmnForm] = None)
+                      bpmnForm: Option[BpmnForm] = None,
+                      isAsyncBefore: Boolean = false
+                     )
   extends HasStringify
     with HasIdent
     with HasForm[StartEvent]
-    with ProcessElement :
+    with ProcessNode :
 
   def stringify(intent: Int): String =
     s"""${intentStr(intent)}startEvent(${ident.stringify()})${
@@ -15,17 +17,23 @@ case class StartEvent(ident: Ident,
     }""".stripMargin
 
   def elemType = NodeKey.startEvents
-    
+  
+  def asyncBefore(): StartEvent = copy(isAsyncBefore = true)
+
   def form(form: BpmnForm): StartEvent = copy(bpmnForm = Some(form))
 
 
-case class EndEvent(ident: Ident)
+case class EndEvent(ident: Ident,
+                    isAsyncBefore: Boolean = false
+                   )
   extends HasStringify
     with HasIdent
-    with ProcessElement :
+    with ProcessNode :
 
   def stringify(intent: Int): String =
     s"""${intentStr(intent)}endEvent(${ident.stringify()})""".stripMargin
 
   def elemType = NodeKey.endEvents
-    
+  
+  def asyncBefore(): EndEvent = copy(isAsyncBefore = true)
+  

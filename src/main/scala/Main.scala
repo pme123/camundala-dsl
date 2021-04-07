@@ -1,5 +1,4 @@
 import camundala.dsl.DSL
-import camundala.dsl.DSL._
 import camundala.bpmn._
 
 object Main extends App with DSL :
@@ -26,7 +25,7 @@ object Main extends App with DSL :
           .starterUsers(
             testUser.ref
           )
-          .elements(
+          .nodes(
             startEvent("LetsStart")
               .form(formKey("MyForm"))
             ,

@@ -6,7 +6,7 @@ import camundala.model.Constraint._
 import camundala.model.GeneratedForm.FormField
 import camundala.model.GeneratedForm.FormFieldType._
 import camundala.model.TaskImplementation._
-import camundala.model.{CandidateGroups, CandidateUsers, ProcessElement, _}
+import camundala.model.{CandidateGroups, CandidateUsers, ProcessNode, _}
 import camundala.dsl._
 
 import scala.language.implicitConversions

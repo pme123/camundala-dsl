@@ -58,7 +58,7 @@ trait FromCamundaBpmn
         sequenceFlows <- createElements(classOf[camunda.SequenceFlow], sequenceFlow)
       } yield
         process(ident)
-          .elements(
+          .nodes(
             startEvents ++
               userTasks ++
               serviceTasks ++
@@ -66,18 +66,19 @@ trait FromCamundaBpmn
               businessRuleTasks ++
               exclusiveGateways ++
               parallelGateways ++
-              endEvents ++
+              endEvents: _*)
+        .flows(
               sequenceFlows
               : _*)
 
-  def createElements[T <: camunda.FlowElement](clazz: Class[T], element: String => ProcessElement)
-  : FromCamundable[IO[FromCamundaException, Seq[ProcessElement]]] = {
+  def createElements[T <: camunda.FlowElement, C](clazz: Class[T], constructor: String => C)
+  : FromCamundable[IO[FromCamundaException, Seq[C]]] = {
     ZIO.collect(summon[BpmnModelInstance].getModelElementsByType(clazz).asScala.toSeq) {
       fe =>
         val zident: ZIdent = fe.createIdent()
         zident
           .mapError(e => Some(e))
-          .map(ident => element(ident))
+          .map(ident => constructor(ident))
     }
   }
 

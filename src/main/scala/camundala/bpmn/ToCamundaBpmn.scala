@@ -53,8 +53,8 @@ trait ToCamundaBpmn:
   extension (process: BpmnProcess)
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
       for {
-        _ <- ZIO.collect(process.elements.elements) {
-          e => e.toCamunda().mapError(Some(_))
+        _ <- ZIO.collect(process.nodes.nodes ++ process.flows.flows) {
+          n => n.toCamunda().mapError(Some(_))
         }
         cProcess <- ZIO(summon[BpmnModelInstance].getModelElementById(process.ident).asInstanceOf[camunda.Process])
           .mapError(ex => ToCamundaException(ex.getMessage()))
@@ -114,7 +114,6 @@ trait ToCamundaBpmn:
         case JavaClass(className) =>
           elem.setCamundaClass(className)
         case ExternalTask(topic) =>
-          println(s"EXTERNAL TASK $topic")
           elem.setCamundaType("external")
           elem.setCamundaTopic(topic)
 
@@ -136,6 +135,7 @@ trait ToCamundaBpmn:
   extension (task: UserTask)
     def merge(elem: camunda.UserTask): ToCamundable[Unit] =
       val builder: UserTaskBuilder = elem.builder()
+      
       task.bpmnForm.foreach {
         case EmbeddedForm(formRef) =>
           builder.camundaFormKey(formRef.toString)

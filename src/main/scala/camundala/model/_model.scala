@@ -98,6 +98,12 @@ trait HasProperties[T]:
   def properties: Properties
   def prop(prop: Property): T
 
+trait HasAsyncBefore[T]:
+  def isAsyncBefore: Boolean
+  def asyncBefore(): T
+  
+  def << : T = asyncBefore()
+
 opaque type ProcessVarString = Ident
 
 object ProcessVarString:

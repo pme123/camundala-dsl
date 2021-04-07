@@ -16,7 +16,8 @@ object FromCamundaBpmnSuites
       val bpmn = fromCamunda(path("bpmns/process-cawemo.bpmn"), path("bpmns/with-ids/process-cawemo.bpmn"))
       assertM(bpmn)(
         hasField("processes", (bpmn: Bpmn) => bpmn.processes.processes.size, equalTo(1)) &&
-          hasField("elements", (bpmn: Bpmn) => bpmn.processes.processes.head.elements.elements.size, equalTo(15))
+          hasField("nodes", (bpmn: Bpmn) => bpmn.processes.processes.head.nodes.elements.size, equalTo(8)) &&
+          hasField("flows", (bpmn: Bpmn) => bpmn.processes.processes.head.flows.elements.size, equalTo(8))
       )
     }
   )

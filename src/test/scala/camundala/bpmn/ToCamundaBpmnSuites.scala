@@ -28,7 +28,7 @@ object ToCamundaBpmnSuites
         process("testDslProcess")
           .starterUsers(user("Darth.Vader"))
           .starterGroups(group("admin"))
-          .elements(
+          .nodes(
             startEvent("startEvent")
               .form(
                 textField(fooVar.toString)
@@ -46,8 +46,7 @@ object ToCamundaBpmnSuites
                   .label("MY FIELD")
                   .enumValue("k1", "blau")
                   .enumValue("k2", "grau")
-                  .required
-                ,
+                  .required,
                 textField("textField")
                   .label("hello")
                   .defaultValue("Peter")
@@ -60,26 +59,24 @@ object ToCamundaBpmnSuites
                   .defaultValue("10")
                   .min(3)
                   .max(12)
-              )
-            ,
+              ),
             userTask("userTaskB")
               .form(
                 formKey("MyFormKey")
-              )
-            ,
+              ),
             scriptTask("scriptTask")
               .inlineGroovy(s"println 'hello Scala world'")
-              .resultVariable("scriptResult")
-            ,
+              .resultVariable("scriptResult"),
+            exclusiveGateway("gatewayFork")
+              .defaultFlow(sequenceFlowIsNotBar.ref)
+          )
+          .flows(
             sequenceFlow("flowIsBar")
               .inlineGroovy(
                 s"""println 'hello'
-            $fooVar == 'bar'""")
-            ,
+            $fooVar == 'bar'"""),
             sequenceFlowIsNotBar
-            ,
-            exclusiveGateway("gatewayFork")
-              .defaultFlow(sequenceFlowIsNotBar.ref)
+
           )
       )
 
