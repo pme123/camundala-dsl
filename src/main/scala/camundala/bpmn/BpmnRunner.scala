@@ -4,6 +4,7 @@ import camundala.dsl.DSL
 import camundala.model.*
 import zio.console.*
 import zio.*
+import scala.language.postfixOps
 
 case class BpmnRunner(config: RunnerConfig)
   extends FromCamundaBpmn
@@ -32,7 +33,7 @@ case class RunnerConfig(
 
 object BpmnRunnerApp
   extends zio.App
-    with DSL {
+    with DSL :
 
   def run(args: List[String]) =
     runnerLogic.exitCode
@@ -46,7 +47,7 @@ object BpmnRunnerApp
       )).run()
 
   val isBarVar = "isBar"
-  val demoBpmn =
+  lazy val demoBpmn =
     bpmn("bpmns/with-ids/process-cawemo.bpmn")
       .processes(
         process("TestDSLProcess")
@@ -59,13 +60,15 @@ object BpmnRunnerApp
           .nodes(
             startEvent("StartProcess"),
             serviceTask("ServiceTask")
-              .expression(s"execution.setVariable('$isBarVar', true)"),
+              .expression(s"execution.setVariable('$isBarVar', true)") ~,
             userTask("UserTaskA"),
-            userTask("UserTaskB"),
-            scriptTask("ScriptTask")
+            userTask("UserTaskB") ~,
+            ~scriptTask("ScriptTask")
               .inlineGroovy("""println "hello there" """),
-            exclusiveGateway("Fork"),
-            exclusiveGateway("gatewayJoin"),
+            exclusiveGateway("Fork")
+              .asyncAfter,
+            exclusiveGateway("gatewayJoin")
+              .asyncAround,
             endEvent("EndProcess")
           )
           .flows(
@@ -81,4 +84,3 @@ object BpmnRunnerApp
             sequenceFlow("SequenceFlow_9_ScriptTask-EndProcess")
           )
       )
-}

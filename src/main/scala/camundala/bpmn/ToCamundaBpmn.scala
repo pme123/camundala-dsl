@@ -18,9 +18,7 @@ import org.camunda.bpm.model.{bpmn => camundaBpmn}
 
 import scala.jdk.CollectionConverters.*
 import java.io.File
-import camundala.dsl.DSL.Givens.
-
-given
+import camundala.dsl.DSL.Givens.given
 
 import scala.language.implicitConversions
 import zio.*
@@ -66,6 +64,13 @@ trait ToCamundaBpmn:
 
   extension (procElement: ProcessElement)
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
+      (for {
+        _ <- mergeElem
+        _ <- mergeTransactionBoundaries
+      } yield ())
+        .mapError(ex => ToCamundaException(ex.getMessage()))
+
+    private def mergeElem: ToCamundable[zio.Task[Unit]] =
       ZIO(
         procElement match
           case pe: StartEvent =>
@@ -96,8 +101,19 @@ trait ToCamundaBpmn:
             val elem: camunda.EndEvent = summon[BpmnModelInstance].getModelElementById(pe.ident)
               pe
             .merge(elem)
-      ).mapError(ex => ToCamundaException(ex.getMessage()))
-
+      )
+    private def mergeTransactionBoundaries: ToCamundable[zio.Task[Unit]] =
+      ZIO(
+        procElement match
+          case pe: HasTransactionBoundary[_] =>
+            println(s"pe.isAsyncBefore: ${pe.isAsyncBefore}")
+              println(s"pe.isAsyncAfter: ${pe.isAsyncAfter}")
+            val elem: camunda.FlowNode = summon[BpmnModelInstance].getModelElementById(pe.ident)
+             elem.setCamundaAsyncBefore(pe.isAsyncBefore)
+             elem.setCamundaExclusive(pe.isAsyncBefore) // just support exclusive
+             elem.setCamundaAsyncAfter(pe.isAsyncAfter)
+          case _ => ()
+      )
   extension (task: ServiceTask)
     def merge(elem: camunda.ServiceTask): Unit =
       task.taskImplementation

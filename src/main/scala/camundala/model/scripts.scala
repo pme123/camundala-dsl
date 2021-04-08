@@ -8,13 +8,16 @@ import camundala.model.TaskImplementation.Expression
 case class ScriptTask(task: Task,
                       scriptImplementation: ScriptImplementation = InlineScript(ScriptLanguage.Groovy, ""),
                       resultVariable: Option[Ident] = None,
-                      isAsyncBefore: Boolean = false
+                      isAsyncBefore: Boolean = false,
+                      isAsyncAfter: Boolean = false
                      )
   extends HasTask
     with ProcessNode :
   val elemType = NodeKey.userTasks
 
-  def asyncBefore(): ScriptTask = copy(isAsyncBefore = true)
+  def asyncBefore: ScriptTask = copy(isAsyncBefore = true)
+
+  def asyncAfter: ScriptTask = copy(isAsyncAfter = true)
 
   def stringify(intent: Int): String =
     stringifyElements(intent, s"scriptTask(${task.ident.stringify(0)})",

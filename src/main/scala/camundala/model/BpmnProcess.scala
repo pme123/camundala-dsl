@@ -139,6 +139,6 @@ object ProcessElementRef:
 
 trait ProcessNode
   extends ProcessElement 
-  with HasAsyncBefore[ProcessNode]
+  with HasTransactionBoundary[ProcessNode]
 
 

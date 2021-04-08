@@ -43,7 +43,7 @@ public class WebappExampleProcessApplication {
         Map<String, Object> variables = new HashMap<>();
         variables.put("fooVar", "Started by Spring");
         runtimeService
-                .startProcessInstanceByKey("testDslProcess", variables);
+                .startProcessInstanceByKey("TestDSLProcess", variables);
     }
 
 }

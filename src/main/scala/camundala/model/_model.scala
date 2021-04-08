@@ -15,16 +15,16 @@ def stringifyWrap(intent: Int, name: String, body: HasStringify): String =
 
 def stringifyWrapFluent(intent: Int, name: String, entries: Seq[_ <: HasStringify]): String =
   s"""${intentStr(intent)}$name(
-     |${entries.map(_.stringify(intent + 1)).mkString(s"\n${intentStr(intent+ 1)}.")}
+     |${entries.map(_.stringify(intent + 1)).mkString(s"\n${intentStr(intent + 1)}.")}
      |${intentStr(intent)})""".stripMargin
-     
+
 def stringifyWrap(intent: Int, name: String, entries: Seq[_ <: HasStringify]): String =
   s"""${intentStr(intent)}$name(
      |${entries.map(_.stringify(intent + 1) + ",").mkString("\n").dropRight(1)}
      |${intentStr(intent)})""".stripMargin
 
 def stringifyElements(intent: Int, name: String, elements: String*): String = {
-  s"""${intentStr(intent)}$name${elements.map(e =>  s"\n${intentStr(intent + 1)}.$e").mkString}""".stripMargin
+  s"""${intentStr(intent)}$name${elements.map(e => s"\n${intentStr(intent + 1)}.$e").mkString}""".stripMargin
 }
 
 trait HasStringify:
@@ -34,7 +34,7 @@ opaque type BpmnPath = String
 
 object BpmnPath:
   def apply(path: String): BpmnPath = path
-  
+
   extension (path: BpmnPath)
     def stringify(intent: Int = 0): String = s"""${intentStr(intent)}"$path""""
 
@@ -69,7 +69,7 @@ trait HasActivity
   extends HasIdent :
   def activity: Activity
 
-  lazy val ident = activity.ident
+  lazy val ident: Ident = activity.ident
 
 trait HasTask
   extends HasActivity :
@@ -92,17 +92,28 @@ trait HasTaskImplementation[T]:
 
 trait HasForm[T]:
   def bpmnForm: Option[BpmnForm]
-  def form(form:BpmnForm): T
+
+  def form(form: BpmnForm): T
 
 trait HasProperties[T]:
   def properties: Properties
+
   def prop(prop: Property): T
 
-trait HasAsyncBefore[T]:
+trait HasTransactionBoundary[T <: HasTransactionBoundary[T]]:
   def isAsyncBefore: Boolean
-  def asyncBefore(): T
-  
-  def << : T = asyncBefore()
+
+  def asyncBefore: T
+
+  def isAsyncAfter: Boolean
+
+  def asyncAfter: T
+
+  def unary_~ : T = asyncBefore
+
+  def ~ : T = asyncAfter
+
+  def asyncAround : T = asyncBefore.asyncAfter
 
 opaque type ProcessVarString = Ident
 

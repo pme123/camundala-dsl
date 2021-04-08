@@ -135,14 +135,17 @@ object RefBinding:
 
 case class ServiceTask(task: Task,
                        taskImplementation: TaskImplementation,
-                       isAsyncBefore: Boolean = false
+                       isAsyncBefore: Boolean = false,
+                       isAsyncAfter: Boolean = false
                       )
   extends HasTask
     with HasTaskImplementation[ServiceTask]
     with ProcessNode :
   val elemType: NodeKey = NodeKey.serviceTasks
   
-  def asyncBefore(): ServiceTask = copy(isAsyncBefore = true)
+  def asyncBefore: ServiceTask = copy(isAsyncBefore = true)
+
+  def asyncAfter: ServiceTask = copy(isAsyncAfter = true)
 
   def taskImplementation(taskImplementation: TaskImplementation): ServiceTask = copy(taskImplementation = taskImplementation)
 
@@ -153,34 +156,41 @@ object ServiceTask:
 
 case class SendTask(task: Task,
                     taskImplementation: TaskImplementation = Expression(""),
-                    isAsyncBefore: Boolean = false
+                    isAsyncBefore: Boolean = false,
+                    isAsyncAfter: Boolean = false
                    )
   extends HasTask
     with HasTaskImplementation[SendTask]
     with ProcessNode :
   val elemType: NodeKey = NodeKey.sendTasks
   
-  def asyncBefore(): SendTask = copy(isAsyncBefore = true)
+  def asyncBefore: SendTask = copy(isAsyncBefore = true)
+
+  def asyncAfter: SendTask = copy(isAsyncAfter = true)
 
   def taskImplementation(taskImplementation: TaskImplementation): SendTask = copy(taskImplementation = taskImplementation)
 
 case class BusinessRuleTask(task: Task,
                             taskImplementation: BusinessRuleTaskImpl = Expression(""),
-                            isAsyncBefore: Boolean = false
+                            isAsyncBefore: Boolean = false,
+                            isAsyncAfter: Boolean = false
                            )
   extends HasTask
   //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
     with ProcessNode :
   val elemType: NodeKey = NodeKey.businessRuleTasks
 
-  def asyncBefore(): BusinessRuleTask = copy(isAsyncBefore = true)
+  def asyncBefore: BusinessRuleTask = copy(isAsyncBefore = true)
+
+  def asyncAfter: BusinessRuleTask = copy(isAsyncAfter = true)
 
   def taskImplementation(taskImplementation: TaskImplementation): BusinessRuleTask = this //TODO copy(taskImplementation = taskImplementation)
   def stringify(intent: Int): String = "----BusinessRuleTask"
 
 case class UserTask(task: Task,
                     bpmnForm: Option[BpmnForm] = None,
-                    isAsyncBefore: Boolean = false
+                    isAsyncBefore: Boolean = false,
+                    isAsyncAfter: Boolean = false
                    )
   extends HasTask
     with HasForm[UserTask]
@@ -192,7 +202,9 @@ case class UserTask(task: Task,
 
   val elemType = NodeKey.userTasks
 
-  def asyncBefore(): UserTask = copy(isAsyncBefore = true)
+  def asyncBefore: UserTask = copy(isAsyncBefore = true)
+
+  def asyncAfter: UserTask = copy(isAsyncAfter = true)
 
   def form(form: BpmnForm): UserTask = copy(bpmnForm = Some(form))
 
