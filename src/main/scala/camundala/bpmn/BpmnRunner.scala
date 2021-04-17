@@ -7,9 +7,9 @@ import zio.*
 import scala.language.postfixOps
 
 case class BpmnRunner(config: RunnerConfig)
-  extends FromCamundaBpmn
+    extends FromCamundaBpmn
     with CompareBpmns
-    with ToCamundaBpmn :
+    with ToCamundaBpmn:
 
   def run() =
     for {
@@ -26,14 +26,12 @@ case class BpmnRunner(config: RunnerConfig)
     fromCamunda(config.bpmnPath, config.workingBpmnDsl.path)
 
 case class RunnerConfig(
-                         bpmnPath: BpmnPath,
-                         workingBpmnDsl: Bpmn,
-                         generatedBpmnPath: BpmnPath
-                       )
+    bpmnPath: BpmnPath,
+    workingBpmnDsl: Bpmn,
+    generatedBpmnPath: BpmnPath
+)
 
-object BpmnRunnerApp
-  extends zio.App
-    with DSL :
+object BpmnRunnerApp extends zio.App with DSL:
 
   def run(args: List[String]) =
     runnerLogic.exitCode
@@ -44,7 +42,8 @@ object BpmnRunnerApp
         path("bpmns/process-cawemo.bpmn"),
         demoBpmn,
         path("camunda-demo/src/main/resources/demo-process.bpmn")
-      )).run()
+      )
+    ).run()
 
   val isBarVar = "isBar"
   lazy val demoBpmn =
@@ -52,23 +51,25 @@ object BpmnRunnerApp
       .processes(
         process("TestDSLProcess")
           .starterGroups(
-
           )
           .starterUsers(
-
           )
           .nodes(
             startEvent("StartProcess"),
             serviceTask("ServiceTask")
-              .expression(s"execution.setVariable('$isBarVar', true)") ~,
-            userTask("UserTaskA"),
-            userTask("UserTaskB") ~,
-            ~scriptTask("ScriptTask")
+              .expression(s"execution.setVariable('$isBarVar', true)"),
+            userTask("UserTaskA")
+              .form(FormKey("my-form")),
+            userTask("UserTaskB")
+              .form(
+                textField("name").required
+                  .minlength(12),
+                textField("firstName")
+              ),
+            scriptTask("ScriptTask")
               .inlineGroovy("""println "hello there" """),
-            exclusiveGateway("Fork")
-              .asyncAfter,
-            exclusiveGateway("gatewayJoin")
-              .asyncAround,
+            exclusiveGateway("Fork").asyncAfter,
+            exclusiveGateway("gatewayJoin"),
             endEvent("EndProcess")
           )
           .flows(

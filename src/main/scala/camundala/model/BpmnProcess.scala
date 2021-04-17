@@ -138,7 +138,6 @@ object ProcessElementRef:
   def apply(ref: String): ProcessElementRef = ref
 
 trait ProcessNode
-  extends ProcessElement 
-  with HasTransactionBoundary[ProcessNode]
+  extends ProcessElement
 
 

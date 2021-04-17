@@ -65,17 +65,28 @@ object TenantId:
 trait HasIdent:
   def ident: Ident
 
-trait HasActivity
-  extends HasIdent :
+trait HasActivity[T <: HasTransactionBoundary[T]]
+  extends HasIdent
+    with HasTransactionBoundary[T] :
   def activity: Activity
+
+  def isAsyncBefore: Boolean = activity.isAsyncBefore
+
+  def isAsyncAfter: Boolean = activity.isAsyncAfter
 
   lazy val ident: Ident = activity.ident
 
-trait HasTask
-  extends HasActivity :
+trait HasTask[T <: HasTransactionBoundary[T]]
+  extends HasActivity[T] :
   def task: Task
 
+  def withTask(task: Task): T
+
   lazy val activity = task.activity
+
+  def asyncBefore: T = withTask(task.copy(activity = activity.asyncBefore))
+
+  def asyncAfter: T = withTask(task.copy(activity = activity.asyncAfter))
 
 trait HasTaskImplementation[T]:
   def elemType: NodeKey
@@ -103,9 +114,9 @@ trait HasProperties[T]:
 trait HasTransactionBoundary[T <: HasTransactionBoundary[T]]:
   def isAsyncBefore: Boolean
 
-  def asyncBefore: T
-
   def isAsyncAfter: Boolean
+
+  def asyncBefore: T
 
   def asyncAfter: T
 
@@ -113,7 +124,7 @@ trait HasTransactionBoundary[T <: HasTransactionBoundary[T]]:
 
   def ~ : T = asyncAfter
 
-  def asyncAround : T = asyncBefore.asyncAfter
+  def asyncAround: T = asyncBefore.asyncAfter
 
 opaque type ProcessVarString = Ident
 

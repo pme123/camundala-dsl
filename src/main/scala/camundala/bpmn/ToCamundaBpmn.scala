@@ -106,8 +106,6 @@ trait ToCamundaBpmn:
       ZIO(
         procElement match
           case pe: HasTransactionBoundary[_] =>
-            println(s"pe.isAsyncBefore: ${pe.isAsyncBefore}")
-              println(s"pe.isAsyncAfter: ${pe.isAsyncAfter}")
             val elem: camunda.FlowNode = summon[BpmnModelInstance].getModelElementById(pe.ident)
              elem.setCamundaAsyncBefore(pe.isAsyncBefore)
              elem.setCamundaExclusive(pe.isAsyncBefore) // just support exclusive

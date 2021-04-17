@@ -4,16 +4,23 @@ import camundala.model.BpmnProcess.NodeKey
 import camundala.model.GeneratedForm.FormField
 import camundala.model.TaskImplementation._
 
-case class Activity(ident: Ident)
-  extends HasIdent
-    with HasStringify :
+case class Activity(
+    ident: Ident,
+    isAsyncBefore: Boolean = false,
+    isAsyncAfter: Boolean = false
+) extends HasIdent
+    with HasStringify:
 
   def stringify(intent: Int): String = ident.stringify(intent)
 
-case class Task(activity: Activity)
-  extends HasActivity
-    with HasStringify :
+  def asyncBefore: Activity = copy(isAsyncBefore = true)
 
+  def asyncAfter: Activity = copy(isAsyncAfter = true)
+
+case class Task(activity: Activity)
+  extends HasIdent
+    with HasStringify:
+  val ident = activity.ident
   def stringify(intent: Int): String = activity.stringify(intent)
 
 object Task {
@@ -23,39 +30,50 @@ object Task {
 
 }
 
-sealed trait TaskImplementation
-  extends HasStringify
+sealed trait TaskImplementation extends HasStringify
 
 object TaskImplementation:
 
-  case class Expression(private val expression: String, resultVariable: Option[String] = None)
-    extends TaskImplementation 
-    with BusinessRuleTaskImpl:
+  case class Expression(
+      private val expression: String,
+      resultVariable: Option[String] = None
+  ) extends TaskImplementation
+      with BusinessRuleTaskImpl:
 
-    def stringify(intent: Int): String = s"""${intentStr(intent)}.expression("$expression"${resultVariable.map(v => s""", "$v"""").getOrElse("")})"""
+    def stringify(intent: Int): String = s"""${intentStr(
+      intent
+    )}.expression("$expression"${resultVariable
+      .map(v => s""", "$v"""")
+      .getOrElse("")})"""
 
-  object Expression :
-    def apply(expr: String):Expression =
+  object Expression:
+    def apply(expr: String): Expression =
       new Expression(
-        if(expr.startsWith("$"))
+        if (expr.startsWith("$"))
           expr
         else
-          s"$${$expr}"  
+          s"$${$expr}"
       )
   case class DelegateExpression(expresssion: String)
-    extends TaskImplementation
-    with BusinessRuleTaskImpl :
-    def stringify(intent: Int): String = s"""${intentStr(intent)}.delegateExpression("$expresssion")"""
+      extends TaskImplementation
+      with BusinessRuleTaskImpl:
+    def stringify(intent: Int): String = s"""${intentStr(
+      intent
+    )}.delegateExpression("$expresssion")"""
 
   case class JavaClass(className: String)
-    extends TaskImplementation 
-    with BusinessRuleTaskImpl:
-    def stringify(intent: Int): String = s"""${intentStr(intent)}.javaClass("$className")"""
+      extends TaskImplementation
+      with BusinessRuleTaskImpl:
+    def stringify(intent: Int): String = s"""${intentStr(
+      intent
+    )}.javaClass("$className")"""
 
   case class ExternalTask(topic: String)
-    extends TaskImplementation 
-    with BusinessRuleTaskImpl:
-    def stringify(intent: Int): String = s"""${intentStr(intent)}.externalTask("$topic")"""
+      extends TaskImplementation
+      with BusinessRuleTaskImpl:
+    def stringify(intent: Int): String = s"""${intentStr(
+      intent
+    )}.externalTask("$topic")"""
 
 sealed trait BusinessRuleTaskImpl
 
@@ -67,23 +85,23 @@ object BusinessRuleTask:
     def apply(ref: String): DecisionRef = ref
 
   extension (ref: DecisionRef)
-    def stringify(intent: Int): String = s"""${intentStr(intent)}.decisionRef("$ref")"""
+    def stringify(intent: Int): String = s"""${intentStr(
+      intent
+    )}.decisionRef("$ref")"""
 
+  case class Dmn(
+      decisionRef: DecisionRef,
+      binding: RefBinding = RefBinding.Latest,
+      resultVariable: Option[ResultVariable] = None,
+      tenantId: Option[TenantId] = None
+  ) extends BusinessRuleTaskImpl:
 
-  case class Dmn(decisionRef: DecisionRef,
-                 binding: RefBinding = RefBinding.Latest,
-                 resultVariable: Option[ResultVariable] = None,
-                 tenantId: Option[TenantId] = None)
-    extends BusinessRuleTaskImpl :
-      
     def stringify(intent: Int): String =
       s"""${intentStr(intent)}dmn(
          |${decisionRef.stringify(intent + 1)},
-         |${
-        (Seq(binding.stringify(intent + 1)) ++
-          resultVariable.map(rv => rv.stringify(intent + 1)).toSeq ++
-          tenantId.map(ti => ti.stringify(intent + 1)).toSeq).mkString(",\n")
-      }
+         |${(Seq(binding.stringify(intent + 1)) ++
+        resultVariable.map(rv => rv.stringify(intent + 1)).toSeq ++
+        tenantId.map(ti => ti.stringify(intent + 1)).toSeq).mkString(",\n")}
          |${intentStr(intent)})""".stripMargin
 
 case class ResultVariable(name: Name, mapDecisionResult: MapDecisionResult):
@@ -107,104 +125,86 @@ enum MapDecisionResult(val label: String):
   // List[Map[String, Object]]
   case ResultList extends MapDecisionResult("resultList")
 
-sealed trait RefBinding
-  extends HasStringify :
+sealed trait RefBinding extends HasStringify:
   def binding: String
 
   def stringify(intent: Int): String = s"${intentStr(intent)}binding($binding)"
 
-
 object RefBinding:
 
-  case object Latest
-    extends RefBinding :
+  case object Latest extends RefBinding:
     val binding: String = "latest"
 
-  case object Deployment
-    extends RefBinding :
+  case object Deployment extends RefBinding:
     val binding: String = "latest"
 
-
-  case class Version(version: String)
-    extends RefBinding :
+  case class Version(version: String) extends RefBinding:
     val binding: String = s"""version("$version")"""
 
-  case class VersionTag(tag: String)
-    extends RefBinding :
+  case class VersionTag(tag: String) extends RefBinding:
     val binding: String = s"""versionTag("$tag")"""
 
-case class ServiceTask(task: Task,
-                       taskImplementation: TaskImplementation,
-                       isAsyncBefore: Boolean = false,
-                       isAsyncAfter: Boolean = false
-                      )
-  extends HasTask
+case class ServiceTask(
+    task: Task,
+    taskImplementation: TaskImplementation
+) extends HasTask[ServiceTask]
     with HasTaskImplementation[ServiceTask]
-    with ProcessNode :
+    with ProcessNode:
   val elemType: NodeKey = NodeKey.serviceTasks
-  
-  def asyncBefore: ServiceTask = copy(isAsyncBefore = true)
 
-  def asyncAfter: ServiceTask = copy(isAsyncAfter = true)
+  def withTask(task: Task): ServiceTask = copy(task = task)
 
-  def taskImplementation(taskImplementation: TaskImplementation): ServiceTask = copy(taskImplementation = taskImplementation)
+  def taskImplementation(taskImplementation: TaskImplementation): ServiceTask =
+    copy(taskImplementation = taskImplementation)
 
 object ServiceTask:
 
   def apply(ident: Ident): ServiceTask =
     ServiceTask(Task(ident), ExternalTask("my-topic"))
 
-case class SendTask(task: Task,
-                    taskImplementation: TaskImplementation = Expression(""),
-                    isAsyncBefore: Boolean = false,
-                    isAsyncAfter: Boolean = false
-                   )
-  extends HasTask
+case class SendTask(
+    task: Task,
+    taskImplementation: TaskImplementation = Expression("")
+) extends HasTask[SendTask]
     with HasTaskImplementation[SendTask]
-    with ProcessNode :
+    with ProcessNode:
   val elemType: NodeKey = NodeKey.sendTasks
-  
-  def asyncBefore: SendTask = copy(isAsyncBefore = true)
 
-  def asyncAfter: SendTask = copy(isAsyncAfter = true)
+  def withTask(task: Task): SendTask = copy(task = task)
 
-  def taskImplementation(taskImplementation: TaskImplementation): SendTask = copy(taskImplementation = taskImplementation)
+  def taskImplementation(taskImplementation: TaskImplementation): SendTask =
+    copy(taskImplementation = taskImplementation)
 
-case class BusinessRuleTask(task: Task,
-                            taskImplementation: BusinessRuleTaskImpl = Expression(""),
-                            isAsyncBefore: Boolean = false,
-                            isAsyncAfter: Boolean = false
-                           )
-  extends HasTask
-  //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
-    with ProcessNode :
+case class BusinessRuleTask(
+    task: Task,
+    taskImplementation: BusinessRuleTaskImpl = Expression("")
+) extends HasTask[BusinessRuleTask]
+    //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
+    with ProcessNode:
   val elemType: NodeKey = NodeKey.businessRuleTasks
 
-  def asyncBefore: BusinessRuleTask = copy(isAsyncBefore = true)
+  def withTask(task: Task): BusinessRuleTask = copy(task = task)
 
-  def asyncAfter: BusinessRuleTask = copy(isAsyncAfter = true)
-
-  def taskImplementation(taskImplementation: TaskImplementation): BusinessRuleTask = this //TODO copy(taskImplementation = taskImplementation)
+  def taskImplementation(
+      taskImplementation: TaskImplementation
+  ): BusinessRuleTask =
+    this //TODO copy(taskImplementation = taskImplementation)
   def stringify(intent: Int): String = "----BusinessRuleTask"
 
-case class UserTask(task: Task,
-                    bpmnForm: Option[BpmnForm] = None,
-                    isAsyncBefore: Boolean = false,
-                    isAsyncAfter: Boolean = false
-                   )
-  extends HasTask
+case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
+    extends HasTask[UserTask]
     with HasForm[UserTask]
-    with ProcessNode :
+    with ProcessNode:
 
   def stringify(intent: Int): String =
-    s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})${
-        bpmnForm.map(_.stringify(intent + 1)).toSeq.mkString(",\n")}""".stripMargin
+    s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})${bpmnForm
+      .map(_.stringify(intent + 1))
+      .toSeq
+      .mkString(",\n")}""".stripMargin
 
   val elemType = NodeKey.userTasks
 
-  def asyncBefore: UserTask = copy(isAsyncBefore = true)
-
-  def asyncAfter: UserTask = copy(isAsyncAfter = true)
+  def withTask(task: Task): UserTask = copy(task = task)
 
   def form(form: BpmnForm): UserTask = copy(bpmnForm = Some(form))
 
