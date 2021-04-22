@@ -11,7 +11,7 @@ import org.camunda.bpm.model.bpmn.builder.*
 import org.camunda.bpm.model.bpmn.impl.instance.ExtensionElementsImpl
 import org.camunda.bpm.model.bpmn.impl.instance.camunda.CamundaFormFieldImpl
 import org.camunda.bpm.model.bpmn.instance.{BpmnModelElementInstance, ConditionExpression, Script}
-import org.camunda.bpm.model.bpmn.instance.camunda.{CamundaConstraint, CamundaFormData, CamundaFormField, CamundaProperties, CamundaProperty, CamundaValidation, CamundaValue}
+import org.camunda.bpm.model.bpmn.instance.camunda.*
 import org.camunda.bpm.model.xml.instance.ModelElementInstance
 import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn => BpmnCamunda, instance => camunda}
 import org.camunda.bpm.model.{bpmn => camundaBpmn}

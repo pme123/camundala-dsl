@@ -24,6 +24,11 @@
       <bpmn2:outgoing>flow7</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:endEvent id="rtztutzu" name="End Process">
+      <bpmn2:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="Input_1b01a9o" />
+        </camunda:inputOutput>
+      </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:serviceTask id="asdfgxx" name="Service Task">

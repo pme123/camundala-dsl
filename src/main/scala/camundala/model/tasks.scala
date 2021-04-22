@@ -6,6 +6,7 @@ import camundala.model.TaskImplementation._
 
 case class Activity(
     ident: Ident,
+    inputParameters: Seq[InOutParameter] = Seq.empty,
     isAsyncBefore: Boolean = false,
     isAsyncAfter: Boolean = false
 ) extends HasIdent
@@ -13,6 +14,8 @@ case class Activity(
       
   def stringify(intent: Int): String = 
     ident.stringify(intent)
+
+  def inputs(params: InOutParameter*): Activity = copy(inputParameters = params)
 
   def asyncBefore: Activity = copy(isAsyncBefore = true)
 
