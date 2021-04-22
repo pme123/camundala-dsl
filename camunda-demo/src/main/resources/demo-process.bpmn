@@ -47,14 +47,14 @@
     <bpmn2:userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" completionQuantity="1" id="UserTaskB" implementation="##unspecified" isForCompensation="false" name="User Task B" startQuantity="1">
       <extensionElements xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
         <camunda:formData>
-          <camunda:formField id="name" label="" type="string">
+          <camunda:formField id="name" label="Name" type="string">
             <camunda:properties/>
             <camunda:validation>
               <camunda:constraint name="required"/>
-              <camunda:constraint config="12" name="minlength"/>
+              <camunda:constraint config="3" name="minlength"/>
             </camunda:validation>
           </camunda:formField>
-          <camunda:formField id="firstName" label="" type="string">
+          <camunda:formField id="firstName" label="First Name" type="string">
             <camunda:properties/>
             <camunda:validation/>
           </camunda:formField>
@@ -136,12 +136,12 @@
             
     
     <bpmn2:sequenceFlow id="IsNOTBar_Fork-UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA">
-      <conditionExpression id="conditionExpression_f4ef09dc-d1a8-4d4c-b6d1-e4b6e4a70719" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
+      <conditionExpression id="conditionExpression_ac4efb49-c72f-42b5-b85b-a4ef2195b6e6" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
     <bpmn2:sequenceFlow id="IsBar_Fork-UserTaskB" name="is Bar" sourceRef="Fork" targetRef="UserTaskB">
-      <conditionExpression id="conditionExpression_e0eafc4b-d520-48a5-b61c-a0e711e07400" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
+      <conditionExpression id="conditionExpression_e88280d1-f3c2-49d1-b3a8-e0ad56eada51" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
     </bpmn2:sequenceFlow>
             
     

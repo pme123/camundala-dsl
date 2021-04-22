@@ -10,8 +10,9 @@ case class Activity(
     isAsyncAfter: Boolean = false
 ) extends HasIdent
     with HasStringify:
-
-  def stringify(intent: Int): String = ident.stringify(intent)
+      
+  def stringify(intent: Int): String = 
+    ident.stringify(intent)
 
   def asyncBefore: Activity = copy(isAsyncBefore = true)
 
@@ -154,6 +155,10 @@ case class ServiceTask(
 
   def withTask(task: Task): ServiceTask = copy(task = task)
 
+  def stringify(intent: Int): String =
+    s"""${intentStr(intent)}${elemType.name}(${task.ident.stringify(0)})
+       |${taskImplementation.stringify(intent + 1)}""".stripMargin
+
   def taskImplementation(taskImplementation: TaskImplementation): ServiceTask =
     copy(taskImplementation = taskImplementation)
 
@@ -174,6 +179,10 @@ case class SendTask(
 
   def taskImplementation(taskImplementation: TaskImplementation): SendTask =
     copy(taskImplementation = taskImplementation)
+
+  def stringify(intent: Int): String =
+    s"""${intentStr(intent)}${elemType.name}(${task.ident.stringify(0)})
+       |${taskImplementation.stringify(intent + 1)}""".stripMargin
 
 case class BusinessRuleTask(
     task: Task,
@@ -197,7 +206,8 @@ case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
     with ProcessNode:
 
   def stringify(intent: Int): String =
-    s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})${bpmnForm
+    s"""${intentStr(intent)}userTask(${task.ident.stringify(0)})
+        |${bpmnForm
       .map(_.stringify(intent + 1))
       .toSeq
       .mkString(",\n")}""".stripMargin

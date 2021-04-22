@@ -12,7 +12,7 @@ import camundala.dsl._
 import scala.language.implicitConversions
 
 trait DSL
-  extends bpmns
+    extends bpmns
     with processes
     with groups
     with users
@@ -22,7 +22,8 @@ trait DSL
     with forms.constraints
     with props
     with tasks
-    with taskImplementations :
+    with taskImplementations
+    with transactions:
 
   def ident(id: String): Ident =
     Ident(id)
@@ -36,7 +37,7 @@ trait DSL
   def tenantId(ti: String): TenantId =
     TenantId(ti)
 
-object DSL extends DSL :
+object DSL extends DSL:
 
   trait Givens:
 
@@ -53,5 +54,3 @@ object DSL extends DSL :
     given Conversion[String, Name] = name(_)
 
   object Givens extends Givens
-
-

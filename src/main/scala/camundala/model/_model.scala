@@ -91,15 +91,9 @@ trait HasTask[T <: HasTransactionBoundary[T]]
 trait HasTaskImplementation[T]:
   def elemType: NodeKey
 
-  def task: Task
-
   def taskImplementation: TaskImplementation
 
   def taskImplementation(taskImplementation: TaskImplementation): T
-
-  def stringify(intent: Int): String =
-    s"""${intentStr(intent)}${elemType.name}(${task.ident.stringify(0)})
-       |${taskImplementation.stringify(intent + 1)}""".stripMargin
 
 trait HasForm[T]:
   def bpmnForm: Option[BpmnForm]
@@ -119,12 +113,6 @@ trait HasTransactionBoundary[T <: HasTransactionBoundary[T]]:
   def asyncBefore: T
 
   def asyncAfter: T
-
-  def unary_~ : T = asyncBefore
-
-  def ~ : T = asyncAfter
-
-  def asyncAround: T = asyncBefore.asyncAfter
 
 opaque type ProcessVarString = Ident
 

@@ -2,12 +2,12 @@ package camundala.dsl
 
 import camundala.model.BusinessRuleTask.{DecisionRef, Dmn}
 import camundala.model.ScriptImplementation.*
-import camundala.model.TaskImplementation.{DelegateExpression, Expression, ExternalTask, JavaClass}
+import camundala.model.TaskImplementation.*
 import camundala.model.*
 
 trait tasks:
-
-  extension[T] (hasTaskImpl: HasTaskImplementation[T])
+  
+  extension [T](hasTaskImpl: HasTaskImplementation[T])
     def expression(expr: String) =
       hasTaskImpl.taskImplementation(Expression(expr))
 
@@ -37,17 +37,25 @@ trait tasks:
   extension (sTask: ScriptTask)
 
     def groovyRef(scriptPath: ScriptPath): ScriptTask =
-      sTask.copy(scriptImplementation = ExternalScript(ScriptLanguage.Groovy, s"$scriptPath.groovy"))
-  
+      sTask.copy(scriptImplementation =
+        ExternalScript(ScriptLanguage.Groovy, s"$scriptPath.groovy")
+      )
+
     def inlineGroovy(script: String): ScriptTask =
-      sTask.copy(scriptImplementation = InlineScript(ScriptLanguage.Groovy, script))
-  
+      sTask.copy(scriptImplementation =
+        InlineScript(ScriptLanguage.Groovy, script)
+      )
+
     def javascriptRef(scriptPath: ScriptPath): ScriptTask =
-      sTask.copy(scriptImplementation = ExternalScript(ScriptLanguage.Javascript, s"$scriptPath.groovy"))
-  
+      sTask.copy(scriptImplementation =
+        ExternalScript(ScriptLanguage.Javascript, s"$scriptPath.groovy")
+      )
+
     def inlineJavascript(script: String): ScriptTask =
-      sTask.copy(scriptImplementation = InlineScript(ScriptLanguage.Javascript, script))
-  
+      sTask.copy(scriptImplementation =
+        InlineScript(ScriptLanguage.Javascript, script)
+      )
+
     def resultVariable(resultVariable: String): ScriptTask =
       sTask.copy(resultVariable = Some(Ident(resultVariable)))
 
@@ -59,7 +67,6 @@ trait tasks:
 
   def userTask(ident: String) =
     UserTask(Ident(ident))
-
 
 trait taskImplementations:
 
@@ -97,10 +104,13 @@ trait taskImplementations:
 
     def version(v: String): Dmn = dmn.copy(binding = RefBinding.Version(v))
 
-    def versionTag(tag: String): Dmn = dmn.copy(binding = RefBinding.VersionTag(tag))
+    def versionTag(tag: String): Dmn =
+      dmn.copy(binding = RefBinding.VersionTag(tag))
 
     def resultVariable(name: String, mapDecisionResult: MapDecisionResult) =
-      dmn.copy(resultVariable = Some(ResultVariable(Name(name), mapDecisionResult)))
+      dmn.copy(resultVariable =
+        Some(ResultVariable(Name(name), mapDecisionResult))
+      )
 
     def singleEntry(name: String): Dmn =
       resultVariable(name, MapDecisionResult.SingleEntry)
@@ -113,5 +123,3 @@ trait taskImplementations:
 
     def resultList(name: String): Dmn =
       resultVariable(name, MapDecisionResult.ResultList)
-
-

@@ -18,6 +18,7 @@ case class BpmnRunner(config: RunnerConfig)
       _ <- putStrLn(bpmn.print())
       audit <- UIO(config.workingBpmnDsl.compareWith(bpmn))
       _ <- putStrLn(audit.log(AuditLevel.WARN))
+      _ <- putStrLn("BPMN DSL:\n" + config.workingBpmnDsl.stringify())
       _ <- config.workingBpmnDsl.toCamunda(config.generatedBpmnPath)
       _ <- putStrLn(s"Generated BPMN to ${config.generatedBpmnPath}")
     } yield ()
@@ -44,13 +45,14 @@ object BpmnRunnerApp extends zio.App with DSL:
         path("camunda-demo/src/main/resources/demo-process.bpmn")
       )
     ).run()
-
+  val admin = group(ident("admin"), name("Administrator"), groupType("system"))
   val isBarVar = "isBar"
   lazy val demoBpmn =
     bpmn("bpmns/with-ids/process-cawemo.bpmn")
       .processes(
         process("TestDSLProcess")
           .starterGroups(
+            admin.ref
           )
           .starterUsers(
           )
@@ -62,9 +64,12 @@ object BpmnRunnerApp extends zio.App with DSL:
               .form(FormKey("my-form")),
             userTask("UserTaskB")
               .form(
-                textField("name").required
-                  .minlength(12),
+                textField("name")
+                  .label("Name")
+                  .required
+                  .minlength(3),
                 textField("firstName")
+                  .label("First Name")
               ),
             scriptTask("ScriptTask")
               .inlineGroovy("""println "hello there" """),
