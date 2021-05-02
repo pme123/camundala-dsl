@@ -1,7 +1,10 @@
+package camundala.examples
+
 import camundala.dsl.DSL
 import camundala.bpmn.*
 import camundala.model.*
-object Main extends App with DSL with DslPrinter:
+
+object PrintBpmnConfigApp extends App with DSL with DslPrinter:
 
   val adminGroup: BpmnGroup =
     group("admin")
@@ -70,9 +73,6 @@ object Main extends App with DSL with DslPrinter:
       .users(testUser, testUser2)
       .groups(adminGroup)
 
-  println(
-    config.print().asString(-1)
-  )
   bpmnsConfig
   .users(
       user("pme123")
@@ -133,4 +133,8 @@ object Main extends App with DSL with DslPrinter:
 
               )
         )
+  )
+
+  println(
+    config.print().asString(-1)
   )

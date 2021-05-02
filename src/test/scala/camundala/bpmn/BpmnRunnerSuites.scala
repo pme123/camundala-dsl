@@ -8,7 +8,7 @@ import zio.test.mock.MockConsole
 import zio.test.mock.Expectation.*
 import zio.test.mock.MockSystem
 import zio.console.Console
-import BpmnRunnerApp.demoBpmn
+import camundala.examples.demoProcess.demoBpmn
 
 object BpmnRunnerSuites
   extends DefaultRunnableSpec
@@ -18,7 +18,7 @@ object BpmnRunnerSuites
     testM("run process") {
       val mockEnv: ULayer[Console] = (
         MockConsole.PutStrLn(equalTo(s"Start Bpmn Runner"), unit) ++
-          MockConsole.PutStrLn(startsWithString("** Generated BPMN DSL:     **")) ++
+          MockConsole.PutStrLn(containsString("bpmn(\"bpmns/with-ids/process-cawemo.bpmn\")")) ++
           MockConsole.PutStrLn(startsWithString("** Compare Audit Log:     **\n")) ++
           MockConsole.PutStrLn(equalTo("Generated BPMN to bpmns/process-generated.bpmn"))
         )
@@ -31,5 +31,6 @@ object BpmnRunnerSuites
       assertM(result)(isUnit)
     }
   )
-    
+
+
 
