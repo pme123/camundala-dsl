@@ -8,9 +8,6 @@ case class SequenceFlows(flows: Seq[SequenceFlow])
   
   val elements: Seq[ProcessElement] = flows
   
-  def stringify(intent: Int): String =
-    stringifyWrap(intent, ".flows", flows)
-
   def :+(process: SequenceFlow): SequenceFlows = SequenceFlows(flows :+ process)
 
 object SequenceFlows:
@@ -24,7 +21,6 @@ case class SequenceFlow(ident: Ident,
   extends ProcessElement 
   with HasProperties[SequenceFlow]:
   
-  def stringify(intent: Int):String = s"""${intentStr(intent)}sequenceFlow("${ident}")"""
   def prop(prop: Property): SequenceFlow = copy(properties = properties :+ prop)
 
   def elemType: NodeKey = NodeKey.sequenceFlows

@@ -2,11 +2,7 @@ package camundala.model
 
 import camundala.model.BpmnProcess.NodeKey
 
-case class BpmnProcesses(processes: Seq[BpmnProcess])
-  extends HasStringify :
-
-  def stringify(intent: Int): String =
-    stringifyWrap(intent, "processes", processes)
+case class BpmnProcesses(processes: Seq[BpmnProcess]) :
 
   def :+(process: BpmnProcess): BpmnProcesses = BpmnProcesses(processes :+ process)
 
@@ -20,18 +16,9 @@ case class BpmnProcess(
                         nodes: ProcessNodes = ProcessNodes.none,
                         flows: SequenceFlows = SequenceFlows.none
                       )
-  extends HasGroups[BpmnProcess]
-    with HasStringify :
-  val elements = nodes.elements ++ flows.elements
-  def stringify(intent: Int): String =
-    s"""${intentStr(intent)}process(${ident.stringify(0)})
-    |${
-      Seq(stringifyWrap(intent + 1, ".starterGroups", starterGroups),
-        stringifyWrap(intent + 1, ".starterUsers", starterUsers),
-        nodes.stringify(intent + 1),
-        flows.stringify(intent + 1)
-      ).mkString(s"\n")
-    }""".stripMargin
+  extends HasGroups[BpmnProcess] :
+
+    val elements = nodes.elements ++ flows.elements
 
 object BpmnProcess:
 
@@ -103,8 +90,7 @@ object BpmnProcess:
 
       override def toString: String = "sequenceFlows"
 
-trait ProcessElements 
-  extends HasStringify:
+trait ProcessElements:
   
   def elements: Seq[ProcessElement]
 
@@ -112,16 +98,12 @@ case class ProcessNodes(nodes: Seq[ProcessNode])
   extends ProcessElements :
   
   val elements: Seq[ProcessElement] = nodes
-  
-  def stringify(intent: Int): String =
-    stringifyWrap(intent, ".nodes", nodes)
 
 object ProcessNodes:
 
   val none = ProcessNodes(Nil)
 
-trait ProcessElement
-  extends HasStringify :
+trait ProcessElement :
   
   def elemType: NodeKey
 
@@ -130,9 +112,6 @@ trait ProcessElement
   def ref: ProcessElementRef = ProcessElementRef(ident.toString)
 
 opaque type ProcessElementRef = String
-
-extension (ref: ProcessElementRef)
-  def stringify(intent: Int = 0): String = s"""${intentStr(intent)}"$ref""""
 
 object ProcessElementRef:
   def apply(ref: String): ProcessElementRef = ref

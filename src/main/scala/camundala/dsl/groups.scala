@@ -8,10 +8,14 @@ trait groups:
   def groups(groups:BpmnGroup*) =
     BpmnGroups(groups)
     
-  def group(refStr: String): GroupRef = GroupRef(refStr)
+  def group(ident: String): BpmnGroup =
+    BpmnGroup(Ident(ident))
 
-  def group(ident: Ident, name: Name, groupType: GroupType): BpmnGroup =
-    BpmnGroup(ident, Some(name), groupType)
+  extension (group: BpmnGroup)
 
-  def groupType(typ: String): GroupType =
-    GroupType(typ)
+    def name(name: String): BpmnGroup =
+      group.copy(maybeName = Some(Name(name)))
+    def groupType(gType: String): BpmnGroup =
+      group.copy(`type` = GroupType(gType))
+
+  end extension

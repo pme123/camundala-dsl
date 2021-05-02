@@ -5,23 +5,21 @@ import camundala.model.BpmnUser._
 
 trait users:
 
-  def users(users:BpmnUser*) =
+  def users(users: BpmnUser*) =
     BpmnUsers(users)
-    
-  def user(username: String) =
-    UserRef(username)
-    
-  def user(username: Username, groupRefs: GroupRefs): BpmnUser =
-    BpmnUser(username, groupRefs = groupRefs)
 
-  def user(ident: Username, lastName: Name, firstName: FirstName, email: Email, groupRefs: GroupRefs): BpmnUser =
-    BpmnUser(ident, Some(lastName), Some(firstName), Some(email), groupRefs)
+  def user(username: String): BpmnUser =
+    BpmnUser(Username(username))
 
-  def username(name: String): Username = Username(name)
+  extension (user: BpmnUser)
 
-  def firstName(name: String): FirstName = FirstName(name)
+    def name(name: String): BpmnUser =
+      user.copy(maybeName = Some(Name(name)))
+    def firstName(name: String): BpmnUser =
+      user.copy(maybeFirstName = Some(FirstName(name)))
+    def email(email: String): BpmnUser =
+      user.copy(maybeEmail = Some(Email(email)))
+    def group(groupRef: GroupRef | String): BpmnUser =
+      user.copy(groupRefs = user.groupRefs :+ GroupRef(groupRef.toString))
 
-  def email(email: String): Email = Email(email)
-
-  def groupRefs(gRefs: GroupRef*) = GroupRefs(gRefs)
-
+  end extension

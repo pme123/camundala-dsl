@@ -14,7 +14,7 @@
   </bpmn2:collaboration>
       
   
-  <bpmn2:process camunda:candidateStarterGroups="" camunda:candidateStarterUsers="" id="TestDSLProcess" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
+  <bpmn2:process camunda:candidateStarterGroups="admin" camunda:candidateStarterUsers="admin" id="TestDSLProcess" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
             
     
     <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="Fork" name="Fork">
@@ -32,7 +32,7 @@
     </bpmn2:exclusiveGateway>
             
     
-    <bpmn2:userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="my-form" completionQuantity="1" id="UserTaskA" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
+    <bpmn2:userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="my-form-key" completionQuantity="1" id="UserTaskA" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
                   
       
       <bpmn2:incoming>IsNOTBar_Fork-UserTaskA</bpmn2:incoming>
@@ -65,7 +65,7 @@
       <bpmn2:incoming>IsBar_Fork-UserTaskB</bpmn2:incoming>
                   
       
-      <bpmn2:outgoing>flow6_UserTaskB-gatewayJoin</bpmn2:outgoing>
+      <bpmn2:outgoing>flow6_UserTaskB-Asdfdsf</bpmn2:outgoing>
                 
     
     </bpmn2:userTask>
@@ -74,10 +74,10 @@
     <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="gatewayJoin">
                   
       
-      <bpmn2:incoming>flow6_UserTaskB-gatewayJoin</bpmn2:incoming>
+      <bpmn2:incoming>flow5_UserTaskA-gatewayJoin</bpmn2:incoming>
                   
       
-      <bpmn2:incoming>flow5_UserTaskA-gatewayJoin</bpmn2:incoming>
+      <bpmn2:incoming>Flow_1i69u7d_Asdfdsf-gatewayJoin</bpmn2:incoming>
                   
       
       <bpmn2:outgoing>flow7_gatewayJoin-ScriptTask</bpmn2:outgoing>
@@ -87,6 +87,21 @@
             
     
     <bpmn2:endEvent id="EndProcess" name="End Process">
+                  
+      
+      <bpmn2:extensionElements>
+                        
+        
+        <camunda:inputOutput>
+                              
+          
+          <camunda:inputParameter name="Input_1b01a9o"/>
+                            
+        
+        </camunda:inputOutput>
+                      
+      
+      </bpmn2:extensionElements>
                   
       
       <bpmn2:incoming>SequenceFlow_9_ScriptTask-EndProcess</bpmn2:incoming>
@@ -136,16 +151,16 @@
             
     
     <bpmn2:sequenceFlow id="IsNOTBar_Fork-UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA">
-      <conditionExpression id="conditionExpression_ac4efb49-c72f-42b5-b85b-a4ef2195b6e6" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
+      <conditionExpression id="conditionExpression_3a0a0190-cda8-466d-b65a-f2b757fca2ad" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
     <bpmn2:sequenceFlow id="IsBar_Fork-UserTaskB" name="is Bar" sourceRef="Fork" targetRef="UserTaskB">
-      <conditionExpression id="conditionExpression_e88280d1-f3c2-49d1-b3a8-e0ad56eada51" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
+      <conditionExpression id="conditionExpression_72e20959-1256-4f2d-a7ef-84e620a2cbd3" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
-    <bpmn2:sequenceFlow id="flow6_UserTaskB-gatewayJoin" name="" sourceRef="UserTaskB" targetRef="gatewayJoin"/>
+    <bpmn2:sequenceFlow id="flow6_UserTaskB-Asdfdsf" name="" sourceRef="UserTaskB" targetRef="Event_12wc9ij"/>
             
     
     <bpmn2:sequenceFlow id="flow5_UserTaskA-gatewayJoin" name="" sourceRef="UserTaskA" targetRef="gatewayJoin"/>
@@ -155,6 +170,27 @@
             
     
     <bpmn2:sequenceFlow id="SequenceFlow_9_ScriptTask-EndProcess" name="" sourceRef="ScriptTask" targetRef="EndProcess"/>
+            
+    
+    <bpmn2:boundaryEvent attachedToRef="UserTaskB" cancelActivity="true" id="Event_1r2fsmi" name="asdfasdf" parallelMultiple="false"/>
+            
+    
+    <bpmn2:sequenceFlow id="Flow_1i69u7d_Asdfdsf-gatewayJoin" sourceRef="Event_12wc9ij" targetRef="gatewayJoin"/>
+            
+    
+    <bpmn2:intermediateThrowEvent id="Event_12wc9ij" name="asdfdsf">
+                  
+      
+      <bpmn2:incoming>flow6_UserTaskB-Asdfdsf</bpmn2:incoming>
+                  
+      
+      <bpmn2:outgoing>Flow_1i69u7d_Asdfdsf-gatewayJoin</bpmn2:outgoing>
+                  
+      
+      <bpmn2:messageEventDefinition id="MessageEventDefinition_18fah7s"/>
+                
+    
+    </bpmn2:intermediateThrowEvent>
           
   
   </bpmn2:process>
@@ -226,19 +262,13 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="flow6_UserTaskB-gatewayJoin" id="BPMNEdge_SequenceFlow_5" sourceElement="_BPMNShape_UserTask_3" targetElement="_BPMNShape_ExclusiveGateway_3">
+      <bpmndi:BPMNEdge bpmnElement="flow6_UserTaskB-Asdfdsf" id="BPMNEdge_SequenceFlow_5" sourceElement="_BPMNShape_UserTask_3" targetElement="Event_01nq4gy_di">
                         
         
         <di:waypoint x="646" y="314"/>
                         
         
-        <di:waypoint x="671" y="314"/>
-                        
-        
-        <di:waypoint x="721" y="314"/>
-                        
-        
-        <di:waypoint x="721" y="243"/>
+        <di:waypoint x="703" y="314"/>
                         
         
         <bpmndi:BPMNLabel>
@@ -320,6 +350,18 @@
                         
         
         <di:waypoint x="292" y="219"/>
+                      
+      
+      </bpmndi:BPMNEdge>
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="Flow_1i69u7d_Asdfdsf-gatewayJoin" id="Flow_1i69u7d_di">
+                        
+        
+        <di:waypoint x="721" y="296"/>
+                        
+        
+        <di:waypoint x="721" y="243"/>
                       
       
       </bpmndi:BPMNEdge>
@@ -428,6 +470,42 @@
                         
         
         <dc:Bounds height="80" width="100" x="796" y="178"/>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Event_12wc9ij" id="Event_01nq4gy_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="703" y="296"/>
+                        
+        
+        <bpmndi:BPMNLabel>
+                              
+          
+          <dc:Bounds height="14" width="36" x="703" y="339"/>
+                            
+        
+        </bpmndi:BPMNLabel>
+                      
+      
+      </bpmndi:BPMNShape>
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="Event_1r2fsmi" id="Event_1tumxeo_di">
+                        
+        
+        <dc:Bounds height="36" width="36" x="602" y="336"/>
+                        
+        
+        <bpmndi:BPMNLabel>
+                              
+          
+          <dc:Bounds height="14" width="42" x="599" y="379"/>
+                            
+        
+        </bpmndi:BPMNLabel>
                       
       
       </bpmndi:BPMNShape>

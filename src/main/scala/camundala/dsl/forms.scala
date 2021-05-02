@@ -2,34 +2,47 @@ package camundala.dsl
 
 import camundala.dsl.forms.{EnumFieldAttr, FieldAttr}
 import camundala.model.Constraint._
-import camundala.model.GeneratedForm.FormFieldType.{BooleanType, DateType, EnumType, LongType, StringType}
-import camundala.model.GeneratedForm.{DefaultValue, EnumValue, EnumValues, FormField, FormFieldType, Label}
+import camundala.model.GeneratedForm.FormFieldType.{
+  BooleanType,
+  DateType,
+  EnumType,
+  LongType,
+  StringType
+}
+import camundala.model.GeneratedForm.{
+  DefaultValue,
+  EnumValue,
+  EnumValues,
+  FormField,
+  FormFieldType,
+  Label
+}
 import camundala.model._
 
 trait forms:
 
-  extension[T] (hasForm: HasForm[T])
-      def form(formRef: FormKey): T =
-        hasForm.form(EmbeddedForm(formRef))
+  extension[T](hasForm: HasForm[T])
+    def form(formRef: FormKey): T =
+      hasForm.form(EmbeddedForm(formRef))
 
-      def form(formFields: FormField*): T =
-        hasForm.form(GeneratedForm(formFields))
-
+    def form(formFields: FormField*): T =
+      hasForm.form(GeneratedForm(formFields))
 
   def formKey(key: String): FormKey = FormKey(key)
 
   def formField(id: String, fieldType: FormFieldType): FormField =
-    FormField(Ident(id),
-   /*   constraints = Constraints(fieldAttrs.collect { case c: Constraint => c }),
+    FormField(
+      Ident(id),
+      /*   constraints = Constraints(fieldAttrs.collect { case c: Constraint => c }),
       properties = Properties(fieldAttrs.collect { case p: Property => p }),
       values = EnumValues(fieldAttrs.collect { case v: EnumValue => v }),
       label = fieldAttrs.collect { case l: Label => l }.headOption, // this works as it is the only opaque type
       defaultValue = fieldAttrs.collect { case v: String => DefaultValue(v) }.headOption, // this works as it is the only opaque type
-    */  `type` = fieldType
+       */ `type` = fieldType
     )
 
   def textField(id: String): FormField =
-     formField(id, StringType)
+    formField(id, StringType)
 
   def stringField(id: String): FormField =
     formField(id, StringType)
@@ -47,11 +60,13 @@ trait forms:
     formField(id, EnumType)
 
   extension (formField: FormField)
-    def enumValue(id: String, name: String): FormField = 
-       formField.copy(values = formField.values :+  EnumValue(Ident(id), Name(name)))
+    def enumValue(id: String, name: String): FormField =
+      formField.copy(values =
+        formField.values :+ EnumValue(Ident(id), Name(name))
+      )
 
     def defaultValue(value: String): FormField =
-      formField.copy(defaultValue = Some(DefaultValue(value))) 
+      formField.copy(defaultValue = Some(DefaultValue(value)))
 
     def label(value: String): FormField =
       formField.copy(label = Some(Label(value)))
@@ -63,18 +78,26 @@ object forms:
   type EnumFieldAttr = FieldAttr | EnumValue
 
   trait constraints:
-    extension (field: FormField)
-      def readonly: FormField = field.copy(constraints = field.constraints :+ Readonly)
+    extension(field: FormField)
+      def readonly: FormField =
+        field.copy(constraints = field.constraints :+ Readonly)
 
-      def required: FormField =field.copy(constraints = field.constraints :+ Required) 
+      def required: FormField =
+        field.copy(constraints = field.constraints :+ Required)
 
-      def minlength(value: Int): FormField = field.copy(constraints = field.constraints :+ Minlength(value))
+      def minlength(value: Int): FormField =
+        field.copy(constraints = field.constraints :+ Minlength(value))
 
-      def maxlength(value: Int): FormField = field.copy(constraints = field.constraints :+ Maxlength(value))
+      def maxlength(value: Int): FormField =
+        field.copy(constraints = field.constraints :+ Maxlength(value))
 
-      def min(value: Int): FormField = field.copy(constraints = field.constraints :+ Min(value))
+      def min(value: Int): FormField =
+        field.copy(constraints = field.constraints :+ Min(value))
 
-      def max(value: Int): FormField = field.copy(constraints = field.constraints :+ Max(value))
+      def max(value: Int): FormField =
+        field.copy(constraints = field.constraints :+ Max(value))
 
-      def custom(name: Ident): FormField = field.copy(constraints = field.constraints :+ Custom(name))
-      def custom(name: Ident, value: String): FormField = field.copy(constraints = field.constraints :+ Custom(name, Some(value)))
+      def custom(name: Ident): FormField =
+        field.copy(constraints = field.constraints :+ Custom(name))
+      def custom(name: Ident, value: String): FormField =
+        field.copy(constraints = field.constraints :+ Custom(name, Some(value)))

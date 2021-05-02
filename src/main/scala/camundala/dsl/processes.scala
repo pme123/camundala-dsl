@@ -8,11 +8,11 @@ trait processes:
     BpmnProcess(Ident(ident))
 
   extension (process: BpmnProcess)
-    def starterGroups(groups: GroupRef*) =
-      process.copy(starterGroups = CandidateGroups(groups))
+    def starterGroup(group: GroupRef | String) =
+      process.copy(starterGroups = process.starterGroups :+ GroupRef(group.toString))
 
-    def starterUsers(users: UserRef*) =
-      process.copy(starterUsers = CandidateUsers(users))
+    def starterUser(user: UserRef | String) =
+      process.copy(starterUsers = process.starterUsers :+ UserRef(user.toString))
 
     def nodes(processNodes: ProcessNode*) =
       process.copy(nodes = ProcessNodes(processNodes))

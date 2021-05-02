@@ -5,27 +5,18 @@ import camundala.model.*
 import camundala.model.Constraint.*
 import camundala.model.GeneratedForm.*
 
-sealed trait BpmnForm extends HasStringify
+sealed trait BpmnForm
 
 case class EmbeddedForm(formKey: FormKey)
-  extends BpmnForm :
-
-  def stringify(intent: Int): String =
-    formKey.stringify(intent)
+  extends BpmnForm
 
 opaque type FormKey = String
 
 object FormKey:
   def apply(formKey: String): FormKey = formKey
 
-  extension (formKey: FormKey)
-    def stringify(intent: Int): String = s"""${intentStr(intent)}.formKey("$formKey")"""
-
 case class GeneratedForm(fields: Seq[FormField] = Seq.empty)
-  extends BpmnForm :
-
-  def stringify(intent: Int): String =
-    stringifyWrap(intent, ".form", fields)
+  extends BpmnForm
 
 object GeneratedForm:
 
@@ -38,30 +29,18 @@ object GeneratedForm:
                        values: EnumValues = EnumValues.none,
                        constraints: Constraints = Constraints.none,
                        properties: Properties = Properties.none)
-    extends HasStringify 
-    with HasProperties[FormField]:
-
-    def stringify(intent: Int): String =
-      stringifyElements(intent + 1, `type`.name + s"Field(${id.stringify(0)})",
-        constraints.constraints.map(_.stringify(0)) ++
-          properties.properties.map(_.stringify()) ++
-          label.map(_.stringify(0)).toSeq ++
-          defaultValue.map(_.stringify(0)).toSeq: _*)
+    extends HasProperties[FormField]:
 
     def prop(prop: Property): FormField =
       copy(properties = properties :+ prop)
 
 
-  case class Label(str: String):
-    def stringify(intent: Int): String = s"""${intentStr(intent)}label("$str")"""
+  case class Label(str: String)
 
   opaque type DefaultValue = String
 
   object DefaultValue:
     def apply(value: String): DefaultValue = value
-
-  extension (value: DefaultValue)
-    def stringify(intent: Int): String = s"""${intentStr(intent)}defaultValue("$value")"""
 
   case class EnumValues(enums: Seq[EnumValue]) :
     def :+ (value: EnumValue) = EnumValues(enums :+ value)
@@ -98,8 +77,7 @@ case class Constraints(constraints: Seq[Constraint]) :
 object Constraints:
   def none = Constraints(Seq.empty)
 
-sealed trait Constraint
-  extends HasStringify :
+sealed trait Constraint :
   def name: Ident
 
   def config: Option[String]
@@ -107,35 +85,23 @@ sealed trait Constraint
 object Constraint:
 
   case class Custom(name: Ident, config: Option[String] = None)
-    extends Constraint :
-
-    def stringify(intent: Int): String = config match {
-      case None => s"""${intentStr(intent)}custom(${name.stringify(0)})"""
-      case Some(value) => s"""${intentStr(intent)}custom(${name.stringify(0)}, "$value")"""
-    }
+    extends Constraint 
 
   case object Required extends Constraint :
     val name: Ident = Ident("required")
 
     val config: Option[String] = None
 
-    def stringify(intent: Int): String = s"${intentStr(intent)}required"
-
-
   case object Readonly extends Constraint :
     val name: Ident = Ident("readonly")
 
     val config: Option[String] = None
-
-    def stringify(intent: Int): String = s"${intentStr(intent)}readonly"
 
   sealed trait MinMax extends Constraint :
 
     def value: Int
 
     val config: Option[String] = Some(s"$value")
-
-    def stringify(intent: Int): String = s"${intentStr(intent)}$name($value)"
 
   case class Minlength(value: Int)extends MinMax :
     val name: Ident = Ident("minlength")

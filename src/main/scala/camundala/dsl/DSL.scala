@@ -23,6 +23,7 @@ trait DSL
     with props
     with tasks
     with taskImplementations
+    with parameters
     with transactions:
 
   def ident(id: String): Ident =

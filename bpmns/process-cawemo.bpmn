@@ -19,8 +19,8 @@
       <bpmn2:outgoing>flow6</bpmn2:outgoing>
     </bpmn2:userTask>
     <bpmn2:exclusiveGateway id="gatewayJoin">
-      <bpmn2:incoming>flow6</bpmn2:incoming>
       <bpmn2:incoming>flow5</bpmn2:incoming>
+      <bpmn2:incoming>Flow_1i69u7d</bpmn2:incoming>
       <bpmn2:outgoing>flow7</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:endEvent id="rtztutzu" name="End Process">
@@ -46,10 +46,17 @@
     <bpmn2:sequenceFlow id="flow2" name="" sourceRef="asdfgxx" targetRef="gatewayFork" />
     <bpmn2:sequenceFlow id="flowIsNotBar" name="is NOT bar" sourceRef="gatewayFork" targetRef="asdfdsf" />
     <bpmn2:sequenceFlow id="flowIsBar" name="is Bar" sourceRef="gatewayFork" targetRef="userTaskB" />
-    <bpmn2:sequenceFlow id="flow6" name="" sourceRef="userTaskB" targetRef="gatewayJoin" />
+    <bpmn2:sequenceFlow id="flow6" name="" sourceRef="userTaskB" targetRef="Event_12wc9ij" />
     <bpmn2:sequenceFlow id="flow5" name="" sourceRef="asdfdsf" targetRef="gatewayJoin" />
     <bpmn2:sequenceFlow id="flow7" name="" sourceRef="gatewayJoin" targetRef="sdfsdf" />
     <bpmn2:sequenceFlow id="SequenceFlow_9" name="" sourceRef="sdfsdf" targetRef="rtztutzu" />
+    <bpmn2:boundaryEvent id="Event_1r2fsmi" name="asdfasdf" attachedToRef="userTaskB" />
+    <bpmn2:sequenceFlow id="Flow_1i69u7d" sourceRef="Event_12wc9ij" targetRef="gatewayJoin" />
+    <bpmn2:intermediateThrowEvent id="Event_12wc9ij" name="asdfdsf">
+      <bpmn2:incoming>flow6</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1i69u7d</bpmn2:outgoing>
+      <bpmn2:messageEventDefinition id="MessageEventDefinition_18fah7s" />
+    </bpmn2:intermediateThrowEvent>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1fhw5dw">
@@ -73,11 +80,9 @@
           <dc:Bounds x="1046" y="172" width="6" height="6" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="flow6" sourceElement="_BPMNShape_UserTask_3" targetElement="_BPMNShape_ExclusiveGateway_3">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="flow6" sourceElement="_BPMNShape_UserTask_3" targetElement="Event_01nq4gy_di">
         <di:waypoint x="646" y="314" />
-        <di:waypoint x="671" y="314" />
-        <di:waypoint x="721" y="314" />
-        <di:waypoint x="721" y="243" />
+        <di:waypoint x="703" y="314" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="998" y="364" width="6" height="6" />
         </bpmndi:BPMNLabel>
@@ -105,6 +110,10 @@
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="flow1" sourceElement="_BPMNShape_StartEvent_2" targetElement="_BPMNShape_ServiceTask_2">
         <di:waypoint x="242" y="219" />
         <di:waypoint x="292" y="219" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1i69u7d_di" bpmnElement="Flow_1i69u7d">
+        <di:waypoint x="721" y="296" />
+        <di:waypoint x="721" y="243" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_ExclusiveGateway_2" bpmnElement="gatewayFork" isMarkerVisible="true">
         <dc:Bounds x="442" y="194" width="50" height="50" />
@@ -141,6 +150,18 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_16o34d6_di" bpmnElement="sdfsdf">
         <dc:Bounds x="796" y="178" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01nq4gy_di" bpmnElement="Event_12wc9ij">
+        <dc:Bounds x="703" y="296" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="703" y="339" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1tumxeo_di" bpmnElement="Event_1r2fsmi">
+        <dc:Bounds x="602" y="336" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="599" y="379" width="42" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

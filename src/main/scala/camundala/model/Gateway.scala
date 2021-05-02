@@ -18,10 +18,6 @@ case class ExclusiveGateway(ident: Ident,
 
   def asyncAfter: ExclusiveGateway = copy(isAsyncAfter = true)
 
-  def stringify(intent: Int): String =
-    val defaultFlowStr: Seq[String] = defaultFlow.map(d => s"defaultFlow(${d.stringify(0)})").toSeq
-    stringifyElements(intent, s"exclusiveGateway(${ident.stringify()})", defaultFlowStr: _*)
-
 case class ParallelGateway(ident: Ident,
                            properties: Properties = Properties.none,
                            //  inFlows: Seq[SequenceFlow] = Seq.empty,
@@ -34,8 +30,5 @@ case class ParallelGateway(ident: Ident,
   def asyncBefore: ParallelGateway = copy(isAsyncBefore = true)
 
   def asyncAfter: ParallelGateway = copy(isAsyncAfter = true)
-
-  def stringify(intent: Int): String =
-    stringifyElements(intent, "parallelGateway", ident.toString)
 
 

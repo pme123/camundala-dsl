@@ -26,8 +26,8 @@ object ToCamundaBpmnSuites
     bpmn("src/test/resources/process.bpmn")
       .processes(
         process("testDslProcess")
-          .starterUsers(user("Darth.Vader"))
-          .starterGroups(group("admin"))
+          .starterUser("Darth.Vader")
+          .starterGroup("admin")
           .nodes(
             startEvent("startEvent")
               .form(

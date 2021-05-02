@@ -1,22 +1,15 @@
 package camundala.model
 
 import camundala.model.BpmnProcess.NodeKey
+sealed trait Event extends HasIdent with ProcessNode
 
 case class StartEvent(
     ident: Ident,
     bpmnForm: Option[BpmnForm] = None,
     isAsyncBefore: Boolean = false,
     isAsyncAfter: Boolean = false
-) extends HasStringify
-    with HasIdent
-    with HasForm[StartEvent]
-    with ProcessNode:
-
-  def stringify(intent: Int): String =
-    s"""${intentStr(intent)}startEvent(${ident.stringify()})${bpmnForm
-      .map("\n" + _.stringify(intent + 1))
-      .toSeq
-      .mkString}""".stripMargin
+) extends Event
+    with HasForm[StartEvent]:
 
   def elemType = NodeKey.startEvents
 
@@ -31,13 +24,8 @@ case class EndEvent(
     inputParameters: Seq[InOutParameter] = Seq.empty,
     isAsyncBefore: Boolean = false,
     isAsyncAfter: Boolean = false
-) extends HasStringify
-    with HasIdent
-    with HasInputParameters[EndEvent]
-    with ProcessNode:
-
-  def stringify(intent: Int): String =
-    s"""${intentStr(intent)}endEvent(${ident.stringify()})""".stripMargin
+) extends Event
+    with HasInputParameters[EndEvent]:
 
   def elemType = NodeKey.endEvents
 
