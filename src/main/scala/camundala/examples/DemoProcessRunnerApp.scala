@@ -1,6 +1,5 @@
 package camundala.examples
 
-import camundala.bpmn.DemoProcessRunnerApp.path
 import camundala.bpmn.*
 import camundala.dsl.DSL
 

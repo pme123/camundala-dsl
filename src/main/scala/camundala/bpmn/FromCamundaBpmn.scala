@@ -39,7 +39,9 @@ trait FromCamundaBpmn
       } yield bpmn(outputPath.toString).processes(processes: _*))
         .mapError {
           case Some(ex: FromCamundaException) => ex
-          case t: Throwable => FromCamundaException(t.getMessage)
+          case t: Throwable => 
+            t.printStackTrace
+            FromCamundaException(t.getMessage)
         }
     }
 
@@ -122,8 +124,11 @@ trait FromCamundaBpmn
       name match
         case Some(n) =>
           n.split(" ").map(_.capitalize).mkString
+          .replaceAll("[^a-zA-Z0-9]", "")
         case None =>
           camObj.getId
-    ).mapError(ex => FromCamundaException(s"Could not create an Ident for $elemType / $name"))
+    ).mapError(ex => 
+      ex.printStackTrace
+      FromCamundaException(s"Could not create an Ident for $elemType / $name"))
 
 case class FromCamundaException(msg: String)
