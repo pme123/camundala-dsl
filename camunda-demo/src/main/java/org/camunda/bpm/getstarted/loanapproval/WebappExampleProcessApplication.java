@@ -40,10 +40,11 @@ public class WebappExampleProcessApplication {
 
     @EventListener
     private void processPostDeploy(PostDeployEvent event) {
-        Map<String, Object> variables = new HashMap<>();
+ /*       Map<String, Object> variables = new HashMap<>();
         variables.put("fooVar", "Started by Spring");
         runtimeService
                 .startProcessInstanceByKey("TestDSLProcess", variables);
-    }
+  */  }
+  */  }
 
 }
