@@ -62,7 +62,7 @@ trait ToCamundaBpmn:
         _ <- UIO(cProcess.setCamundaCandidateStarterUsersList(users.asJava))
       } yield ()
 
-  extension (procElement: ProcessElement)
+  extension (procElement: HasProcessElement[_])
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
       (for {
         _ <- mergeElem

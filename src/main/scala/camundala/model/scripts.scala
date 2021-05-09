@@ -1,7 +1,7 @@
 package camundala.model
 
 import camundala.model.*
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 import camundala.model.ScriptImplementation.{ExternalScript, InlineScript, ScriptPath}
 import camundala.model.TaskImplementation.Expression
 
@@ -9,9 +9,8 @@ case class ScriptTask(task: Task,
                       scriptImplementation: ScriptImplementation = InlineScript(ScriptLanguage.Groovy, ""),
                       resultVariable: Option[Ident] = None
                      )
-  extends HasTask[ScriptTask]
-    with ProcessNode :
-  val elemType = NodeKey.userTasks
+  extends HasTask[ScriptTask]:
+  val elemType = ElemKey.userTasks
 
   def withTask(task: Task): ScriptTask = copy(task = task)
 

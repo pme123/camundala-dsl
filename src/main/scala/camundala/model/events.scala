@@ -1,36 +1,37 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
-sealed trait Event extends HasIdent with ProcessNode
+import camundala.model.BpmnProcess.ElemKey
+
+trait HasEvent[T <: HasEvent[T]] extends HasProcessNode[T]
 
 case class StartEvent(
-    ident: Ident,
-    bpmnForm: Option[BpmnForm] = None,
-    isAsyncBefore: Boolean = false,
-    isAsyncAfter: Boolean = false
-) extends Event
+    processNode: ProcessNode,
+    bpmnForm: Option[BpmnForm] = None
+) extends HasEvent[StartEvent]
     with HasForm[StartEvent]:
+  def elemType = ElemKey.startEvents
 
-  def elemType = NodeKey.startEvents
-
-  def asyncBefore: StartEvent = copy(isAsyncBefore = true)
-
-  def asyncAfter: StartEvent = copy(isAsyncAfter = true)
+  def withProcessNode(processNode: ProcessNode): StartEvent =
+    copy(processNode = processNode)
 
   def form(form: BpmnForm): StartEvent = copy(bpmnForm = Some(form))
 
+object StartEvent :
+
+  def apply(ident: String): StartEvent =
+    StartEvent(ProcessNode(ident))
+
+
 case class EndEvent(
-    ident: Ident,
-    inputParameters: Seq[InOutParameter] = Seq.empty,
-    isAsyncBefore: Boolean = false,
-    isAsyncAfter: Boolean = false
-) extends Event
+    processNode: ProcessNode,
+    inputParameters: Seq[InOutParameter] = Seq.empty
+) extends HasEvent[EndEvent]
     with HasInputParameters[EndEvent]:
 
-  def elemType = NodeKey.endEvents
+  def elemType = ElemKey.endEvents
 
   def inputs(params: InOutParameter*): EndEvent = copy(inputParameters = params)
 
-  def asyncBefore: EndEvent = copy(isAsyncBefore = true)
-
-  def asyncAfter: EndEvent = copy(isAsyncAfter = true)
+object EndEvent:
+  def apply(ident: String): EndEvent =
+    EndEvent(ProcessNode(ident))

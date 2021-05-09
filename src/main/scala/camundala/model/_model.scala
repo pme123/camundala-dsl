@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 import camundala.model.GeneratedForm.FormField
 
 //type IdRegex = MatchesRegex["""^[a-zA-Z_][\w\-\.]+$"""]
@@ -29,36 +29,25 @@ object TenantId:
 trait HasIdent:
   def ident: Ident
 
-trait HasActivity[T <: HasTransactionBoundary[T]]
-    extends HasIdent
-    with HasTransactionBoundary[T]
+trait HasActivity[T <: HasActivity[T]]
+    extends HasProcessNode[T]
     with HasInputParameters[T]:
 
   def activity: Activity
 
   def inputParameters = activity.inputParameters
 
-  def isAsyncBefore: Boolean = activity.isAsyncBefore
-
-  def isAsyncAfter: Boolean = activity.isAsyncAfter
-
-  lazy val ident: Ident = activity.ident
-
-trait HasTask[T <: HasTransactionBoundary[T]] extends HasActivity[T]:
+trait HasTask[T <: HasTask[T]] extends HasActivity[T]:
   def task: Task
 
   def withTask(task: Task): T
 
   lazy val activity = task.activity
 
-  def asyncBefore: T = withTask(task.copy(activity = activity.asyncBefore))
-
-  def asyncAfter: T = withTask(task.copy(activity = activity.asyncAfter))
-
   def inputs(params: InOutParameter*): T = withTask(task.copy(activity = activity.inputs(params:_*)))
 
 trait HasTaskImplementation[T]:
-  def elemType: NodeKey
+  def elemType: ElemKey
 
   def taskImplementation: TaskImplementation
 

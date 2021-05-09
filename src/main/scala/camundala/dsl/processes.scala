@@ -14,7 +14,7 @@ trait processes:
     def starterUser(user: UserRef | String) =
       process.copy(starterUsers = process.starterUsers :+ UserRef(user.toString))
 
-    def nodes(processNodes: ProcessNode*) =
+    def nodes(processNodes: HasProcessNode[_]*) =
       process.copy(nodes = ProcessNodes(processNodes))
 
     def flows(processFlows: SequenceFlow*) =

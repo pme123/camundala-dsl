@@ -1,6 +1,6 @@
 package camundala.dsl
 
-import camundala.model.BusinessRuleTask.{DecisionRef, Dmn}
+import camundala.model.BusinessRuleTaskImpl.{DecisionRef, Dmn}
 import camundala.model.ScriptImplementation.*
 import camundala.model.TaskImplementation.*
 import camundala.model.*
@@ -24,15 +24,15 @@ trait tasks:
       hasTaskImpl.taskImplementation(ExternalTask(topic: String))
 
   def serviceTask(ident: String) =
-    ServiceTask(Ident(ident))
+    ServiceTask(ident)
 
   def sendTask(ident: String) =
-    SendTask(Task(Ident(ident)))
+    SendTask(Task(ident))
 
   def scriptTask(ident: String) =
   //   scriptImplementation: ScriptImplementation,
   // resultVariable: Option[Ident] = None) =
-    ScriptTask(Task(Ident(ident)))
+    ScriptTask(Task(ident))
 
   extension (sTask: ScriptTask)
 
@@ -60,13 +60,13 @@ trait tasks:
       sTask.copy(resultVariable = Some(Ident(resultVariable)))
 
   def businessRuleTask(ident: String) =
-    BusinessRuleTask(Task(Ident(ident)))
+    BusinessRuleTask(Task(ident))
 
   extension (brTask: BusinessRuleTask)
     def impl(d: Dmn) = brTask.copy(taskImplementation = d)
 
   def userTask(ident: String) =
-    UserTask(Ident(ident))
+    UserTask(ident)
 
 trait taskImplementations:
 
