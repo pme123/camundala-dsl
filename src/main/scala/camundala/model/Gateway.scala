@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 
 sealed trait Gateway extends ProcessNode
 
@@ -12,7 +12,7 @@ case class ExclusiveGateway(ident: Ident,
                             isAsyncBefore: Boolean = false,
                             isAsyncAfter: Boolean = false
                            )extends Gateway :
-  val elemType: NodeKey = NodeKey.exclusiveGateways
+  val elemType: ElemKey = ElemKey.exclusiveGateways
 
   def asyncBefore: ExclusiveGateway = copy(isAsyncBefore = true)
 
@@ -25,7 +25,7 @@ case class ParallelGateway(ident: Ident,
                            isAsyncBefore: Boolean = false,
                            isAsyncAfter: Boolean = false
                           )extends Gateway :
-  val elemType: NodeKey = NodeKey.parallelGateways
+  val elemType: ElemKey = ElemKey.parallelGateways
 
   def asyncBefore: ParallelGateway = copy(isAsyncBefore = true)
 

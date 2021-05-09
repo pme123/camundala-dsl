@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 sealed trait Event extends HasIdent with ProcessNode
 
 case class StartEvent(
@@ -11,7 +11,7 @@ case class StartEvent(
 ) extends Event
     with HasForm[StartEvent]:
 
-  def elemType = NodeKey.startEvents
+  def elemType = ElemKey.startEvents
 
   def asyncBefore: StartEvent = copy(isAsyncBefore = true)
 
@@ -27,7 +27,7 @@ case class EndEvent(
 ) extends Event
     with HasInputParameters[EndEvent]:
 
-  def elemType = NodeKey.endEvents
+  def elemType = ElemKey.endEvents
 
   def inputs(params: InOutParameter*): EndEvent = copy(inputParameters = params)
 

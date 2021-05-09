@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 import camundala.model.Condition._
 
 case class SequenceFlows(flows: Seq[SequenceFlow])
@@ -23,7 +23,7 @@ case class SequenceFlow(ident: Ident,
   
   def prop(prop: Property): SequenceFlow = copy(properties = properties :+ prop)
 
-  def elemType: NodeKey = NodeKey.sequenceFlows
+  def elemType: ElemKey = ElemKey.sequenceFlows
 
 
   

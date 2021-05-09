@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 import camundala.model.GeneratedForm.FormField
 
 //type IdRegex = MatchesRegex["""^[a-zA-Z_][\w\-\.]+$"""]
@@ -58,7 +58,7 @@ trait HasTask[T <: HasTransactionBoundary[T]] extends HasActivity[T]:
   def inputs(params: InOutParameter*): T = withTask(task.copy(activity = activity.inputs(params:_*)))
 
 trait HasTaskImplementation[T]:
-  def elemType: NodeKey
+  def elemType: ElemKey
 
   def taskImplementation: TaskImplementation
 

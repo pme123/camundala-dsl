@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 import camundala.model.GeneratedForm.FormField
 import camundala.model.TaskImplementation._
 
@@ -109,7 +109,7 @@ case class ServiceTask(
 ) extends HasTask[ServiceTask]
     with HasTaskImplementation[ServiceTask]
     with ProcessNode:
-  val elemType: NodeKey = NodeKey.serviceTasks
+  val elemType: ElemKey = ElemKey.serviceTasks
 
   def withTask(task: Task): ServiceTask = copy(task = task)
 
@@ -127,7 +127,7 @@ case class SendTask(
 ) extends HasTask[SendTask]
     with HasTaskImplementation[SendTask]
     with ProcessNode:
-  val elemType: NodeKey = NodeKey.sendTasks
+  val elemType: ElemKey = ElemKey.sendTasks
 
   def withTask(task: Task): SendTask = copy(task = task)
 
@@ -140,7 +140,7 @@ case class BusinessRuleTask(
 ) extends HasTask[BusinessRuleTask]
     //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
     with ProcessNode:
-  val elemType: NodeKey = NodeKey.businessRuleTasks
+  val elemType: ElemKey = ElemKey.businessRuleTasks
 
   def withTask(task: Task): BusinessRuleTask = copy(task = task)
 
@@ -154,7 +154,7 @@ case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
     with HasForm[UserTask]
     with ProcessNode:
 
-  val elemType = NodeKey.userTasks
+  val elemType = ElemKey.userTasks
 
   def withTask(task: Task): UserTask = copy(task = task)
 

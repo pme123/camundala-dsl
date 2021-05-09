@@ -1,6 +1,6 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.NodeKey
+import camundala.model.BpmnProcess.ElemKey
 
 case class BpmnProcesses(processes: Seq[BpmnProcess]) :
 
@@ -22,69 +22,69 @@ case class BpmnProcess(
 
 object BpmnProcess:
 
-  sealed trait NodeKey:
+  sealed trait ElemKey:
     def name: String
 
     def order: Int
 
 
-  object NodeKey:
+  object ElemKey:
 
-    case object startEvents extends NodeKey :
+    case object startEvents extends ElemKey :
       val name = "startEvent"
       val order = 1
 
       override def toString: String = "startEvents"
 
-    case object userTasks extends NodeKey :
+    case object userTasks extends ElemKey :
       val name = "userTask"
       val order = 2
 
       override def toString: String = "userTasks"
 
-    case object serviceTasks extends NodeKey :
+    case object serviceTasks extends ElemKey :
       val name = "serviceTask"
       val order = 3
 
       override def toString: String = "serviceTasks"
 
-    case object businessRuleTasks extends NodeKey :
+    case object businessRuleTasks extends ElemKey :
       val name = "businessRuleTask"
       val order = 4
 
       override def toString: String = "businessRuleTasks"
 
-    case object sendTasks extends NodeKey :
+    case object sendTasks extends ElemKey :
       val name = "sendTask"
       val order = 5
 
       override def toString: String = "sendTasks"
 
-    case object callActivities extends NodeKey :
+    case object callActivities extends ElemKey :
       val name = "callActivity"
       val order = 6
 
       override def toString: String = "callActivities"
 
-    case object exclusiveGateways extends NodeKey :
+    case object exclusiveGateways extends ElemKey :
       val name = "exclusiveGateway"
       val order = 7
 
       override def toString: String = "exclusiveGateways"
 
-    case object parallelGateways extends NodeKey :
+    case object parallelGateways extends ElemKey :
       val name = "parallelGateway"
       val order = 7
 
       override def toString: String = "parallelGateways"
 
-    case object endEvents extends NodeKey :
+    case object endEvents extends ElemKey :
       val name = "endEvent"
       val order = 8
 
       override def toString: String = "endEvents"
 
-    case object sequenceFlows extends NodeKey :
+    case object sequenceFlows extends ElemKey :
       val name = "sequenceFlow"
       val order = 9
 
@@ -105,7 +105,7 @@ object ProcessNodes:
 
 trait ProcessElement :
   
-  def elemType: NodeKey
+  def elemType: ElemKey
 
   def ident: Ident
 
