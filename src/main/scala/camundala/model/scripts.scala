@@ -11,7 +11,7 @@ case class ScriptTask(task: Task,
                      )
   extends HasTask[ScriptTask]
     with ProcessNode :
-  val elemType = ElemKey.userTasks
+  val elemKey = ElemKey.userTasks
 
   def withTask(task: Task): ScriptTask = copy(task = task)
 

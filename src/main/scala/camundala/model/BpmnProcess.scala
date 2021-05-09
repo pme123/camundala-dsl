@@ -91,12 +91,12 @@ object BpmnProcess:
       override def toString: String = "sequenceFlows"
 
 trait ProcessElements:
-  
+
   def elements: Seq[ProcessElement]
 
 case class ProcessNodes(nodes: Seq[ProcessNode])
   extends ProcessElements :
-  
+
   val elements: Seq[ProcessElement] = nodes
 
 object ProcessNodes:
@@ -104,8 +104,8 @@ object ProcessNodes:
   val none = ProcessNodes(Nil)
 
 trait ProcessElement :
-  
-  def elemType: ElemKey
+
+  def elemKey: ElemKey
 
   def ident: Ident
 

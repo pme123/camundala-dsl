@@ -109,7 +109,7 @@ case class ServiceTask(
 ) extends HasTask[ServiceTask]
     with HasTaskImplementation[ServiceTask]
     with ProcessNode:
-  val elemType: ElemKey = ElemKey.serviceTasks
+  val elemKey: ElemKey = ElemKey.serviceTasks
 
   def withTask(task: Task): ServiceTask = copy(task = task)
 
@@ -127,7 +127,7 @@ case class SendTask(
 ) extends HasTask[SendTask]
     with HasTaskImplementation[SendTask]
     with ProcessNode:
-  val elemType: ElemKey = ElemKey.sendTasks
+  val elemKey: ElemKey = ElemKey.sendTasks
 
   def withTask(task: Task): SendTask = copy(task = task)
 
@@ -140,7 +140,7 @@ case class BusinessRuleTask(
 ) extends HasTask[BusinessRuleTask]
     //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
     with ProcessNode:
-  val elemType: ElemKey = ElemKey.businessRuleTasks
+  val elemKey: ElemKey = ElemKey.businessRuleTasks
 
   def withTask(task: Task): BusinessRuleTask = copy(task = task)
 
@@ -154,7 +154,7 @@ case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
     with HasForm[UserTask]
     with ProcessNode:
 
-  val elemType = ElemKey.userTasks
+  val elemKey = ElemKey.userTasks
 
   def withTask(task: Task): UserTask = copy(task = task)
 

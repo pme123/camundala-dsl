@@ -12,7 +12,7 @@ case class ExclusiveGateway(ident: Ident,
                             isAsyncBefore: Boolean = false,
                             isAsyncAfter: Boolean = false
                            )extends Gateway :
-  val elemType: ElemKey = ElemKey.exclusiveGateways
+  val elemKey: ElemKey = ElemKey.exclusiveGateways
 
   def asyncBefore: ExclusiveGateway = copy(isAsyncBefore = true)
 
@@ -25,7 +25,7 @@ case class ParallelGateway(ident: Ident,
                            isAsyncBefore: Boolean = false,
                            isAsyncAfter: Boolean = false
                           )extends Gateway :
-  val elemType: ElemKey = ElemKey.parallelGateways
+  val elemKey: ElemKey = ElemKey.parallelGateways
 
   def asyncBefore: ParallelGateway = copy(isAsyncBefore = true)
 

@@ -23,7 +23,7 @@ case class SequenceFlow(ident: Ident,
   
   def prop(prop: Property): SequenceFlow = copy(properties = properties :+ prop)
 
-  def elemType: ElemKey = ElemKey.sequenceFlows
+  def elemKey: ElemKey = ElemKey.sequenceFlows
 
 
   

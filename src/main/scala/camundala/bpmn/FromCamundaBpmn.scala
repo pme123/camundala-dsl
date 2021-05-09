@@ -119,7 +119,7 @@ trait FromCamundaBpmn
     }
 
   def identString(name: Option[String], camObj: camunda.BaseElement): ZIdent =
-    val elemType = camObj.getElementType.getTypeName
+    val elemKey = camObj.getElementType.getTypeName
     zio.Task(
       name match
         case Some(n) =>
@@ -129,6 +129,6 @@ trait FromCamundaBpmn
           camObj.getId
     ).mapError(ex => 
       ex.printStackTrace
-      FromCamundaException(s"Could not create an Ident for $elemType / $name"))
+      FromCamundaException(s"Could not create an Ident for $elemKey / $name"))
 
 case class FromCamundaException(msg: String)

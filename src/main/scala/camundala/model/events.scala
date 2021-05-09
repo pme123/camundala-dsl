@@ -11,7 +11,7 @@ case class StartEvent(
 ) extends Event
     with HasForm[StartEvent]:
 
-  def elemType = ElemKey.startEvents
+  def elemKey = ElemKey.startEvents
 
   def asyncBefore: StartEvent = copy(isAsyncBefore = true)
 
@@ -27,7 +27,7 @@ case class EndEvent(
 ) extends Event
     with HasInputParameters[EndEvent]:
 
-  def elemType = ElemKey.endEvents
+  def elemKey = ElemKey.endEvents
 
   def inputs(params: InOutParameter*): EndEvent = copy(inputParameters = params)
 

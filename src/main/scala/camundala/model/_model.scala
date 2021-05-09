@@ -58,7 +58,7 @@ trait HasTask[T <: HasTransactionBoundary[T]] extends HasActivity[T]:
   def inputs(params: InOutParameter*): T = withTask(task.copy(activity = activity.inputs(params:_*)))
 
 trait HasTaskImplementation[T]:
-  def elemType: ElemKey
+  def elemKey: ElemKey
 
   def taskImplementation: TaskImplementation
 

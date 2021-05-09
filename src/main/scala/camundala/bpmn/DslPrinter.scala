@@ -128,7 +128,7 @@ trait DslPrinter:
 
   extension (node: ProcessElement)
     def print(): Print =
-      pl(s"""${node.elemType.name}("${node.ident}")""")
+      pl(s"""${node.elemKey.name}("${node.ident}")""")
   end extension
 
   def po(pr: Print, lines: Print*) = PrintObject(pr +: lines)
