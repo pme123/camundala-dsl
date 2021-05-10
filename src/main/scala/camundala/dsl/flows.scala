@@ -7,7 +7,7 @@ import camundala.model.ScriptImplementation.ScriptPath
 trait flows:
 
   def sequenceFlow(ident: String) =
-    SequenceFlow(Ident(ident))
+    SequenceFlow(ident)
 
   def flow(ident: String) =
     sequenceFlow(ident)
@@ -28,7 +28,7 @@ trait flows:
 
   def exclusiveGateway(ident: String) =
     ExclusiveGateway(ident)
-
+    
   extension (exclGateway: ExclusiveGateway)
     def defaultFlow(ref: ProcessElementRef): ExclusiveGateway = 
       exclGateway.copy(defaultFlow = Some(ref))

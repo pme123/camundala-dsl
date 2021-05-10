@@ -29,25 +29,32 @@ object TenantId:
 trait HasIdent:
   def ident: Ident
 
-trait HasActivity[T <: HasActivity[T]]
-    extends HasProcessNode[T]
-    with HasInputParameters[T]:
-
+trait HasActivity[T] extends HasProcessNode[T] with HasInputParameters[T]:
   def activity: Activity
+  def withActivity(activity: Activity): T
+  def processNode: ProcessNode = activity.processNode
+
+  def withProcessNode(processNode: ProcessNode): T = 
+    withActivity(activity.copy(processNode = processNode))
 
   def inputParameters = activity.inputParameters
 
-trait HasTask[T <: HasTask[T]] extends HasActivity[T]:
+trait HasTask[T] extends HasActivity[T]:
   def task: Task
 
   def withTask(task: Task): T
 
+  def withActivity(activity: Activity): T =
+    withTask(task.copy(activity = activity))
+
   lazy val activity = task.activity
 
-  def inputs(params: InOutParameter*): T = withTask(task.copy(activity = activity.inputs(params:_*)))
+  def inputs(params: InOutParameter*): T = withTask(
+    task.copy(activity = activity.inputs(params: _*))
+  )
 
 trait HasTaskImplementation[T]:
-  def elemType: ElemKey
+  def elemKey: ElemKey
 
   def taskImplementation: TaskImplementation
 
@@ -63,7 +70,7 @@ trait HasProperties[T]:
 
   def prop(prop: Property): T
 
-trait HasTransactionBoundary[T <: HasTransactionBoundary[T]]:
+trait HasTransactionBoundary[T]:
   def isAsyncBefore: Boolean
 
   def isAsyncAfter: Boolean
@@ -81,4 +88,3 @@ opaque type ProcessVarString = Ident
 
 object ProcessVarString:
   def apply(variable: String): ProcessVarString = variable
-

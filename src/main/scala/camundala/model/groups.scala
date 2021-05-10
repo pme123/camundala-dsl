@@ -47,3 +47,4 @@ object CandidateGroups:
   val none: CandidateGroups = CandidateGroups()
 
 trait HasGroups[T]
+

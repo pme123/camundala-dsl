@@ -20,7 +20,7 @@
     <sequenceFlow id="SequenceFlow_4_SendRejectionNotification-Join" name="" sourceRef="SendRejectionNotification" targetRef="Join"/>
             
     
-    <exclusiveGateway gatewayDirection="Unspecified" id="Approved" name="Approved?">
+    <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Approved" name="Approved?">
                   
       
       <incoming>SequenceFlow_2_ReviewTweet-Approved</incoming>
@@ -59,7 +59,7 @@
     <sequenceFlow id="Yes_Approved-PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter"/>
             
     
-    <exclusiveGateway gatewayDirection="Unspecified" id="Join" name="Join">
+    <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Join" name="Join">
                   
       
       <incoming>SequenceFlow_4_SendRejectionNotification-Join</incoming>
@@ -92,7 +92,7 @@
     <sequenceFlow id="SequenceFlow_3_PublishOnTwitter-Join" name="" sourceRef="PublishOnTwitter" targetRef="Join"/>
             
     
-    <endEvent id="TweetHandled" name="Tweet handled">
+    <endEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="TweetHandled" name="Tweet handled">
                   
       
       <incoming>SequenceFlow_5_Join-TweetHandled</incoming>
@@ -101,7 +101,7 @@
     </endEvent>
             
     
-    <startEvent camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator" id="TweetWritten" isInterrupting="true" name="Tweet written" parallelMultiple="false">
+    <startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator" id="TweetWritten" isInterrupting="true" name="Tweet written" parallelMultiple="false">
                   
       
       <outgoing>SequenceFlow_9_TweetWritten-ReviewTweet</outgoing>

@@ -102,46 +102,34 @@ object ProcessNodes:
 
   val none = ProcessNodes(Nil)
 
-trait HasProcessElement[T <: HasProcessElement[T]] extends HasProperties[T]:
-  def processElement: ProcessElement
-  def ident: Ident = processElement.ident
-  def elemKey: ElemKey
-    
-  def withProcessElement(processElement: ProcessElement): T
-
-  def prop(prop: Property): T = withProcessElement(processElement.prop(prop))
-
-
 case class ProcessElement(
     ident: Ident,
     properties: Properties = Properties.none
 ):
 
-  def ref: ProcessElementRef = ProcessElementRef(ident.toString)
-
   def prop(prop: Property): ProcessElement =
     copy(properties = properties :+ prop)
+
+object ProcessElement:
+  def apply(ident: String): ProcessElement =
+    ProcessElement(Ident(ident))
+
+trait HasProcessElement[T] extends HasProperties[T]:
+  def processElement: ProcessElement
+  def withProcessElement(processElement: ProcessElement): T
+
+  def ident: Ident = processElement.ident
+  def elemKey: ElemKey
+  def ref: ProcessElementRef = ProcessElementRef(ident.toString)
+
+  def properties: Properties = processElement.properties
+
+  def prop(prop: Property): T = withProcessElement(processElement.prop(prop))
 
 opaque type ProcessElementRef = String
 
 object ProcessElementRef:
   def apply(ref: String): ProcessElementRef = ref
-
-trait HasProcessNode[T <: HasProcessNode[T]]
-    extends HasProcessElement[T]
-    with HasTransactionBoundary[T]:
-      
-  def processNode: ProcessNode
-
-  def withProcessNode(processNode: ProcessNode): T
-
-  def isAsyncBefore: Boolean = processNode.isAsyncBefore
-
-  def isAsyncAfter: Boolean = processNode.isAsyncAfter
-
-  def asyncBefore: T = withProcessNode(processNode.asyncBefore)
-
-  def asyncAfter: T = withProcessNode(processNode.asyncAfter)
 
 case class ProcessNode(
     processElement: ProcessElement,
@@ -161,4 +149,22 @@ case class ProcessNode(
 
 object ProcessNode:
   def apply(ident: String): ProcessNode =
-    ProcessNode(ProcessElement(Ident(ident)))
+    ProcessNode(ProcessElement(ident))
+
+trait HasProcessNode[T]
+    extends HasProcessElement[T]
+    with HasTransactionBoundary[T]:
+  def processNode: ProcessNode
+  def withProcessNode(processNode: ProcessNode): T
+
+  def withProcessElement(processElement: ProcessElement): T = withProcessNode(processNode.copy(processElement = processElement))
+
+  def processElement: ProcessElement = processNode.processElement
+
+  def isAsyncBefore: Boolean = processNode.isAsyncBefore
+
+  def isAsyncAfter: Boolean = processNode.isAsyncAfter
+
+  def asyncBefore: T = withProcessNode(processNode.asyncBefore)
+
+  def asyncAfter: T = withProcessNode(processNode.asyncAfter)
