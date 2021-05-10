@@ -122,7 +122,7 @@
     <bpmn2:sequenceFlow id="flowIsNotBar" name="is NOT bar" sourceRef="gatewayFork" targetRef="userTaskA"/>
         
     <bpmn2:sequenceFlow id="flowIsBar" name="is Bar" sourceRef="gatewayFork" targetRef="userTaskB">
-      <conditionExpression id="conditionExpression_64827706-88d5-48d3-b0ff-47df336bbbf3" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">println 'hello'
+      <conditionExpression id="conditionExpression_124a95b2-c5aa-4ffb-8996-0e2890591dda" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">println 'hello'
             fooVar == 'bar'</conditionExpression>
     </bpmn2:sequenceFlow>
         
