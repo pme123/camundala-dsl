@@ -10,7 +10,7 @@ import zio.test.mock.MockSystem
 import zio.console.Console
 import zio.test
 import zio.test.mock.{Expectation, MockConsole, MockSystem}
-import demoProcess.demoBpmn
+import camundala.examples.demoProcess.demoBpmn
 
 object DslPrinterSuites extends DefaultRunnableSpec with DslPrinter:
 

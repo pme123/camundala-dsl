@@ -18,6 +18,10 @@ case class ExclusiveGateway(ident: Ident,
 
   def asyncAfter: ExclusiveGateway = copy(isAsyncAfter = true)
 
+object ExclusiveGateway:
+  def apply(ident: String): ExclusiveGateway =
+    ExclusiveGateway(Ident(ident))
+
 case class ParallelGateway(ident: Ident,
                            properties: Properties = Properties.none,
                            //  inFlows: Seq[SequenceFlow] = Seq.empty,
@@ -31,4 +35,6 @@ case class ParallelGateway(ident: Ident,
 
   def asyncAfter: ParallelGateway = copy(isAsyncAfter = true)
 
-
+object ParallelGateway:
+  def apply(ident: String): ParallelGateway =
+    ParallelGateway(Ident(ident))

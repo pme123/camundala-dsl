@@ -27,12 +27,12 @@ trait flows:
       condition(InlineScriptCond(script))
 
   def exclusiveGateway(ident: String) =
-    ExclusiveGateway(Ident(ident))
+    ExclusiveGateway(ident)
     
   extension (exclGateway: ExclusiveGateway)
     def defaultFlow(ref: ProcessElementRef): ExclusiveGateway = 
       exclGateway.copy(defaultFlow = Some(ref))
 
   def parallelGateway(ident: String) = 
-    ExclusiveGateway(Ident(ident))    
+    ParallelGateway(ident)
     
