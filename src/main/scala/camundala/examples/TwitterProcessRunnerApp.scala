@@ -33,7 +33,8 @@ object twitterProcess extends DSL :
     .processes(
         process("TwitterDemoProcess")
           .nodes(
-            startEvent("TweetWritten"),
+            startEvent("TweetWritten")
+            .prop("", ""),
             userTask("ReviewTweet"),
             serviceTask("SendRejectionNotification"),
             serviceTask("PublishOnTwitter"),

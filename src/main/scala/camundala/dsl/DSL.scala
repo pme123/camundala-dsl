@@ -20,8 +20,8 @@ trait DSL
     with flows
     with forms
     with forms.constraints
-    with props
     with tasks
+    with props
     with taskImplementations
     with parameters
     with transactions:
