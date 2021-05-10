@@ -3,10 +3,10 @@ package camundala.model
 import camundala.dsl.forms.FieldAttr
 
 // Camunda Extension
-case class Property(key: Ident, value: String) 
+case class Property(key: Ident, value: String)
 
 case class Properties(properties: Seq[Property] = Seq.empty):
-  
+  def isEmpty = properties.isEmpty
   def :+(prop: Property): Properties = copy(properties :+ prop)
 
 object Properties {

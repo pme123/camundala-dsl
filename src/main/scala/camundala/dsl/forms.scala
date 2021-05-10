@@ -24,6 +24,9 @@ trait forms:
   extension[T](hasForm: HasForm[T])
     def form(formRef: FormKey): T =
       hasForm.form(EmbeddedForm(formRef))
+    
+    def staticForm(path: String): T =
+      hasForm.form(EmbeddedStaticForm(path))
 
     def form(formFields: FormField*): T =
       hasForm.form(GeneratedForm(formFields))

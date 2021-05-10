@@ -17,38 +17,42 @@ object TwitterProcessRunnerApp extends zio.App with DSL:
       )
     ).run()
 
-object twitterProcess extends DSL :
-  val admin = group("admin")
-    .name("Administrator")
-    .groupType("system")
-  val adminUser = user("admin")
-    .name("Administrator")
-    .firstName("-")
-    .email("myEmail@email.ch")
-    .group(admin.ref)
+object twitterProcess extends DSL:
 
-  val isBarVar = "isBar"
+  private val kpiRatio = "KPI-Ratio"
+  private val probability = "probability"
   lazy val twitterBpmn =
-  bpmn("bpmns/with-ids/twitter-cawemo.bpmn")
-    .processes(
+    bpmn("bpmns/with-ids/twitter-cawemo.bpmn")
+      .processes(
         process("TwitterDemoProcess")
           .nodes(
             startEvent("TweetWritten")
-            .prop("", ""),
-            userTask("ReviewTweet"),
-            serviceTask("SendRejectionNotification"),
-            serviceTask("PublishOnTwitter"),
-            exclusiveGateway("Approved"),
+              .staticForm("forms/createTweet.html")
+              .prop("KPI-Cycle-Start", "Tweet Approval Time"),
+            userTask("ReviewTweet")
+              .staticForm("forms/reviewTweet.html")
+              .prop("durationMean", "10000")
+              .prop("durationSd", "5000"),
+            serviceTask("SendRejectionNotification")
+              .prop(kpiRatio, "Tweet Rejected"),
+            serviceTask("PublishOnTwitter")
+              .prop(kpiRatio, "Tweet Approved"),
+            exclusiveGateway("Approved")
+              .prop("KPI-Cycle-End", "Tweet Approval Time"),
             exclusiveGateway("Join"),
             endEvent("TweetHandled")
           )
           .flows(
             sequenceFlow("SequenceFlow_4_SendRejectionNotification-Join"),
-            sequenceFlow("No_Approved-SendRejectionNotification"),
-            sequenceFlow("Yes_Approved-PublishOnTwitter"),
+            sequenceFlow("No_Approved-SendRejectionNotification")
+              .expression("!approved")
+              .prop(probability, "13"),
+            sequenceFlow("Yes_Approved-PublishOnTwitter")
+              .expression("approved")
+              .prop(probability, "87"),
             sequenceFlow("SequenceFlow_5_Join-TweetHandled"),
             sequenceFlow("SequenceFlow_3_PublishOnTwitter-Join"),
             sequenceFlow("SequenceFlow_9_TweetWritten-ReviewTweet"),
             sequenceFlow("SequenceFlow_2_ReviewTweet-Approved")
           )
-    )
+      )
