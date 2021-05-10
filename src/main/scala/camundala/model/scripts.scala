@@ -9,8 +9,7 @@ case class ScriptTask(task: Task,
                       scriptImplementation: ScriptImplementation = InlineScript(ScriptLanguage.Groovy, ""),
                       resultVariable: Option[Ident] = None
                      )
-  extends HasTask[ScriptTask]
-    with ProcessNode :
+  extends HasTask[ScriptTask] :
   val elemKey = ElemKey.userTasks
 
   def withTask(task: Task): ScriptTask = copy(task = task)

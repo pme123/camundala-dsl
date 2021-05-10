@@ -5,24 +5,34 @@ import camundala.model.GeneratedForm.FormField
 import camundala.model.TaskImplementation._
 
 case class Activity(
-    ident: Ident,
-    inputParameters: Seq[InOutParameter] = Seq.empty,
-    isAsyncBefore: Boolean = false,
-    isAsyncAfter: Boolean = false
-) extends HasIdent:
+    processNode: ProcessNode,
+    inputParameters: Seq[InOutParameter] = Seq.empty
+):
+  val ident = processNode.ident
+  val properties: Properties = processNode.properties
 
   def inputs(params: InOutParameter*): Activity = copy(inputParameters = params)
 
-  def asyncBefore: Activity = copy(isAsyncBefore = true)
+  def prop(prop: Property): Activity = copy(processNode = processNode.prop(prop))
 
-  def asyncAfter: Activity = copy(isAsyncAfter = true)
+  def asyncBefore: Activity = copy(processNode = processNode.asyncBefore)
+
+  def asyncAfter: Activity = copy(processNode = processNode.asyncAfter)
 
 case class Task(activity: Activity) extends HasIdent:
   val ident = activity.ident
 
+  val properties: Properties = activity.properties
+
+  def prop(prop: Property): Task = copy(activity = activity.prop(prop))
+
+object Activity:
+  def apply(ident: String): Activity =
+    Activity(ProcessNode(ident))
+
 object Task:
 
-  def apply(ident: Ident): Task =
+  def apply(ident: String): Task =
     Task(Activity(ident))
 
 sealed trait TaskImplementation
@@ -51,12 +61,11 @@ object TaskImplementation:
       extends TaskImplementation
       with BusinessRuleTaskImpl
 
-  case class ExternalTask(topic: String)
-      extends TaskImplementation
+  case class ExternalTask(topic: String) extends TaskImplementation
 
 sealed trait BusinessRuleTaskImpl
 
-object BusinessRuleTask:
+object BusinessRuleTaskImpl:
 
   opaque type DecisionRef = String
 
@@ -86,7 +95,7 @@ enum MapDecisionResult(val label: String):
   // List[Map[String, Object]]
   case ResultList extends MapDecisionResult("resultList")
 
-sealed trait RefBinding :
+sealed trait RefBinding:
   def binding: String
 
 object RefBinding:
@@ -107,8 +116,7 @@ case class ServiceTask(
     task: Task,
     taskImplementation: TaskImplementation
 ) extends HasTask[ServiceTask]
-    with HasTaskImplementation[ServiceTask]
-    with ProcessNode:
+    with HasTaskImplementation[ServiceTask]:
   val elemKey: ElemKey = ElemKey.serviceTasks
 
   def withTask(task: Task): ServiceTask = copy(task = task)
@@ -118,15 +126,14 @@ case class ServiceTask(
 
 object ServiceTask:
 
-  def apply(ident: Ident): ServiceTask =
+  def apply(ident: String): ServiceTask =
     ServiceTask(Task(ident), ExternalTask("my-topic"))
 
 case class SendTask(
     task: Task,
     taskImplementation: TaskImplementation = Expression("")
 ) extends HasTask[SendTask]
-    with HasTaskImplementation[SendTask]
-    with ProcessNode:
+    with HasTaskImplementation[SendTask]:
   val elemKey: ElemKey = ElemKey.sendTasks
 
   def withTask(task: Task): SendTask = copy(task = task)
@@ -137,9 +144,8 @@ case class SendTask(
 case class BusinessRuleTask(
     task: Task,
     taskImplementation: BusinessRuleTaskImpl = Expression("")
-) extends HasTask[BusinessRuleTask]
+) extends HasTask[BusinessRuleTask]:
     //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
-    with ProcessNode:
   val elemKey: ElemKey = ElemKey.businessRuleTasks
 
   def withTask(task: Task): BusinessRuleTask = copy(task = task)
@@ -151,8 +157,7 @@ case class BusinessRuleTask(
 
 case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
     extends HasTask[UserTask]
-    with HasForm[UserTask]
-    with ProcessNode:
+    with HasForm[UserTask]:
 
   val elemKey = ElemKey.userTasks
 
@@ -162,5 +167,5 @@ case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
 
 object UserTask:
 
-  def apply(ident: Ident): UserTask =
+  def apply(ident: String): UserTask =
     UserTask(Task(ident))

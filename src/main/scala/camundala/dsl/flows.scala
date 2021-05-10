@@ -7,7 +7,7 @@ import camundala.model.ScriptImplementation.ScriptPath
 trait flows:
 
   def sequenceFlow(ident: String) =
-    SequenceFlow(Ident(ident))
+    SequenceFlow(ident)
 
   def flow(ident: String) =
     sequenceFlow(ident)

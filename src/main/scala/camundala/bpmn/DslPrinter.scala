@@ -112,7 +112,7 @@ trait DslPrinter:
     def print(): Print =
       po(
         pl(".nodes("),
-        pa(nodes.nodes.map(_.print())),
+          pa(nodes.elements.map(_.print())),
         pl(")")
       )
   end extension
@@ -121,14 +121,14 @@ trait DslPrinter:
     def print(): Print =
       po(
         pl(".flows("),
-        pa(flows.flows.map(_.print())),
+          pa(flows.elements.map(_.print())),
         pl(")")
       )
   end extension
 
-  extension (node: ProcessElement)
+  extension (elem:  HasProcessElement[_])
     def print(): Print =
-      pl(s"""${node.elemKey.name}("${node.ident}")""")
+      pl(s"""${elem.elemKey.name}("${elem.ident}")""")
   end extension
 
   def po(pr: Print, lines: Print*) = PrintObject(pr +: lines)

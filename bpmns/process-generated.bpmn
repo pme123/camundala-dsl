@@ -17,7 +17,7 @@
   <bpmn2:process camunda:candidateStarterGroups="admin" camunda:candidateStarterUsers="admin" id="TestDSLProcess" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
             
     
-    <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="Fork" name="Fork">
+    <bpmn2:exclusiveGateway camunda:asyncAfter="true" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Fork" name="Fork">
                   
       
       <bpmn2:incoming>flow2_ServiceTask-Fork</bpmn2:incoming>
@@ -71,7 +71,7 @@
     </bpmn2:userTask>
             
     
-    <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="gatewayJoin">
+    <bpmn2:exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="gatewayJoin">
                   
       
       <bpmn2:incoming>flow5_UserTaskA-gatewayJoin</bpmn2:incoming>
@@ -86,7 +86,7 @@
     </bpmn2:exclusiveGateway>
             
     
-    <bpmn2:endEvent id="EndProcess" name="End Process">
+    <bpmn2:endEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="EndProcess" name="End Process">
                   
       
       <bpmn2:extensionElements>
@@ -122,7 +122,7 @@
     </bpmn2:serviceTask>
             
     
-    <bpmn2:startEvent id="StartProcess" isInterrupting="true" name="Start Process" parallelMultiple="false">
+    <bpmn2:startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="StartProcess" isInterrupting="true" name="Start Process" parallelMultiple="false">
                   
       
       <bpmn2:outgoing>flow1_StartProcess-ServiceTask</bpmn2:outgoing>
@@ -151,12 +151,12 @@
             
     
     <bpmn2:sequenceFlow id="IsNOTBar_Fork-UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA">
-      <conditionExpression id="conditionExpression_3ecd26c7-f386-42cc-84c8-c29ebc3925fe" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
+      <conditionExpression id="conditionExpression_bf53790a-b696-4f60-bcd7-d7c5c99d1b55" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
     <bpmn2:sequenceFlow id="IsBar_Fork-UserTaskB" name="is Bar" sourceRef="Fork" targetRef="UserTaskB">
-      <conditionExpression id="conditionExpression_4bdef3b0-0c77-451d-9710-e9a9a91bee2c" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
+      <conditionExpression id="conditionExpression_a6516703-9838-4533-a3d3-7fec61fed52a" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
