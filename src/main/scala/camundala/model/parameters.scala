@@ -13,9 +13,4 @@ object VariableAssignment:
   
   object Expression :
     def apply(expr: String):Expression =
-      new Expression(
-        if(expr.startsWith("$"))
-          expr
-        else
-          s"$${$expr}"
-      )
+      new Expression(wrapExpression(expr))

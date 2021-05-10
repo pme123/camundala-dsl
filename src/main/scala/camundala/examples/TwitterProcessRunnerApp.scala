@@ -34,8 +34,10 @@ object twitterProcess extends DSL:
               .prop("durationMean", "10000")
               .prop("durationSd", "5000"),
             serviceTask("SendRejectionNotification")
+              .delegateExpression("emailAdapter")
               .prop(kpiRatio, "Tweet Rejected"),
             serviceTask("PublishOnTwitter")
+              .delegateExpression("tweetAdapter")
               .prop(kpiRatio, "Tweet Approved"),
             exclusiveGateway("Approved")
               .prop("KPI-Cycle-End", "Tweet Approval Time"),

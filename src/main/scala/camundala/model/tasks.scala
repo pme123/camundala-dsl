@@ -13,7 +13,8 @@ case class Activity(
 
   def inputs(params: InOutParameter*): Activity = copy(inputParameters = params)
 
-  def prop(prop: Property): Activity = copy(processNode = processNode.prop(prop))
+  def prop(prop: Property): Activity =
+    copy(processNode = processNode.prop(prop))
 
   def asyncBefore: Activity = copy(processNode = processNode.asyncBefore)
 
@@ -48,14 +49,18 @@ object TaskImplementation:
   object Expression:
     def apply(expr: String): Expression =
       new Expression(
-        if (expr.startsWith("$"))
-          expr
-        else
-          s"$${$expr}"
+        wrapExpression(expr)
       )
+
   case class DelegateExpression(expresssion: String)
       extends TaskImplementation
       with BusinessRuleTaskImpl
+
+  object DelegateExpression:
+    def apply(expr: String): DelegateExpression =
+      new DelegateExpression(
+        wrapExpression(expr)
+      )
 
   case class JavaClass(className: String)
       extends TaskImplementation
@@ -145,7 +150,7 @@ case class BusinessRuleTask(
     task: Task,
     taskImplementation: BusinessRuleTaskImpl = Expression("")
 ) extends HasTask[BusinessRuleTask]:
-    //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
+  //  with HasTaskImplementation[BusinessRuleTask] // TODO DMN Table
   val elemKey: ElemKey = ElemKey.businessRuleTasks
 
   def withTask(task: Task): BusinessRuleTask = copy(task = task)

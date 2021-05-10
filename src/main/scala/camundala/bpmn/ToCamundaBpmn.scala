@@ -163,6 +163,7 @@ trait ToCamundaBpmn:
 
   extension (taskImpl: TaskImplementation)
     def merge(elem: camunda.ServiceTask): Unit =
+      println(s"TaskImplementation: $taskImpl")
       taskImpl match
         case Expression(expresssion, resultVariable) =>
           elem.setCamundaExpression(expresssion)

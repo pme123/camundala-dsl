@@ -88,3 +88,9 @@ opaque type ProcessVarString = Ident
 
 object ProcessVarString:
   def apply(variable: String): ProcessVarString = variable
+
+def wrapExpression(expr: String): String =
+  if (expr.startsWith("$"))
+    expr
+  else
+    s"$${$expr}"
