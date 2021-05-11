@@ -11,7 +11,8 @@
   <description>Spring Boot Application using [Camunda](http://docs.camunda.org).</description>
 
   <properties>
-    <camunda.version>7.14.5-ee</camunda.version>
+   <!-- <camunda.version>7.14.5-ee</camunda.version>-->
+    <camunda.version>7.15.0</camunda.version>
     <springBoot.version>2.3.4.RELEASE</springBoot.version>
 
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -56,7 +57,8 @@
 
     <dependency>
       <groupId>org.camunda.bpm.springboot</groupId>
-      <artifactId>camunda-bpm-spring-boot-starter-webapp-ee</artifactId>
+    <!--  <artifactId>camunda-bpm-spring-boot-starter-webapp-ee</artifactId>-->
+      <artifactId>camunda-bpm-spring-boot-starter-webapp</artifactId>
     </dependency>
 
     <dependency>
@@ -118,13 +120,13 @@
       <name>Camunda Maven Repository</name>
       <url>https://app.camunda.com/nexus/content/groups/public</url>
     </repository>
-    <!-- enable this for EE dependencies (requires credentials in ~/.m2/settings.xml) -->
+    <!-- enable this for EE dependencies (requires credentials in ~/.m2/settings.xml)
     <repository>
       <id>camunda-bpm-nexus-ee</id>
       <name>Camunda Enterprise Maven Repository</name>
       <url>https://app.camunda.com/nexus/content/repositories/camunda-bpm-ee</url>
     </repository>
-
+    -->
   </repositories>
 
   <build>
