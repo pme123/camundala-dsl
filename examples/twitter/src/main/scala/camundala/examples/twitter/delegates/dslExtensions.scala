@@ -1,4 +1,4 @@
-package org.camunda.bpm.spring.boot.example.twitter
+package camundala.examples.twitter.delegates
 
 import camundala.model.TaskImplementation.DelegateExpression
 import camundala.model.{HasTaskImplementation, ServiceTask}

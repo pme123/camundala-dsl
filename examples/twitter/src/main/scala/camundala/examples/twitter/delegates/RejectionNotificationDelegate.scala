@@ -1,4 +1,4 @@
-package org.camunda.bpm.spring.boot.example.twitter
+package camundala.examples.twitter.delegates
 
 import org.camunda.bpm.engine.delegate.{DelegateExecution, JavaDelegate}
 import org.springframework.stereotype.Service

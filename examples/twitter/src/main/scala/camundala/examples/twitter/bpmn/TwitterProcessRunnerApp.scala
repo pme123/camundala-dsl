@@ -1,9 +1,10 @@
-package camundala.examples.twitter
+package camundala.examples.twitter.bpmn
 
 import camundala.bpmn.*
+
 import camundala.dsl.DSL
-import org.camunda.bpm.spring.boot.example.twitter.*
-import org.camunda.bpm.spring.boot.example.twitter.delecateExpr.{emailAdapter, tweetAdapter}
+import camundala.examples.twitter.delegates.*
+import camundala.examples.twitter.delegates.delecateExpr.{emailAdapter, tweetAdapter}
 
 import java.io.File
 
@@ -15,9 +16,9 @@ object TwitterProcessRunnerApp extends zio.App with DSL:
   private lazy val runnerLogic =
     BpmnRunner(
       RunnerConfig(
-        path("./examples/twitter/bpmn/cawemo/twitter-cawemo.bpmn"),
+        path("./examples/twitter/cawemo/twitter-cawemo.bpmn"),
         twitterProcess.twitterBpmn,
-        path("./examples/twitter/server/src/main/resources/twitter-process.bpmn")
+        path("./examples/twitter/src/main/resources/twitter-process.bpmn")
       )
     ).run()
 
@@ -26,7 +27,7 @@ object twitterProcess extends DSL:
   private val kpiRatio = "KPI-Ratio"
   private val probability = "probability"
   lazy val twitterBpmn =
-    bpmn("bpmns/with-ids/twitter-cawemo.bpmn")
+    bpmn("./examples/twitter/cawemo/with-ids/twitter-cawemo.bpmn")
       .processes(
         process("TwitterDemoProcess")
           .nodes(

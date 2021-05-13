@@ -1,4 +1,4 @@
-package org.camunda.bpm.spring.boot.example.twitter
+package camundala.examples.twitter
 
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication
 import org.springframework.boot.SpringApplication

@@ -8,7 +8,7 @@ val org = "io.github.pme123"
 lazy val root = project
   .in(file("."))
   .settings()
-  .aggregate(dsl, exampleTwitterServer, exampleTwitterBpmn)
+  .aggregate(dsl, exampleTwitter)
 
 lazy val dsl = project
   .in(file("./dsl"))
@@ -41,10 +41,10 @@ val h2Version = "1.4.200"
 // Twitter
 val twitter4jVersion = "4.0.7"
 
-lazy val exampleTwitterServer = project
-  .in(file("./examples/twitter/server"))
+lazy val exampleTwitter = project
+  .in(file("./examples/twitter"))
   .settings(
-    name := "example-twitter-server",
+    name := "example-twitter",
     organization := org,
     scalaVersion := scala3Version,
     version := projectVersion,
@@ -57,12 +57,3 @@ lazy val exampleTwitterServer = project
       "com.h2database" % "h2" % h2Version
     )
   ).dependsOn(dsl)
-
-lazy val exampleTwitterBpmn = project
-  .in(file("./examples/twitter/bpmn"))
-  .settings(
-    name := "example-twitter-bpmn",
-    organization := org,
-    scalaVersion := scala3Version,
-    version := projectVersion,
-  ).dependsOn(exampleTwitterServer)
