@@ -1,7 +1,9 @@
-package camundala.examples
+package camundala.examples.twitter
 
 import camundala.bpmn.*
 import camundala.dsl.DSL
+
+import java.io.File
 
 object TwitterProcessRunnerApp extends zio.App with DSL:
 
@@ -11,9 +13,9 @@ object TwitterProcessRunnerApp extends zio.App with DSL:
   private lazy val runnerLogic =
     BpmnRunner(
       RunnerConfig(
-        path("bpmns/twitter-cawemo.bpmn"),
+        path("./examples/twitter/bpmn/cawemo/twitter-cawemo.bpmn"),
         twitterProcess.twitterBpmn,
-        path("camunda-demo/src/main/resources/twitter-process.bpmn")
+        path("./examples/twitter/server/src/main/resources/twitter-process.bpmn")
       )
     ).run()
 
