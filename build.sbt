@@ -1,12 +1,19 @@
+val projectVersion = "0.1.0-SNAPSHOT"
 val scala2Version = "2.13.4"
 val scala3Version = "3.0.0-RC3"
 val zioVersion = "1.0.7"
+val org = "io.github.pme123"
 
 lazy val root = project
   .in(file("."))
+  .aggregate(dsl, exampleTwitter)
+
+lazy val dsl = project
+  .in(file("./dsl"))
   .settings(
+    organization := org,
     name := "camundala-dsl",
-    version := "0.1.0",
+    version := projectVersion,
 
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
@@ -23,3 +30,15 @@ lazy val root = project
     // To cross compile with Dotty and Scala 2
     crossScalaVersions := Seq(scala3Version, scala2Version)
   )
+
+lazy val exampleTwitter = project
+  .in(file("./examples/twitter/bpmn"))
+  .settings(
+    organization := org,
+    name := "example-twitter",
+    version := projectVersion,
+
+    scalaVersion := scala3Version,
+
+    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+  ).dependsOn(dsl)
