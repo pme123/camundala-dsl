@@ -4,15 +4,18 @@ val scala3Version = "3.0.0-RC3"
 val zioVersion = "1.0.7"
 val org = "io.github.pme123"
 
+
 lazy val root = project
   .in(file("."))
-  .aggregate(dsl, exampleTwitter)
+  .settings()
+  .aggregate(dsl, exampleTwitterServer, exampleTwitterBpmn)
 
 lazy val dsl = project
   .in(file("./dsl"))
   .settings(
-    organization := org,
     name := "camundala-dsl",
+    organization := org,
+    scalaVersion := scala3Version,
     version := projectVersion,
 
     libraryDependencies ++= Seq(
@@ -31,14 +34,35 @@ lazy val dsl = project
     crossScalaVersions := Seq(scala3Version, scala2Version)
   )
 
-lazy val exampleTwitter = project
-  .in(file("./examples/twitter/bpmn"))
+// EXAMPLES
+val springBootVersion = "2.4.4"
+val camundaSpringBootStarterVersion = "7.15.0"
+val h2Version = "1.4.200"
+// Twitter
+val twitter4jVersion = "4.0.7"
+
+lazy val exampleTwitterServer = project
+  .in(file("./examples/twitter/server"))
   .settings(
+    name := "example-twitter-server",
     organization := org,
-    name := "example-twitter",
+    scalaVersion := scala3Version,
     version := projectVersion,
 
-    scalaVersion := scala3Version,
-
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+    libraryDependencies ++= Seq(
+      "org.springframework.boot" % "spring-boot-starter-web" % springBootVersion,
+      "org.springframework.boot" % "spring-boot-starter-jdbc" % springBootVersion,
+      "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-webapp" % camundaSpringBootStarterVersion,
+      "org.twitter4j" % "twitter4j-core" % twitter4jVersion,
+      "com.h2database" % "h2" % h2Version
+    )
   ).dependsOn(dsl)
+
+lazy val exampleTwitterBpmn = project
+  .in(file("./examples/twitter/bpmn"))
+  .settings(
+    name := "example-twitter-bpmn",
+    organization := org,
+    scalaVersion := scala3Version,
+    version := projectVersion,
+  ).dependsOn(exampleTwitterServer)

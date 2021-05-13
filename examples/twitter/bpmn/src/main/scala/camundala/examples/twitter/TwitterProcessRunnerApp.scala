@@ -2,6 +2,8 @@ package camundala.examples.twitter
 
 import camundala.bpmn.*
 import camundala.dsl.DSL
+import org.camunda.bpm.spring.boot.example.twitter.*
+import org.camunda.bpm.spring.boot.example.twitter.delecateExpr.{emailAdapter, tweetAdapter}
 
 import java.io.File
 
@@ -36,10 +38,10 @@ object twitterProcess extends DSL:
               .prop("durationMean", "10000")
               .prop("durationSd", "5000"),
             serviceTask("SendRejectionNotification")
-              .delegateExpression("emailAdapter")
+              .emailDelegate
               .prop(kpiRatio, "Tweet Rejected"),
             serviceTask("PublishOnTwitter")
-              .delegateExpression("tweetAdapter")
+              .tweetDelegate
               .prop(kpiRatio, "Tweet Approved"),
             exclusiveGateway("Approved")
               .prop("KPI-Cycle-End", "Tweet Approval Time"),
