@@ -1,7 +1,6 @@
-package camundala.examples
+package camundala.bpmn
 
 import camundala.dsl.DSL
-import camundala.bpmn.*
 import camundala.model.*
 
 object PrintBpmnConfigApp extends App with DSL with DslPrinter:

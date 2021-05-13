@@ -1,6 +1,6 @@
-package camundala.examples
+package camundala.bpmn
 
-import camundala.bpmn.*
+import camundala.bpmn
 import camundala.dsl.DSL
 
 object DemoProcessRunnerApp extends zio.App with DSL:
@@ -8,16 +8,19 @@ object DemoProcessRunnerApp extends zio.App with DSL:
   def run(args: List[String]) =
     runnerLogic.exitCode
 
+  val demoProcessPath = "./dsl/src/test/cawemo/process-cawemo.bpmn"
+  val demoProcessOutputPath = "./dsl/src/test/cawemo/output/process-cawemo.bpmn"
   private lazy val runnerLogic =
     BpmnRunner(
       RunnerConfig(
-        path("bpmns/process-cawemo.bpmn"),
+        path(demoProcessPath),
         demoProcess.demoBpmn,
-        path("camunda-demo/src/main/resources/demo-process.bpmn")
+        path(demoProcessOutputPath)
       )
     ).run()
 
 object demoProcess extends DSL :
+  val demoProcessWithIdsPath = "./dsl/src/test/cawemo/with-ids/process-cawemo.bpmn"
   val admin = group("admin")
     .name("Administrator")
     .groupType("system")
@@ -29,7 +32,7 @@ object demoProcess extends DSL :
 
   val isBarVar = "isBar"
   lazy val demoBpmn =
-    bpmn("bpmns/with-ids/process-cawemo.bpmn")
+    bpmn(demoProcessWithIdsPath)
       .processes(
         process("TestDSLProcess")
           .starterGroup(

@@ -23,7 +23,7 @@ object ToCamundaBpmnSuites
   val sequenceFlowIsNotBar = sequenceFlow("flowIsNotBar")
 
   val bpmnModel: Bpmn =
-    bpmn("src/test/resources/process.bpmn")
+    bpmn("./dsl/src/test/cawemo/process.bpmn")
       .processes(
         process("testDslProcess")
           .starterUser("Darth.Vader")
@@ -82,7 +82,7 @@ object ToCamundaBpmnSuites
 
   def spec = suite("ToCamundaBpmnSuites")(
     testM("merge DSL Bpmn with BPMN XML") {
-      assertM(bpmnModel.toCamunda(path("camunda-demo/src/main/resources/generatedBpmn.bpmn")))(isUnit)
+      assertM(bpmnModel.toCamunda(path("./dsl/src/test/cawemo/output/generatedBpmn.bpmn")))(isUnit)
     }
   )
 
