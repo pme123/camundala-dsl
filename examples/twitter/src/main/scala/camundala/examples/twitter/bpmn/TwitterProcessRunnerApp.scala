@@ -1,6 +1,6 @@
 package camundala.examples.twitter.bpmn
 
-import camundala.bpmn.*
+import camundala.dev.*
 
 import camundala.dsl.DSL
 import camundala.examples.twitter.delegates.*
@@ -31,7 +31,7 @@ object twitterProcess extends DSL:
         process("TwitterDemoProcess")
           .nodes(
             startEvent("TweetWritten")
-              .
+              .createTweetForm
               .prop("KPI-Cycle-Start", "Tweet Approval Time"),
             userTask("ReviewTweet")
               .reviewTweetForm

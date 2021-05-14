@@ -1,4 +1,4 @@
-package camundala.bpmn
+package camundala.dev
 
 import camundala.dsl.DSL
 import camundala.model.*

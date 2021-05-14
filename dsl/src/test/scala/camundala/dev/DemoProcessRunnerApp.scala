@@ -1,6 +1,6 @@
-package camundala.bpmn
+package camundala.dev
 
-import camundala.bpmn
+import camundala.dev
 import camundala.dsl.DSL
 
 object DemoProcessRunnerApp extends zio.App with DSL:
