@@ -40,7 +40,7 @@ trait HasActivity[T] extends HasProcessNode[T] with HasInputParameters[T]:
   def withProcessNode(processNode: ProcessNode): T =
     withActivity(activity.copy(processNode = processNode))
   
-  def inputs(params: InOutParameter*): T = withActivity(
+  def withInputs(params: InOutParameter*): T = withActivity(
     activity.withInputs(params: _*)
   )
 
