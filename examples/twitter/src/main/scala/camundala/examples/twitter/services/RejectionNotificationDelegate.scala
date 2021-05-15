@@ -1,5 +1,6 @@
-package camundala.examples.twitter.delegates
+package camundala.examples.twitter.services
 
+import camundala.examples.twitter.dsl.delecateExpr
 import org.camunda.bpm.engine.delegate.{DelegateExecution, JavaDelegate}
 import org.springframework.stereotype.Service
 

@@ -14,3 +14,8 @@ object VariableAssignment:
   object Expression :
     def apply(expr: String):Expression =
       new Expression(wrapExpression(expr))
+
+trait HasInputParameters[T]:
+  def inputParameters: Seq[InOutParameter]
+
+  def withInputs(params: Seq[InOutParameter]): T

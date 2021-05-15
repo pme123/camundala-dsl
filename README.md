@@ -1,14 +1,27 @@
-## sbt project cross-compiled with Dotty and Scala 2
+# Camundala
+> Using the BPMN-Power of _**Camunda**_
+and the Type safety of _**Scala**_ to develop a new way of BPMN Development.
+## Why Camundala
+* Typesafe
+* Code Completion
+* Composable on any Granularity
+* Automatic Testing included
+* 100% Camunda compatible
 
-## BPMN 2.0
+## State of the Project
+This is still in experimental State to evaluate if this makes sense to me and others.
 
+So I try to keep this repo as stable as possible - there are no guarantees for that.
+
+If you want to try it out and you are stuck - please open an issue!
+
+This project is the 2. attempt realising these ideas. Here you find the first attempt: https://github.com/pme123/camundala
+
+## Twitter Example
+As a first demo I used the famous Twitter example.
+See [here](examples/twitter/README.md)
+
+## References
+
+### BPMN 2.0
 see https://www.omg.org/spec/BPMN/2.0/PDF
-
-### Usage
-
-This is a normal sbt project, you can compile code with `sbt compile` and run it
-with `sbt run`, `sbt console` will start a Dotty REPL. For more information on
-cross-compilation in sbt, see <https://www.scala-sbt.org/1.x/docs/Cross-Build.html>.
-
-For more information on the sbt-dotty plugin, see the
-[dotty-example-project](https://github.com/lampepfl/dotty-example-project/blob/master/README.md).

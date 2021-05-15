@@ -3,8 +3,8 @@ package camundala.examples.twitter.bpmn
 import camundala.dev.*
 
 import camundala.dsl.DSL
-import camundala.examples.twitter.delegates.*
-import camundala.examples.twitter.delegates.delecateExpr.{emailAdapter, tweetAdapter}
+import camundala.examples.twitter.services.*
+import camundala.examples.twitter.dsl.*
 
 import java.io.File
 

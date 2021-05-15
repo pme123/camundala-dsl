@@ -5,17 +5,17 @@ import camundala.model.BpmnProcess.ElemKey
 sealed trait HasEvent[T] extends HasProcessNode[T]
 
 case class StartEvent(
-    processNode: ProcessNode,
-    bpmnForm: Option[BpmnForm] = None
+                       processNode: ProcessNode,
+                       maybeForm: Option[BpmnForm] = None
 ) extends HasEvent[StartEvent]
-    with HasForm[StartEvent]:
+    with HasMaybeForm[StartEvent]:
 
   def elemKey = ElemKey.startEvents
 
-  def withProcessNode(processNode: ProcessNode): StartEvent = 
+  def withProcessNode(processNode: ProcessNode): StartEvent =
     copy(processNode = processNode)
 
-  def form(form: BpmnForm): StartEvent = copy(bpmnForm = Some(form))
+  def withForm(form: BpmnForm): StartEvent = copy(maybeForm = Some(form))
 
 object StartEvent:
   def apply(ident: String): StartEvent =
@@ -29,7 +29,7 @@ case class EndEvent(
 
   def elemKey = ElemKey.endEvents
 
-  def inputs(params: InOutParameter*): EndEvent = copy(inputParameters = params)
+  def withInputs(params: InOutParameter*): EndEvent = copy(inputParameters = params)
 
   def withProcessNode(processNode: ProcessNode): EndEvent = 
     copy(processNode = processNode)

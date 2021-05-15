@@ -1,4 +1,4 @@
-package camundala.examples.twitter.delegates
+package camundala.examples.twitter.services
 
 import org.camunda.bpm.engine.delegate.{DelegateExecution, JavaDelegate}
 import twitter4j.auth.AccessToken

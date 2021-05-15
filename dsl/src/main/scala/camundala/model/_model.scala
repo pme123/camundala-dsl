@@ -30,14 +30,19 @@ trait HasIdent:
   def ident: Ident
 
 trait HasActivity[T] extends HasProcessNode[T] with HasInputParameters[T]:
+
   def activity: Activity
   def withActivity(activity: Activity): T
+
   def processNode: ProcessNode = activity.processNode
-
-  def withProcessNode(processNode: ProcessNode): T = 
-    withActivity(activity.copy(processNode = processNode))
-
   def inputParameters = activity.inputParameters
+
+  def withProcessNode(processNode: ProcessNode): T =
+    withActivity(activity.copy(processNode = processNode))
+  
+  def inputs(params: InOutParameter*): T = withActivity(
+    activity.withInputs(params: _*)
+  )
 
 trait HasTask[T] extends HasActivity[T]:
   def task: Task
@@ -49,10 +54,6 @@ trait HasTask[T] extends HasActivity[T]:
 
   lazy val activity = task.activity
 
-  def inputs(params: InOutParameter*): T = withTask(
-    task.copy(activity = activity.inputs(params: _*))
-  )
-
 trait HasTaskImplementation[T]:
   def elemKey: ElemKey
 
@@ -60,10 +61,10 @@ trait HasTaskImplementation[T]:
 
   def taskImplementation(taskImplementation: TaskImplementation): T
 
-trait HasForm[T]:
-  def bpmnForm: Option[BpmnForm]
+trait HasMaybeForm[T]:
+  def maybeForm: Option[BpmnForm]
 
-  def form(form: BpmnForm): T
+  def withForm(form: BpmnForm): T
 
 trait HasProperties[T]:
   def properties: Properties
@@ -78,11 +79,6 @@ trait HasTransactionBoundary[T]:
   def asyncBefore: T
 
   def asyncAfter: T
-
-trait HasInputParameters[T]:
-  def inputParameters: Seq[InOutParameter]
-
-  def inputs(params: Seq[InOutParameter]): T
 
 opaque type ProcessVarString = Ident
 

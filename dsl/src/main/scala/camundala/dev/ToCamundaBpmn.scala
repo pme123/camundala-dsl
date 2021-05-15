@@ -163,7 +163,6 @@ trait ToCamundaBpmn:
 
   extension (taskImpl: TaskImplementation)
     def merge(elem: camunda.ServiceTask): Unit =
-      println(s"TaskImplementation: $taskImpl")
       taskImpl match
         case Expression(expresssion, resultVariable) =>
           elem.setCamundaExpression(expresssion)
@@ -179,7 +178,7 @@ trait ToCamundaBpmn:
   extension (event: StartEvent)
     def merge(elem: camunda.StartEvent): ToCamundable[Unit] =
       val builder: StartEventBuilder = elem.builder()
-      event.bpmnForm.foreach {
+      event.maybeForm.foreach {
         case EmbeddedForm(formRef) =>
           builder.camundaFormKey(formRef.toString)
         case EmbeddedStaticForm(formPath) =>
@@ -198,7 +197,7 @@ trait ToCamundaBpmn:
     def merge(elem: camunda.UserTask): ToCamundable[Unit] =
       val builder: UserTaskBuilder = elem.builder()
 
-      task.bpmnForm.foreach {
+      task.maybeForm.foreach {
         case EmbeddedForm(formRef) =>
           builder.camundaFormKey(formRef.toString)
         case EmbeddedStaticForm(formPath) =>

@@ -21,15 +21,15 @@ import camundala.model._
 
 trait forms:
 
-  extension[T](hasForm: HasForm[T])
+  extension[T](hasForm: HasMaybeForm[T])
     def form(formRef: FormKey): T =
-      hasForm.form(EmbeddedForm(formRef))
+      hasForm.withForm(EmbeddedForm(formRef))
     
     def staticForm(path: String): T =
-      hasForm.form(EmbeddedStaticForm(path))
+      hasForm.withForm(EmbeddedStaticForm(path))
 
     def form(formFields: FormField*): T =
-      hasForm.form(GeneratedForm(formFields))
+      hasForm.withForm(GeneratedForm(formFields))
 
   def formKey(key: String): FormKey = FormKey(key)
 

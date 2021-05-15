@@ -9,7 +9,7 @@ trait parameters:
   extension[T](hasInputParams: HasInputParameters[T])
 
     def inputParam(inout: InOutParameter): T =
-            hasInputParams.inputs(
+            hasInputParams.withInputs(
         hasInputParams.inputParameters :+ inout
       )
 

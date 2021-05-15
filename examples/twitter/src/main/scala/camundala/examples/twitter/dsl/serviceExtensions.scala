@@ -1,4 +1,4 @@
-package camundala.examples.twitter.delegates
+package camundala.examples.twitter.dsl
 
 import camundala.model.TaskImplementation.DelegateExpression
 import camundala.model.{HasTaskImplementation, ServiceTask}

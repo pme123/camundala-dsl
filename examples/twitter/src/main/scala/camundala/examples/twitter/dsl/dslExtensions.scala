@@ -1,6 +1,6 @@
 package camundala.examples.twitter.bpmn
 
-import camundala.model.{HasProperties, HasForm}
+import camundala.model.{HasProperties, HasMaybeForm}
 import camundala.dsl.DSL.*
 
 private val probabilityKey = "probability"
@@ -14,7 +14,7 @@ extension [T](hasProperties: HasProperties[T])
     def kpiRatio(label: String): T =    
         hasProperties.prop(kpiRatioKey, label)
 
-extension [T](hasForm: HasForm[T])
+extension [T](hasForm: HasMaybeForm[T])
 
     def createTweetForm: T =
         hasForm.staticForm("forms/createTweet.html")

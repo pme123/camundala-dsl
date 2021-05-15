@@ -11,7 +11,10 @@ case class Activity(
   val ident = processNode.ident
   val properties: Properties = processNode.properties
 
-  def inputs(params: InOutParameter*): Activity = copy(inputParameters = params)
+  def withInputs(params: InOutParameter*): Activity = copy(inputParameters = params)
+
+  def withProcessNode(processNode: ProcessNode): Activity =
+    copy(processNode = processNode)
 
   def prop(prop: Property): Activity =
     copy(processNode = processNode.prop(prop))
@@ -160,15 +163,15 @@ case class BusinessRuleTask(
   ): BusinessRuleTask =
     this //TODO copy(taskImplementation = taskImplementation)
 
-case class UserTask(task: Task, bpmnForm: Option[BpmnForm] = None)
+case class UserTask(task: Task, maybeForm: Option[BpmnForm] = None)
     extends HasTask[UserTask]
-    with HasForm[UserTask]:
+    with HasMaybeForm[UserTask]:
 
   val elemKey = ElemKey.userTasks
 
   def withTask(task: Task): UserTask = copy(task = task)
 
-  def form(form: BpmnForm): UserTask = copy(bpmnForm = Some(form))
+  def withForm(form: BpmnForm): UserTask = copy(maybeForm = Some(form))
 
 object UserTask:
 
