@@ -1,4 +1,4 @@
-# Camundala
+# Camundala — a new Way to develop Camunda BPMNs.
 > Using the BPMN-Power of _**Camunda**_
 and the Type safety of _**Scala**_ to develop a new way of BPMN Development.
 ## Why Camundala
@@ -7,6 +7,9 @@ and the Type safety of _**Scala**_ to develop a new way of BPMN Development.
 * Composable on any Granularity
 * Automatic Testing included
 * 100% Camunda compatible
+
+## Check my Blog Post: 
+[Camundala — a new Way to develop Camunda BPMNs.](https://pme123.medium.com/camundala-a-new-way-to-develop-camunda-bpmns-b16134607f94)
 
 ## State of the Project
 This is still in experimental State to evaluate if this makes sense to me and others.
