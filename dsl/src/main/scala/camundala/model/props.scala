@@ -12,3 +12,8 @@ case class Properties(properties: Seq[Property] = Seq.empty):
 object Properties {
   val none: Properties = Properties()
 }
+
+trait HasProperties[T]:
+  def properties: Properties
+
+  def prop(prop: Property): T

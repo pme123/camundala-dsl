@@ -1,6 +1,6 @@
 # Camundala — a new Way to develop Camunda BPMNs.
 > Using the BPMN-Power of _**Camunda**_
-and the Type safety of _**Scala**_ to develop a new way of BPMN Development.
+and the Type safety of _**Scala**_ to develop BPMN Processes with a nice DSL.
 ## Why Camundala
 * Typesafe
 * Code Completion

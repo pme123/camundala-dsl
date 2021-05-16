@@ -6,13 +6,16 @@ import camundala.model.TaskImplementation._
 
 case class Activity(
     processNode: ProcessNode,
-    inputParameters: Seq[InOutParameter] = Seq.empty
+    inputParameters: Seq[InOutParameter] = Seq.empty,
+    outputParameters: Seq[InOutParameter] = Seq.empty
 ):
   val ident = processNode.ident
   val properties: Properties = processNode.properties
 
-  def withInputs(params: InOutParameter*): Activity = copy(inputParameters = params)
-
+  def withInputs(params: InOutParameter*): Activity =
+    copy(inputParameters = params)
+  def withOutputs(params: InOutParameter*): Activity =
+    copy(outputParameters = params)
   def withProcessNode(processNode: ProcessNode): Activity =
     copy(processNode = processNode)
 
@@ -23,6 +26,31 @@ case class Activity(
 
   def asyncAfter: Activity = copy(processNode = processNode.asyncAfter)
 
+object Activity:
+  def apply(ident: String): Activity =
+    Activity(ProcessNode(ident))
+
+trait HasActivity[T]
+    extends HasProcessNode[T]
+    with HasInputParameters[T]
+    with HasOutputParameters[T]:
+
+  def activity: Activity
+  def withActivity(activity: Activity): T
+
+  def processNode: ProcessNode = activity.processNode
+  def withProcessNode(processNode: ProcessNode): T =
+    withActivity(activity.copy(processNode = processNode))
+
+  def inputParameters = activity.inputParameters
+  def withInputs(params: InOutParameter*): T = withActivity(
+    activity.withInputs(params: _*)
+  )
+  def outputParameters = activity.outputParameters
+  def withOutputs(params: InOutParameter*): T = withActivity(
+    activity.withOutputs(params: _*)
+  )
+
 case class Task(activity: Activity) extends HasIdent:
   val ident = activity.ident
 
@@ -30,14 +58,20 @@ case class Task(activity: Activity) extends HasIdent:
 
   def prop(prop: Property): Task = copy(activity = activity.prop(prop))
 
-object Activity:
-  def apply(ident: String): Activity =
-    Activity(ProcessNode(ident))
-
 object Task:
 
   def apply(ident: String): Task =
     Task(Activity(ident))
+
+trait HasTask[T] extends HasActivity[T]:
+  def task: Task
+
+  def withTask(task: Task): T
+
+  def withActivity(activity: Activity): T =
+    withTask(task.copy(activity = activity))
+
+  lazy val activity = task.activity
 
 sealed trait TaskImplementation
 
@@ -70,6 +104,15 @@ object TaskImplementation:
       with BusinessRuleTaskImpl
 
   case class ExternalTask(topic: String) extends TaskImplementation
+
+end TaskImplementation
+
+trait HasTaskImplementation[T]:
+  def elemKey: ElemKey
+
+  def taskImplementation: TaskImplementation
+
+  def taskImplementation(taskImplementation: TaskImplementation): T
 
 sealed trait BusinessRuleTaskImpl
 

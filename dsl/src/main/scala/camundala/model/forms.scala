@@ -127,3 +127,8 @@ object Constraint:
 
   case class Max(value: Int) extends MinMax:
     val name: Ident = Ident("max")
+
+trait HasMaybeForm[T]:
+  def maybeForm: Option[BpmnForm]
+
+  def withForm(form: BpmnForm): T

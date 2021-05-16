@@ -29,48 +29,6 @@ object TenantId:
 trait HasIdent:
   def ident: Ident
 
-trait HasActivity[T] extends HasProcessNode[T] with HasInputParameters[T]:
-
-  def activity: Activity
-  def withActivity(activity: Activity): T
-
-  def processNode: ProcessNode = activity.processNode
-  def inputParameters = activity.inputParameters
-
-  def withProcessNode(processNode: ProcessNode): T =
-    withActivity(activity.copy(processNode = processNode))
-  
-  def withInputs(params: InOutParameter*): T = withActivity(
-    activity.withInputs(params: _*)
-  )
-
-trait HasTask[T] extends HasActivity[T]:
-  def task: Task
-
-  def withTask(task: Task): T
-
-  def withActivity(activity: Activity): T =
-    withTask(task.copy(activity = activity))
-
-  lazy val activity = task.activity
-
-trait HasTaskImplementation[T]:
-  def elemKey: ElemKey
-
-  def taskImplementation: TaskImplementation
-
-  def taskImplementation(taskImplementation: TaskImplementation): T
-
-trait HasMaybeForm[T]:
-  def maybeForm: Option[BpmnForm]
-
-  def withForm(form: BpmnForm): T
-
-trait HasProperties[T]:
-  def properties: Properties
-
-  def prop(prop: Property): T
-
 trait HasTransactionBoundary[T]:
   def isAsyncBefore: Boolean
 

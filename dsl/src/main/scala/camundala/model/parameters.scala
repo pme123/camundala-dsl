@@ -19,3 +19,8 @@ trait HasInputParameters[T]:
   def inputParameters: Seq[InOutParameter]
 
   def withInputs(params: Seq[InOutParameter]): T
+
+trait HasOutputParameters[T]:
+  def outputParameters: Seq[InOutParameter]
+
+  def withOutputs(params: Seq[InOutParameter]): T
