@@ -144,8 +144,6 @@ case class ProcessNode(
 
   def asyncAfter: ProcessNode = copy(isAsyncAfter = true)
 
-  def prop(prop: Property): ProcessNode =
-    copy(processElement = processElement.prop(prop))
 
 object ProcessNode:
   def apply(ident: String): ProcessNode =

@@ -19,13 +19,6 @@ case class Activity(
   def withProcessNode(processNode: ProcessNode): Activity =
     copy(processNode = processNode)
 
-  def prop(prop: Property): Activity =
-    copy(processNode = processNode.prop(prop))
-
-  def asyncBefore: Activity = copy(processNode = processNode.asyncBefore)
-
-  def asyncAfter: Activity = copy(processNode = processNode.asyncAfter)
-
 object Activity:
   def apply(ident: String): Activity =
     Activity(ProcessNode(ident))
@@ -51,12 +44,7 @@ trait HasActivity[T]
     activity.withOutputs(params: _*)
   )
 
-case class Task(activity: Activity) extends HasIdent:
-  val ident = activity.ident
-
-  val properties: Properties = activity.properties
-
-  def prop(prop: Property): Task = copy(activity = activity.prop(prop))
+case class Task(activity: Activity)
 
 object Task:
 
