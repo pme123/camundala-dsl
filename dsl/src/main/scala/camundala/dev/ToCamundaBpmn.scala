@@ -27,7 +27,6 @@ import org.camunda.bpm.model.{bpmn => camundaBpmn}
 import scala.jdk.CollectionConverters.*
 import java.io.File
 import camundala.dsl.DSL.Givens.given
-
 import scala.language.implicitConversions
 import zio.*
 
@@ -83,9 +82,11 @@ trait ToCamundaBpmn:
       } yield ()
 
   extension (procElement: HasProcessElement[_])
+
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
       (for {
         _ <- mergeElem
+        //  _ <- mergeNode
         _ <- mergeTransactionBoundaries
       } yield ())
         .mapError(ex => ToCamundaException(ex.getMessage()))
@@ -127,23 +128,36 @@ trait ToCamundaBpmn:
               summon[BpmnModelInstance].getModelElementById(pe.ident)
             pe
               .merge(elem)
-      ) andThen ZIO {
-        if (!procElement.properties.isEmpty) {
-          val elem: camunda.BaseElement =
-            summon[BpmnModelInstance].getModelElementById(procElement.ident)
-          val props: CamundaProperties =
-            summon[BpmnModelInstance].newInstance(classOf[CamundaProperties])
-          elem.builder.addExtensionElement(props).done
-          procElement.properties.properties
-            .foreach { case Property(ident, value) =>
-              val cp =
-                summon[BpmnModelInstance].newInstance(classOf[CamundaProperty])
-              cp.setCamundaName(ident.toString)
-              cp.setCamundaValue(value)
-              props.getCamundaProperties().add(cp)
-            }
+      ) andThen
+        procElement.propsToCamunda(
+          summon[BpmnModelInstance].getModelElementById(procElement.ident)
+        ) andThen
+        ZIO(
+          procElement match
+            case pe: HasProperties[_] =>
+              pe.propsToCamunda(
+                summon[BpmnModelInstance].getModelElementById(procElement.ident)
+              )
+        ) andThen
+        ZIO{
+          val inout = summon[BpmnModelInstance].newInstance(classOf[CamundaInputOutput])
+          val elem: camunda.BaseElement = summon[BpmnModelInstance].getModelElementById(procElement.ident)
+          procElement match
+            case iop: (HasInputParameters[_] & HasOutputParameters[_]) =>
+              if (iop.inputParameters.nonEmpty || iop.outputParameters.nonEmpty)
+                elem.builder.addExtensionElement(inout).done
+                iop.inputParamsToCamunda(elem, inout)
+                iop.outputParamsToCamunda(elem, inout)
+            case ip: HasInputParameters[_] =>
+              if (ip.inputParameters.nonEmpty)
+                elem.builder.addExtensionElement(inout).done
+                ip.inputParamsToCamunda(elem, inout)
+            case op: HasOutputParameters[_] =>
+              if (op.outputParameters.nonEmpty)
+                elem.builder.addExtensionElement(inout).done
+                op.outputParamsToCamunda(elem, inout)
+            case _ => ()
         }
-      }
 
     private def mergeTransactionBoundaries: ToCamundable[zio.Task[Unit]] =
       ZIO(
@@ -156,6 +170,73 @@ trait ToCamundaBpmn:
             elem.setCamundaAsyncAfter(pe.isAsyncAfter)
           case _ => ()
       )
+
+  extension (hasProperties: HasProperties[_])
+    def propsToCamunda(
+        elem: camunda.BaseElement
+    ): ToCamundable[zio.Task[Unit]] =
+      zio.Task {
+        if (hasProperties.properties.nonEmpty) {
+          val props: CamundaProperties =
+            summon[BpmnModelInstance].newInstance(classOf[CamundaProperties])
+          elem.builder.addExtensionElement(props).done
+          hasProperties.properties.properties
+            .foreach { case Property(ident, value) =>
+              val cp =
+                summon[BpmnModelInstance].newInstance(classOf[CamundaProperty])
+              cp.setCamundaName(ident.toString)
+              cp.setCamundaValue(value)
+              props.getCamundaProperties().add(cp)
+            }
+        }
+      }
+
+  extension (hasInputParams: HasInputParameters[_])
+    def inputParamsToCamunda(elem: camunda.BaseElement, inout: CamundaInputOutput): ToCamundable[Unit] =
+      hasInputParams.inputParameters
+        .foreach { case InOutParameter(ident, value) =>
+          val cp = summon[BpmnModelInstance].newInstance(
+            classOf[CamundaInputParameter]
+          )
+          cp.setCamundaName(ident.toString)
+          inout.getCamundaInputParameters().add(cp)
+          value.paramsToCamunda(cp)
+        }
+
+  extension (hasOutputParams: HasOutputParameters[_])
+    def outputParamsToCamunda(elem: camunda.BaseElement, inout: CamundaInputOutput): ToCamundable[Unit] =
+      hasOutputParams.outputParameters
+        .foreach { case InOutParameter(ident, value) =>
+          val cp = summon[BpmnModelInstance].newInstance(
+            classOf[CamundaOutputParameter]
+          )
+          cp.setCamundaName(ident.toString)
+          inout.getCamundaOutputParameters().add(cp)
+          value.paramsToCamunda(cp)
+        }
+
+  extension (value: VariableAssignment | ScriptImplementation)
+    def paramsToCamunda(
+        cp: CamundaGenericValueElement & ModelElementInstance
+    ): ToCamundable[Unit] =
+      value match
+        case VariableAssignment.StringVal(str) =>
+          cp.setTextContent(str)
+        case VariableAssignment.Expression(str) =>
+          cp.setTextContent(str)
+        case InlineScript(lang, str) =>
+          val script: CamundaScript =
+            summon[BpmnModelInstance].newInstance(classOf[CamundaScript])
+          script.setCamundaScriptFormat(lang.toString)
+          script.setTextContent(str)
+          cp.setValue(script)
+        case ExternalScript(lang, resource) =>
+          val script: CamundaScript =
+            summon[BpmnModelInstance].newInstance(classOf[CamundaScript])
+          script.setCamundaScriptFormat(lang.toString)
+          script.setCamundaResource(resource)
+          cp.setValue(script)
+
   extension (task: ServiceTask)
     def merge(elem: camunda.ServiceTask): Unit =
       task.taskImplementation

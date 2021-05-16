@@ -48,7 +48,12 @@ object demoProcess extends DSL :
               .inputString("in1", "value1")
               .inputExpression("myBoolean", "true")
               .inputGroovy("groovyRef", "myGroovy.groovy")
-              .inputGroovyInline("additon", "1 + 3"),
+              .inputGroovyInline("additon", "1 + 3")
+              .outputString("in1", "value1")
+              .outputExpression("myBoolean", "true")
+              .outputGroovy("groovyRef", "myGroovy.groovy")
+              .outputGroovyInline("additon", "1 + 3")
+              ,
             userTask("UserTaskA")
               .form(formKey("my-form-key")),
             userTask("UserTaskB")
@@ -65,6 +70,7 @@ object demoProcess extends DSL :
             exclusiveGateway("Fork").asyncAfter,
             exclusiveGateway("gatewayJoin"),
             endEvent("EndProcess")
+              .inputString("endFlag", "finished")
           )
           .flows(
             sequenceFlow("IsNOTBar_Fork-UserTaskA")

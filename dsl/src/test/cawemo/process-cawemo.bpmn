@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="_8bKMYE5TEeSvRrSmPCK-VA" targetNamespace="http://camunda.org/examples" exporter="Camunda Modeler" exporterVersion="4.6.0" camunda:diagramRelationId="db7b011b-ae11-4804-a86a-60d63e08c976" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="_8bKMYE5TEeSvRrSmPCK-VA" targetNamespace="http://camunda.org/examples" exporter="Camunda Modeler" exporterVersion="4.7.0" camunda:diagramRelationId="db7b011b-ae11-4804-a86a-60d63e08c976" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
   <bpmn2:collaboration id="Collaboration_1fhw5dw">
     <bpmn2:documentation>This is just a test for Camundala</bpmn2:documentation>
     <bpmn2:participant id="Participant_006et1b" name="Test DSL Process" processRef="testDslProcess" />
@@ -24,11 +24,6 @@
       <bpmn2:outgoing>flow7</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:endEvent id="rtztutzu" name="End Process">
-      <bpmn2:extensionElements>
-        <camunda:inputOutput>
-          <camunda:inputParameter name="Input_1b01a9o" />
-        </camunda:inputOutput>
-      </bpmn2:extensionElements>
       <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:serviceTask id="asdfgxx" name="Service Task">
@@ -50,7 +45,6 @@
     <bpmn2:sequenceFlow id="flow5" name="" sourceRef="asdfdsf" targetRef="gatewayJoin" />
     <bpmn2:sequenceFlow id="flow7" name="" sourceRef="gatewayJoin" targetRef="sdfsdf" />
     <bpmn2:sequenceFlow id="SequenceFlow_9" name="" sourceRef="sdfsdf" targetRef="rtztutzu" />
-    <bpmn2:boundaryEvent id="Event_1r2fsmi" name="asdfasdf" attachedToRef="userTaskB" />
     <bpmn2:sequenceFlow id="Flow_1i69u7d" sourceRef="Event_12wc9ij" targetRef="gatewayJoin" />
     <bpmn2:intermediateThrowEvent id="Event_12wc9ij" name="asdfdsf">
       <bpmn2:incoming>flow6</bpmn2:incoming>
@@ -63,6 +57,10 @@
       <bpmndi:BPMNShape id="Participant_006et1b_di" bpmnElement="Participant_006et1b" isHorizontal="true">
         <dc:Bounds x="154" y="58" width="850" height="320" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1i69u7d_di" bpmnElement="Flow_1i69u7d">
+        <di:waypoint x="721" y="296" />
+        <di:waypoint x="721" y="243" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_9" bpmnElement="SequenceFlow_9" sourceElement="Activity_16o34d6_di" targetElement="_BPMNShape_EndEvent_3">
         <di:waypoint x="896" y="218" />
         <di:waypoint x="946" y="218" />
@@ -111,10 +109,6 @@
         <di:waypoint x="242" y="219" />
         <di:waypoint x="292" y="219" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1i69u7d_di" bpmnElement="Flow_1i69u7d">
-        <di:waypoint x="721" y="296" />
-        <di:waypoint x="721" y="243" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_ExclusiveGateway_2" bpmnElement="gatewayFork" isMarkerVisible="true">
         <dc:Bounds x="442" y="194" width="50" height="50" />
         <bpmndi:BPMNLabel>
@@ -155,12 +149,6 @@
         <dc:Bounds x="703" y="296" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="703" y="339" width="36" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1tumxeo_di" bpmnElement="Event_1r2fsmi">
-        <dc:Bounds x="602" y="336" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="599" y="379" width="42" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
