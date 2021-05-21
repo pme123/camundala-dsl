@@ -1,9 +1,8 @@
 val projectVersion = "0.1.0-SNAPSHOT"
 val scala2Version = "2.13.4"
-val scala3Version = "3.0.0-RC3"
-val zioVersion = "1.0.7"
+val scala3Version = "3.0.0"
+val zioVersion = "1.0.8"
 val org = "io.github.pme123"
-
 
 lazy val root = project
   .in(file("."))
@@ -17,7 +16,6 @@ lazy val dsl = project
     organization := org,
     scalaVersion := scala3Version,
     version := projectVersion,
-
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
       "org.camunda.bpm.model" % "camunda-bpmn-model" % "7.14.0",
@@ -31,7 +29,7 @@ lazy val dsl = project
     scalaVersion := scala3Version,
 
     // To cross compile with Dotty and Scala 2
-    crossScalaVersions := Seq(scala3Version, scala2Version)
+   // crossScalaVersions := Seq(scala3Version, scala2Version)
   )
 
 // EXAMPLES
@@ -48,7 +46,6 @@ lazy val exampleTwitter = project
     organization := org,
     scalaVersion := scala3Version,
     version := projectVersion,
-
     libraryDependencies ++= Seq(
       "org.springframework.boot" % "spring-boot-starter-web" % springBootVersion,
       "org.springframework.boot" % "spring-boot-starter-jdbc" % springBootVersion,
@@ -56,4 +53,5 @@ lazy val exampleTwitter = project
       "org.twitter4j" % "twitter4j-core" % twitter4jVersion,
       "com.h2database" % "h2" % h2Version
     )
-  ).dependsOn(dsl)
+  )
+  .dependsOn(dsl)

@@ -6,6 +6,7 @@ import camundala.dsl.DSL
 import camundala.examples.twitter.services.*
 import camundala.examples.twitter.dsl.*
 
+
 import java.io.File
 
 object TwitterProcessRunnerApp extends zio.App with DSL:
@@ -23,6 +24,8 @@ object TwitterProcessRunnerApp extends zio.App with DSL:
     ).run()
 
 object twitterProcess extends DSL:
+
+  case class Tweet(email: String, content: String)
 
   private val kpiRatio = "KPI-Ratio"
   lazy val twitterBpmn =

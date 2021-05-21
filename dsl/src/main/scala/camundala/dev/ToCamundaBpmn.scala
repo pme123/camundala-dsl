@@ -132,14 +132,14 @@ trait ToCamundaBpmn:
         procElement.propsToCamunda(
           summon[BpmnModelInstance].getModelElementById(procElement.ident)
         ) andThen
-        ZIO(
+        ZIO( // HasProperties
           procElement match
             case pe: HasProperties[_] =>
               pe.propsToCamunda(
                 summon[BpmnModelInstance].getModelElementById(procElement.ident)
               )
         ) andThen
-        ZIO{
+        ZIO{ // HasInputParameters / HasOutputParameters
           val inout = summon[BpmnModelInstance].newInstance(classOf[CamundaInputOutput])
           val elem: camunda.BaseElement = summon[BpmnModelInstance].getModelElementById(procElement.ident)
           procElement match
