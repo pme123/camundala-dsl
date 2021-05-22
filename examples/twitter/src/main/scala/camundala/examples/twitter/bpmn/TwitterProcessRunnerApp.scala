@@ -26,6 +26,7 @@ object TwitterProcessRunnerApp extends zio.App with DSL:
 object twitterProcess extends DSL:
 
   case class Tweet(email: String, content: String)
+  case class ApprovedTweet(tweet: Tweet, approved: Boolean)
 
   private val kpiRatio = "KPI-Ratio"
   lazy val twitterBpmn =
