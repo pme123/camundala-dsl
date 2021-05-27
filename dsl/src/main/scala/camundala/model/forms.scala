@@ -15,7 +15,8 @@ opaque type FormKey = String
 object FormKey:
   def apply(formKey: String): FormKey = formKey
 
-case class EmbeddedStaticForm(private val formPath: BpmnPath) extends BpmnForm
+case class EmbeddedStaticForm(private val formPath: BpmnPath) extends BpmnForm :
+  val formPathStr = formPath.toString
 
 object EmbeddedStaticForm:
   @targetName("create")

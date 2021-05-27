@@ -14,10 +14,12 @@ extension [T](hasProperties: HasProperties[T])
     def kpiRatio(label: String): T =    
         hasProperties.prop(kpiRatioKey, label)
 
+final val createTweetFormPath = "forms/createTweet.html"        
+final val reviewTweetFormPath = "forms/reviewTweet.html"        
 extension [T](hasForm: HasMaybeForm[T])
 
     def createTweetForm: T =
-        hasForm.staticForm("forms/createTweet.html")
+        hasForm.staticForm(createTweetFormPath)
 
     def reviewTweetForm: T =    
-        hasForm.staticForm("forms/reviewTweet.html")
+        hasForm.staticForm(reviewTweetFormPath)

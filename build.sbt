@@ -51,7 +51,12 @@ lazy val exampleTwitter = project
       "org.springframework.boot" % "spring-boot-starter-jdbc" % springBootVersion,
       "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-webapp" % camundaSpringBootStarterVersion,
       "org.twitter4j" % "twitter4j-core" % twitter4jVersion,
-      "com.h2database" % "h2" % h2Version
+      "com.h2database" % "h2" % h2Version,
+      "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0" % Test,
+      "org.assertj" % "assertj-core" % "3.19.0" % Test,
+      "org.mockito" % "mockito-core" % "3.1.0" % Test,
+      "com.novocode" % "junit-interface" % "0.11" % Test
+
     )
   )
   .dependsOn(dsl)
