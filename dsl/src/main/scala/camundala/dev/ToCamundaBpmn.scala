@@ -84,24 +84,34 @@ trait ToCamundaBpmn:
   extension (procElement: HasProcessElement[_])
 
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
-      (for {
-        _ <- mergeElem
+      for {
+        elem <- checkElem()
+        _ <- mergeSpecElem
         //  _ <- mergeNode
+        _ <- mergeProperties(elem)
         _ <- mergeTransactionBoundaries
-      } yield ())
-        .mapError(ex => {
-          ex.printStackTrace
-          ToCamundaException(ex.getMessage())
-        })
+      } yield ()
 
-    private def mergeElem: ToCamundable[zio.Task[Unit]] =
+    private def checkElem()
+        : ToCamundable[IO[ToCamundaException, camunda.BaseElement]] =
+      val elem: camunda.BaseElement =
+        summon[BpmnModelInstance].getModelElementById(procElement.ident)
+      if (elem == null)
+        ZIO.fail(
+          ToCamundaException(
+            s"There is no existing ${procElement.elemKey.name} with this ident: ${procElement.ident}"
+          )
+        )
+      else
+        ZIO.succeed(elem)
+
+    private def mergeSpecElem: ToCamundable[IO[ToCamundaException, Unit]] =
       ZIO(
         procElement match
           case pe: StartEvent =>
             val elem: camunda.StartEvent =
               summon[BpmnModelInstance].getModelElementById(pe.ident)
-            pe
-              .merge(elem)
+            pe.merge(elem)
           case pe: ServiceTask =>
             val elem: camunda.ServiceTask =
               summon[BpmnModelInstance].getModelElementById(pe.ident)
@@ -109,60 +119,59 @@ trait ToCamundaBpmn:
           case pe: UserTask =>
             val elem: camunda.UserTask =
               summon[BpmnModelInstance].getModelElementById(pe.ident)
-            pe
-              .merge(elem)
+            pe.merge(elem)
           case pe: ScriptTask =>
             val elem: camunda.ScriptTask =
               summon[BpmnModelInstance].getModelElementById(pe.ident)
-            pe
-              .merge(elem)
+            pe.merge(elem)
           case pe: SequenceFlow =>
             val elem: camunda.SequenceFlow =
               summon[BpmnModelInstance].getModelElementById(pe.ident)
-            pe
-              .merge(elem)
+            pe.merge(elem)
           case eg: ExclusiveGateway =>
             val elem: camunda.ExclusiveGateway =
               summon[BpmnModelInstance].getModelElementById(eg.ident)
-            eg
-              .merge(elem)
+            eg.merge(elem)
           case pe: EndEvent =>
             val elem: camunda.EndEvent =
               summon[BpmnModelInstance].getModelElementById(pe.ident)
-            pe
-              .merge(elem)
-      ) andThen
-        procElement.propsToCamunda(
-          summon[BpmnModelInstance].getModelElementById(procElement.ident)
-        ) andThen
-        ZIO( // HasProperties
-          procElement match
-            case pe: HasProperties[_] =>
-              pe.propsToCamunda(
-                summon[BpmnModelInstance].getModelElementById(procElement.ident)
-              )
-        ) andThen
-        ZIO{ // HasInputParameters / HasOutputParameters
-          val inout = summon[BpmnModelInstance].newInstance(classOf[CamundaInputOutput])
-          val elem: camunda.BaseElement = summon[BpmnModelInstance].getModelElementById(procElement.ident)
-          procElement match
-            case iop: (HasInputParameters[_] & HasOutputParameters[_]) =>
-              if (iop.inputParameters.nonEmpty || iop.outputParameters.nonEmpty)
-                elem.builder.addExtensionElement(inout).done
-                iop.inputParamsToCamunda(elem, inout)
-                iop.outputParamsToCamunda(elem, inout)
-            case ip: HasInputParameters[_] =>
-              if (ip.inputParameters.nonEmpty)
-                elem.builder.addExtensionElement(inout).done
-                ip.inputParamsToCamunda(elem, inout)
-            case op: HasOutputParameters[_] =>
-              if (op.outputParameters.nonEmpty)
-                elem.builder.addExtensionElement(inout).done
-                op.outputParamsToCamunda(elem, inout)
-            case _ => ()
-        }
+            pe.merge(elem)
+      ).mapError(handleException(procElement.elemKey.name))
 
-    private def mergeTransactionBoundaries: ToCamundable[zio.Task[Unit]] =
+    private def mergeProperties(
+        elem: camunda.BaseElement
+    ): ToCamundable[IO[ToCamundaException, Unit]] =
+      // HasProperties
+      procElement match
+        case pe: HasProperties[_] =>
+          pe.propsToCamunda(elem)
+            .mapError(handleException("Properties"))
+
+    private def mergeParameters: ToCamundable[IO[ToCamundaException, Unit]] =
+      ZIO { // HasInputParameters / HasOutputParameters
+        val inout =
+          summon[BpmnModelInstance].newInstance(classOf[CamundaInputOutput])
+        val elem: camunda.BaseElement =
+          summon[BpmnModelInstance].getModelElementById(procElement.ident)
+        procElement match
+          case iop: (HasInputParameters[_] & HasOutputParameters[_]) =>
+            if (iop.inputParameters.nonEmpty || iop.outputParameters.nonEmpty)
+              elem.builder.addExtensionElement(inout).done
+              iop.inputParamsToCamunda(elem, inout)
+              iop.outputParamsToCamunda(elem, inout)
+          case ip: HasInputParameters[_] =>
+            if (ip.inputParameters.nonEmpty)
+              elem.builder.addExtensionElement(inout).done
+              ip.inputParamsToCamunda(elem, inout)
+          case op: HasOutputParameters[_] =>
+            if (op.outputParameters.nonEmpty)
+              elem.builder.addExtensionElement(inout).done
+              op.outputParamsToCamunda(elem, inout)
+          case _ => ()
+      }.mapError(handleException("Paramters"))
+
+    private def mergeTransactionBoundaries
+        : ToCamundable[IO[ToCamundaException, Unit]] =
       ZIO(
         procElement match
           case pe: HasTransactionBoundary[_] =>
@@ -172,7 +181,16 @@ trait ToCamundaBpmn:
             elem.setCamundaExclusive(pe.isAsyncBefore) // just support exclusive
             elem.setCamundaAsyncAfter(pe.isAsyncAfter)
           case _ => ()
+      ).mapError(handleException("TransactionBoundaries"))
+
+    private def handleException(
+        msg: String
+    ): Throwable => ToCamundaException = { ex =>
+      ex.printStackTrace
+      ToCamundaException(
+        s"Problem merging $msg for $procElement\n${ex.getMessage}"
       )
+    }
 
   extension (hasProperties: HasProperties[_])
     def propsToCamunda(
@@ -195,7 +213,10 @@ trait ToCamundaBpmn:
       }
 
   extension (hasInputParams: HasInputParameters[_])
-    def inputParamsToCamunda(elem: camunda.BaseElement, inout: CamundaInputOutput): ToCamundable[Unit] =
+    def inputParamsToCamunda(
+        elem: camunda.BaseElement,
+        inout: CamundaInputOutput
+    ): ToCamundable[Unit] =
       hasInputParams.inputParameters
         .foreach { case InOutParameter(ident, value) =>
           val cp = summon[BpmnModelInstance].newInstance(
@@ -207,7 +228,10 @@ trait ToCamundaBpmn:
         }
 
   extension (hasOutputParams: HasOutputParameters[_])
-    def outputParamsToCamunda(elem: camunda.BaseElement, inout: CamundaInputOutput): ToCamundable[Unit] =
+    def outputParamsToCamunda(
+        elem: camunda.BaseElement,
+        inout: CamundaInputOutput
+    ): ToCamundable[Unit] =
       hasOutputParams.outputParameters
         .foreach { case InOutParameter(ident, value) =>
           val cp = summon[BpmnModelInstance].newInstance(
@@ -314,6 +338,7 @@ trait ToCamundaBpmn:
     def merge(elem: camunda.SequenceFlow): ToCamundable[Unit] =
       val expression =
         summon[BpmnModelInstance].newInstance(classOf[ConditionExpression])
+      println(s"FLOW: ${elem} - $flow")
       flow.condition
         .map {
           case ExpressionCond(expr) =>
