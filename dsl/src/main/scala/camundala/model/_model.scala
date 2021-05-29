@@ -14,7 +14,7 @@ object BpmnPath:
 opaque type Ident = String
 
 object Ident:
-  def apply(ident: String): Ident = ident
+  def apply(ident: String): Ident = ident.replaceAll("-", "__")
 
 opaque type Name = String
 

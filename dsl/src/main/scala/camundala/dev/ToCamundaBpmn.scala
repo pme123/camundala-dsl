@@ -89,7 +89,10 @@ trait ToCamundaBpmn:
         //  _ <- mergeNode
         _ <- mergeTransactionBoundaries
       } yield ())
-        .mapError(ex => ToCamundaException(ex.getMessage()))
+        .mapError(ex => {
+          ex.printStackTrace
+          ToCamundaException(ex.getMessage())
+        })
 
     private def mergeElem: ToCamundable[zio.Task[Unit]] =
       ZIO(

@@ -1,6 +1,6 @@
 package camundala.dev
 
-import camundala.dsl.DSL
+import camundala.dsl.DSL.*
 import zio.test.*
 import zio.*
 import Assertion.*
@@ -10,22 +10,23 @@ import zio.test.mock.MockSystem
 import zio.console.Console
 import zio.test
 import zio.test.mock.{Expectation, MockConsole, MockSystem}
-import camundala.dev.demoProcess.demoBpmn
+import camundala.dev.demoProcess.processConfig
 
 object DslPrinterSuites extends DefaultRunnableSpec with DslPrinter:
 
   def spec = suite("DslPrinterSuites")(
     test("run printer") {
-      val result = demoBpmn.print()
-      println(result.asString(0))
+
+      val result = processConfig.print("TestDemo")
+      println(result.asString())
       assert(result)(
         hasField(
-          "lines",
+          "prints",
           (p: Print) =>
             p match {
-              case Print.PrintObject(lines) => lines.size
+              case Print.PrintArray(prints, _) => prints.size
               case _ => -1
-            }, equalTo(2)
+            }, equalTo(3)
         )
       )
     }

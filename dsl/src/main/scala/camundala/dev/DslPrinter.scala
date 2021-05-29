@@ -1,18 +1,33 @@
 package camundala.dev
 
 import camundala.model.*
+import camundala.dev.Print.PrintObject
 
 trait DslPrinter:
 
   import Print.*
 
   extension (bpmnsConfig: BpmnsConfig)
-    def print(): Print =
-      po(
-        pl("bpmnsConfig"),
-        bpmnsConfig.users.print(),
-        bpmnsConfig.groups.print(),
-        bpmnsConfig.bpmns.print()
+    def print(projectName: String): Print =
+      pa2(
+        pl(s"""|
+               |import camundala.dsl.DSL
+               |
+               |object $projectName extends DSL:
+               |""".stripMargin),
+        pa2(
+          po(
+            pl("bpmnsConfig"),
+            bpmnsConfig.users.print(),
+            bpmnsConfig.groups.print(),
+            bpmnsConfig.bpmns.print()
+          ),
+          bpmnsConfig.users.printObjects(),
+          bpmnsConfig.groups.printObjects(),
+          bpmnsConfig.bpmns.printObjects()
+        ),
+        pl("""|
+              |""".stripMargin)
       )
 
   end extension
@@ -24,12 +39,17 @@ trait DslPrinter:
         pa(users.users.map(_.print())),
         pl(")")
       )
+    def printObjects(): Print =
+      poo("users", users.users.map(_.printObjects()))
   end extension
 
   extension (user: BpmnUser)
     def print(): Print =
+      pl(s"users.${user.username}")
+
+    def printObjects(): Print =
       po(
-        pl(s"""user("${user.username}")"""),
+        pl(s"""val ${user.username} = user("${user.username}")"""),
         po(
           user.maybeName.map(n => pl(s""".name("$n")""")).toSeq ++
             user.maybeFirstName.map(n => pl(s""".firstName("$n")""")).toSeq ++
@@ -46,12 +66,17 @@ trait DslPrinter:
         pa(groups.groups.map(_.print())),
         pl(")")
       )
+    def printObjects(): Print =
+      poo("groups", groups.groups.map(_.printObjects()))
   end extension
 
   extension (group: BpmnGroup)
     def print(): Print =
+      pl(s"groups.${group.ident}")
+
+    def printObjects(): Print =
       po(
-        pl(s"""group("${group.ident}")"""),
+        pl(s"""val ${group.ident} = group("${group.ident}")"""),
         po(
           pl(s""".groupType("${group.`type`}")"""),
           group.maybeName.map(n => pl(s""".name("$n")""")).toSeq: _*
@@ -66,13 +91,27 @@ trait DslPrinter:
         pa(bpmns.bpmns.map(_.print())),
         pl(")")
       )
+
+    def printObjects(): Print =
+      poo(
+        "bpmns",
+        bpmns.bpmns.map(_.printObjects())
+      )
   end extension
 
   extension (bpmn: Bpmn)
     def print(): Print =
-      po(
-        pl(s"""bpmn("${bpmn.path}")"""),
-        bpmn.processes.print()
+      pl(s"bpmns.${bpmn.ident}")
+
+    def printObjects(): Print =
+      pa2(
+        po(
+          pl(s"""val ${bpmn.ident} = bpmn("${bpmn.path}")"""),
+          po(
+            bpmn.processes.print()
+          )
+        ),
+        bpmn.processes.printObjects(): _*
       )
   end extension
 
@@ -83,6 +122,8 @@ trait DslPrinter:
         pa(processes.processes.map(_.print())),
         pl(")")
       )
+    def printObjects(): Seq[Print] =
+      processes.processes.flatMap(p => p.printObjects())
 
   end extension
 
@@ -96,73 +137,127 @@ trait DslPrinter:
         process.flows.print()
       )
 
+    def printObjects(): Seq[Print] =
+      process.nodes.printObjects() :+
+        process.flows.printObjects()
+
   end extension
 
   extension (candidateGroups: CandidateGroups)
     def print(): Print =
-      po(candidateGroups.groups.map(g => pl(s""".starterGroup("$g")""")))
+      po(
+        pl(".starterGroups("),
+        pa(candidateGroups.groups.map(g => pl(s"groups.$g.ref"))),
+        pl(")")
+      )
   end extension
 
   extension (candidateUsers: CandidateUsers)
     def print(): Print =
-      po(candidateUsers.users.map(u => pl(s""".starterUser("$u")""")))
+      po(
+        pl(".starterUsers("),
+        pa(candidateUsers.users.map(u => pl(s"users.$u.ref"))),
+        pl(")")
+      )
   end extension
 
   extension (nodes: ProcessNodes)
     def print(): Print =
       po(
         pl(".nodes("),
-          pa(nodes.elements.map(_.print())),
+        pa(nodes.elements.map(_.print())),
         pl(")")
       )
+    def printObjects(): Seq[Print] =
+      nodes.elements
+        .groupBy(_.elemKey)
+        .map { case (k, elems) =>
+          poo(
+            k.toString,
+            elems.flatMap(_.printObjects())
+          )
+        }
+        .toSeq
+
   end extension
 
   extension (flows: SequenceFlows)
     def print(): Print =
       po(
         pl(".flows("),
-          pa(flows.elements.map(_.print())),
+        pa(flows.elements.map(_.print())),
         pl(")")
+      )
+    def printObjects(): Print =
+      poo(
+        "flows",
+        flows.elements.flatMap(_.printObjects())
       )
   end extension
 
-  extension (elem:  HasProcessElement[_])
+  extension (elem: HasProcessElement[_])
     def print(): Print =
-      pl(s"""${elem.elemKey.name}("${elem.ident}")""")
+      pl(s"""${elem.elemKey.toString}.${elem.ident}""")
+
+    def printObjects(): Seq[Print] =
+      Seq(
+        pl(s"""val ${elem.ident}Ident = "${elem.ident}""""),
+        pl(
+          s"""lazy val ${elem.ident} = ${elem.elemKey.name}(${elem.ident}Ident)"""
+        )
+      )
   end extension
 
-  def po(pr: Print, lines: Print*) = PrintObject(pr +: lines)
+  def po(pr: Print, prints: Print*) = PrintObject(pr +: prints)
 
-  def po(lines: Seq[Print]) = PrintObject(lines)
+  def po(prints: Seq[Print]) = PrintObject(prints)
 
-  def pa(lines: Seq[Print]) = PrintArray(lines)
+  def poo(objectName: String, prints: Seq[Print]): Print =
+    po(
+      pl(s"object $objectName :\n"),
+      pa2(prints)
+    )
+  def poo(objectName: String, print: Print, prints: Print*): Print =
+    poo(objectName, print +: prints)
+
+  def pa(prints: Seq[Print]) = PrintArray(prints)
+
+  def pa(print: Print, prints: Print*) = PrintArray(print +: prints)
+
+  def pa2(prints: Seq[Print]) = PrintArray(prints, "\n")
+
+  def pa2(print: Print, prints: Print*) =
+    PrintArray(print +: prints, "\n")
 
   def pl(text: String) = PrintLine(text)
 
 sealed trait Print:
   def nonEmpty: Boolean
-  def asString(intent: Int): String
+  def asString(intent: Int = -2): String
 
 object Print:
 
-  case class PrintObject(lines: Seq[Print]) extends Print:
-    def nonEmpty = lines.nonEmpty
+  case class PrintObject(prints: Seq[Print]) extends Print:
+    def nonEmpty = prints.nonEmpty
     def asString(intent: Int): String =
-      lines
+      prints
         .filter(_.nonEmpty)
         .map(_.asString(intent + 1))
         .mkString("\n")
 
-  case class PrintArray(lines: Seq[Print]) extends Print:
-    def nonEmpty = lines.nonEmpty
+  case class PrintArray(prints: Seq[Print], separator: String = ",")
+      extends Print:
+    def nonEmpty = prints.nonEmpty
     def asString(intent: Int): String =
-      lines
+      prints
         .filter(_.nonEmpty)
         .map(_.asString(intent + 1))
-        .mkString(",\n")
+        .mkString(s"$separator\n")
 
   case class PrintLine(text: String) extends Print:
 
     def nonEmpty = text.trim.nonEmpty
     def asString(intent: Int): String =
       s"${" " * 2 * intent}$text"
+
+  end PrintLine

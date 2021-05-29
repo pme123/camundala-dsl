@@ -135,5 +135,5 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
   )
 
   println(
-    config.print().asString(-1)
+    config.print("bpmnExample").asString(-1)
   )

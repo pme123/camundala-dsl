@@ -112,7 +112,7 @@ trait FromCamundaBpmn
         ident <- element.generateIdent()
         sourceIdent <- element.getSource.generateIdent()
         targetIdent <- element.getTarget.generateIdent()
-        newIdent =  s"${ident}_${sourceIdent}-${targetIdent}"
+        newIdent =  s"${ident}__${sourceIdent}__${targetIdent}"
         _ = element.setId(newIdent)
       } yield
        newIdent

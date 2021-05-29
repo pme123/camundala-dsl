@@ -5,25 +5,25 @@
         
     <serviceTask camunda:delegateExpression="#{emailAdapter}" completionQuantity="1" id="SendRejectionNotification" implementation="##WebService" isForCompensation="false" name="Send rejection notification" startQuantity="1">
             
-      <incoming>No_Approved-SendRejectionNotification</incoming>
+      <incoming>No__Approved__SendRejectionNotification</incoming>
             
-      <outgoing>SequenceFlow_4_SendRejectionNotification-Join</outgoing>
+      <outgoing>SequenceFlow_4__SendRejectionNotification__Join</outgoing>
           
     </serviceTask>
         
-    <sequenceFlow id="SequenceFlow_4_SendRejectionNotification-Join" name="" sourceRef="SendRejectionNotification" targetRef="Join"/>
+    <sequenceFlow id="SequenceFlow_4__SendRejectionNotification__Join" name="" sourceRef="SendRejectionNotification" targetRef="Join"/>
         
     <exclusiveGateway gatewayDirection="Unspecified" id="Approved" name="Approved?">
             
-      <incoming>SequenceFlow_2_ReviewTweet-Approved</incoming>
+      <incoming>SequenceFlow_2__ReviewTweet__Approved</incoming>
             
-      <outgoing>No_Approved-SendRejectionNotification</outgoing>
+      <outgoing>No__Approved__SendRejectionNotification</outgoing>
             
-      <outgoing>Yes_Approved-PublishOnTwitter</outgoing>
+      <outgoing>Yes__Approved__PublishOnTwitter</outgoing>
           
     </exclusiveGateway>
         
-    <sequenceFlow id="No_Approved-SendRejectionNotification" name="no " sourceRef="Approved" targetRef="SendRejectionNotification">
+    <sequenceFlow id="No__Approved__SendRejectionNotification" name="no " sourceRef="Approved" targetRef="SendRejectionNotification">
             
       <extensionElements>
                 
@@ -37,53 +37,53 @@
           
     </sequenceFlow>
         
-    <sequenceFlow id="Yes_Approved-PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter"/>
+    <sequenceFlow id="Yes__Approved__PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter"/>
         
     <exclusiveGateway gatewayDirection="Unspecified" id="Join" name="Join">
             
-      <incoming>SequenceFlow_4_SendRejectionNotification-Join</incoming>
+      <incoming>SequenceFlow_4__SendRejectionNotification__Join</incoming>
             
-      <incoming>SequenceFlow_3_PublishOnTwitter-Join</incoming>
+      <incoming>SequenceFlow_3__PublishOnTwitter__Join</incoming>
             
-      <outgoing>SequenceFlow_5_Join-TweetHandled</outgoing>
+      <outgoing>SequenceFlow_5__Join__TweetHandled</outgoing>
           
     </exclusiveGateway>
         
-    <sequenceFlow id="SequenceFlow_5_Join-TweetHandled" name="" sourceRef="Join" targetRef="TweetHandled"/>
+    <sequenceFlow id="SequenceFlow_5__Join__TweetHandled" name="" sourceRef="Join" targetRef="TweetHandled"/>
         
     <serviceTask camunda:delegateExpression="#{tweetAdapter}" completionQuantity="1" id="PublishOnTwitter" implementation="##WebService" isForCompensation="false" name="Publish on Twitter" startQuantity="1">
             
-      <incoming>Yes_Approved-PublishOnTwitter</incoming>
+      <incoming>Yes__Approved__PublishOnTwitter</incoming>
             
-      <outgoing>SequenceFlow_3_PublishOnTwitter-Join</outgoing>
+      <outgoing>SequenceFlow_3__PublishOnTwitter__Join</outgoing>
           
     </serviceTask>
         
-    <sequenceFlow id="SequenceFlow_3_PublishOnTwitter-Join" name="" sourceRef="PublishOnTwitter" targetRef="Join"/>
+    <sequenceFlow id="SequenceFlow_3__PublishOnTwitter__Join" name="" sourceRef="PublishOnTwitter" targetRef="Join"/>
         
     <endEvent id="TweetHandled" name="Tweet handled">
             
-      <incoming>SequenceFlow_5_Join-TweetHandled</incoming>
+      <incoming>SequenceFlow_5__Join__TweetHandled</incoming>
           
     </endEvent>
         
     <startEvent camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator" id="TweetWritten" isInterrupting="true" name="Tweet written" parallelMultiple="false">
             
-      <outgoing>SequenceFlow_9_TweetWritten-ReviewTweet</outgoing>
+      <outgoing>SequenceFlow_9__TweetWritten__ReviewTweet</outgoing>
           
     </startEvent>
         
-    <sequenceFlow id="SequenceFlow_9_TweetWritten-ReviewTweet" name="" sourceRef="TweetWritten" targetRef="ReviewTweet"/>
+    <sequenceFlow id="SequenceFlow_9__TweetWritten__ReviewTweet" name="" sourceRef="TweetWritten" targetRef="ReviewTweet"/>
         
     <userTask camunda:assignee="demo" camunda:formKey="embedded:app:forms/reviewTweet.html" completionQuantity="1" id="ReviewTweet" implementation="##unspecified" isForCompensation="false" name="Review Tweet" startQuantity="1">
             
-      <incoming>SequenceFlow_9_TweetWritten-ReviewTweet</incoming>
+      <incoming>SequenceFlow_9__TweetWritten__ReviewTweet</incoming>
             
-      <outgoing>SequenceFlow_2_ReviewTweet-Approved</outgoing>
+      <outgoing>SequenceFlow_2__ReviewTweet__Approved</outgoing>
           
     </userTask>
         
-    <sequenceFlow id="SequenceFlow_2_ReviewTweet-Approved" name="" sourceRef="ReviewTweet" targetRef="Approved"/>
+    <sequenceFlow id="SequenceFlow_2__ReviewTweet__Approved" name="" sourceRef="ReviewTweet" targetRef="Approved"/>
       
   </process>
     
@@ -91,7 +91,7 @@
         
     <bpmndi:BPMNPlane bpmnElement="TwitterDemoProcess" id="BPMNPlane_TwitterDemoProcess">
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2_ReviewTweet-Approved" id="BPMNEdge_SequenceFlow_2" sourceElement="BPMNShape_Review_Tweet_3" targetElement="BPMNShape_Approved__3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2__ReviewTweet__Approved" id="BPMNEdge_SequenceFlow_2" sourceElement="BPMNShape_Review_Tweet_3" targetElement="BPMNShape_Approved__3">
                 
         <omgdi:waypoint x="386" y="194"/>
                 
@@ -105,7 +105,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9_TweetWritten-ReviewTweet" id="BPMNEdge_SequenceFlow_9" sourceElement="BPMNShape_new_tweet_3" targetElement="BPMNShape_Review_Tweet_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9__TweetWritten__ReviewTweet" id="BPMNEdge_SequenceFlow_9" sourceElement="BPMNShape_new_tweet_3" targetElement="BPMNShape_Review_Tweet_3">
                 
         <omgdi:waypoint x="208" y="194"/>
                 
@@ -119,7 +119,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3_PublishOnTwitter-Join" id="BPMNEdge_SequenceFlow_3" sourceElement="BPMNShape_Publish_on_Twitter_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3__PublishOnTwitter__Join" id="BPMNEdge_SequenceFlow_3" sourceElement="BPMNShape_Publish_on_Twitter_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
                 
         <omgdi:waypoint x="722" y="274"/>
                 
@@ -135,7 +135,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_5_Join-TweetHandled" id="BPMNEdge_SequenceFlow_5" sourceElement="BPMNShape_Exclusive_Databased_Gateway_3" targetElement="BPMNShape_EndNoneEvent_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_5__Join__TweetHandled" id="BPMNEdge_SequenceFlow_5" sourceElement="BPMNShape_Exclusive_Databased_Gateway_3" targetElement="BPMNShape_EndNoneEvent_3">
                 
         <omgdi:waypoint x="797" y="194"/>
                 
@@ -149,7 +149,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="Yes_Approved-PublishOnTwitter" id="BPMNEdge_yes" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Publish_on_Twitter_3">
+      <bpmndi:BPMNEdge bpmnElement="Yes__Approved__PublishOnTwitter" id="BPMNEdge_yes" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Publish_on_Twitter_3">
                 
         <omgdi:waypoint x="537" y="214"/>
                 
@@ -165,7 +165,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="No_Approved-SendRejectionNotification" id="BPMNEdge_no" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Send_rejection_notification_3">
+      <bpmndi:BPMNEdge bpmnElement="No__Approved__SendRejectionNotification" id="BPMNEdge_no" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Send_rejection_notification_3">
                 
         <omgdi:waypoint x="537" y="174"/>
                 
@@ -181,7 +181,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4_SendRejectionNotification-Join" id="BPMNEdge_SequenceFlow_4" sourceElement="BPMNShape_Send_rejection_notification_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4__SendRejectionNotification__Join" id="BPMNEdge_SequenceFlow_4" sourceElement="BPMNShape_Send_rejection_notification_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
                 
         <omgdi:waypoint x="722" y="124"/>
                 

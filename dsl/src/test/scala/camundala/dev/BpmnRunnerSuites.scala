@@ -20,7 +20,7 @@ object BpmnRunnerSuites
         MockConsole.PutStrLn(equalTo(s"Start Bpmn Runner"), unit) ++
           MockConsole.PutStrLn(containsString("bpmn(\"./dsl/src/test/cawemo/with-ids/process-cawemo.bpmn\")")) ++
           MockConsole.PutStrLn(startsWithString("** Compare Audit Log:     **\n")) ++
-          MockConsole.PutStrLn(equalTo("Generated BPMN to ./dsl/src/test/cawemo/output/process-cawemo.bpmn"))
+          MockConsole.PutStrLn(equalTo(s"Generated BPMN to ${DemoProcessRunnerApp.demoProcessOutputPath}"))
         )
       val result = BpmnRunner(RunnerConfig(
         path(DemoProcessRunnerApp.demoProcessPath),

@@ -44,6 +44,7 @@ case class CandidateUsers(users: Seq[UserRef] = Nil):
 
   def isEmpty: Boolean = users.isEmpty
   def :+(user: UserRef) = CandidateUsers(users :+ user)
+  def ++(usrs: Seq[UserRef]) = CandidateUsers(users ++ usrs)
 
 object CandidateUsers:
   val none: CandidateUsers = CandidateUsers()

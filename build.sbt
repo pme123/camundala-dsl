@@ -6,7 +6,9 @@ val org = "io.github.pme123"
 
 lazy val root = project
   .in(file("."))
-  .settings()
+  .settings(
+    name := "camundala",
+  )
   .aggregate(dsl, exampleTwitter)
 
 lazy val dsl = project

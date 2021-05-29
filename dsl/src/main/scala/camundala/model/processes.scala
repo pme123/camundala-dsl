@@ -88,7 +88,7 @@ object BpmnProcess:
       val name = "sequenceFlow"
       val order = 9
 
-      override def toString: String = "sequenceFlows"
+      override def toString: String = "flows"
 
 trait ProcessElements:
 

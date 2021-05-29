@@ -16,7 +16,7 @@ case class BpmnRunner(config: RunnerConfig)
     for {
       _ <- putStrLn("Start Bpmn Runner")
       bpmn <- fromCamunda()
-      _ <- putStrLn(bpmn.print().asString(0))
+      _ <- putStrLn(bpmn.printObjects().asString(0))
       audit <- UIO(config.workingBpmnDsl.compareWith(bpmn))
       _ <- putStrLn(audit.log(AuditLevel.WARN))
     // at the moment Printer only for the import from Cawemo _ <- putStrLn("BPMN DSL:\n" + config.workingBpmnDsl.print().asString(0))

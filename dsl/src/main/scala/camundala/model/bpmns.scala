@@ -21,4 +21,5 @@ object Bpmns:
 
 case class Bpmn(path: BpmnPath,
                 processes: BpmnProcesses
-               )
+               ) :
+  lazy val ident = Ident(path.toString.split("/").last.split("\\.").head)

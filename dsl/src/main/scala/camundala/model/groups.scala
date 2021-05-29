@@ -43,6 +43,8 @@ case class CandidateGroups(groups: Seq[GroupRef] = Nil):
   def isEmpty: Boolean = groups.isEmpty
   def :+(group: GroupRef) = CandidateGroups(groups :+ group)
 
+  def ++(grps: Seq[GroupRef]) = CandidateGroups(groups ++ grps)
+
 object CandidateGroups:
   val none: CandidateGroups = CandidateGroups()
 

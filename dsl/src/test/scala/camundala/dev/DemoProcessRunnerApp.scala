@@ -19,8 +19,9 @@ object DemoProcessRunnerApp extends zio.App with DSL:
       )
     ).run()
 
-object demoProcess extends DSL :
-  val demoProcessWithIdsPath = "./dsl/src/test/cawemo/with-ids/process-cawemo.bpmn"
+object demoProcess extends DSL:
+  val demoProcessWithIdsPath =
+    "./dsl/src/test/cawemo/with-ids/process-cawemo.bpmn"
   val admin = group("admin")
     .name("Administrator")
     .groupType("system")
@@ -30,16 +31,26 @@ object demoProcess extends DSL :
     .email("myEmail@email.ch")
     .group(admin.ref)
 
+  val dev = user("dev")
+      .name("Dev")
+      .firstName("-")
+      .email("dev@email.ch")
+
+  lazy val processConfig = bpmnsConfig
+    .users(adminUser, dev)
+    .groups(admin)
+    .bpmns(demoBpmn)
   val isBarVar = "isBar"
   lazy val demoBpmn =
     bpmn(demoProcessWithIdsPath)
       .processes(
         process("TestDSLProcess")
-          .starterGroup(
+          .starterGroups(
             admin.ref
           )
-          .starterUser(
-            adminUser.ref
+          .starterUsers(
+            adminUser.ref,
+            dev.ref
           )
           .nodes(
             startEvent("StartProcess"),
@@ -52,8 +63,7 @@ object demoProcess extends DSL :
               .outputString("in1", "value1")
               .outputExpression("myBoolean", "true")
               .outputGroovy("groovyRef", "myGroovy.groovy")
-              .outputGroovyInline("additon", "1 + 3")
-              ,
+              .outputGroovyInline("additon", "1 + 3"),
             userTask("UserTaskA")
               .form(formKey("my-form-key")),
             userTask("UserTaskB")
@@ -73,16 +83,16 @@ object demoProcess extends DSL :
               .inputString("endFlag", "finished")
           )
           .flows(
-            sequenceFlow("IsNOTBar_Fork-UserTaskA")
+            sequenceFlow("IsNOTBar__Fork__UserTaskA")
               .expression(s"!$isBarVar"),
-            sequenceFlow("IsBar_Fork-UserTaskB")
+            sequenceFlow("IsBar__Fork__UserTaskB")
               .inlineGroovy(isBarVar),
-            sequenceFlow("flow1_StartProcess-ServiceTask"),
-            sequenceFlow("flow2_ServiceTask-Fork"),
-            sequenceFlow("flow6_UserTaskB-Asdfdsf"),
-            sequenceFlow("flow5_UserTaskA-gatewayJoin"),
-            sequenceFlow("flow7_gatewayJoin-ScriptTask"),
-            sequenceFlow("SequenceFlow_9_ScriptTask-EndProcess"),
-            sequenceFlow("Flow_1i69u7d_Asdfdsf-gatewayJoin")
+            sequenceFlow("flow1__StartProcess__ServiceTask"),
+            sequenceFlow("flow2__ServiceTask__Fork"),
+            sequenceFlow("flow6__UserTaskB__Asdfdsf"),
+            sequenceFlow("flow5__UserTaskA__gatewayJoin"),
+            sequenceFlow("flow7__gatewayJoin__ScriptTask"),
+            sequenceFlow("SequenceFlow_9__ScriptTask__EndProcess"),
+            sequenceFlow("Flow_1i69u7d__Asdfdsf__gatewayJoin")
           )
       )
