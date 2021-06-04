@@ -10,14 +10,14 @@ import zio.test.mock.MockSystem
 import zio.console.Console
 import zio.test
 import zio.test.mock.{Expectation, MockConsole, MockSystem}
-import camundala.dev.demoProcess.processConfig
+import camundala.dev.demoProcess.bpmnsProjectConfig
 
 object DslPrinterSuites extends DefaultRunnableSpec with DslPrinter:
 
   def spec = suite("DslPrinterSuites")(
     test("run printer") {
 
-      val result = processConfig.print("TestDemo")
+      val result = bpmnsProjectConfig.print("TestDemo")
       println(result.asString())
       assert(result)(
         hasField(

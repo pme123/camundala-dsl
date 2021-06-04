@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" exporter="Camunda Modeler" exporterVersion="4.5.0" expressionLanguage="http://www.w3.org/1999/XPath" id="_8bKMYE5TEeSvRrSmPCK-VA" targetNamespace="http://camunda.org/examples" typeLanguage="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+    
+  <bpmn2:collaboration id="Collaboration_1fhw5dw" isClosed="false">
+        
+    <bpmn2:participant id="Participant_006et1b" name="Test DSL Process" processRef="testDslProcess"/>
+      
+  </bpmn2:collaboration>
+    
+  <bpmn2:process camunda:candidateStarterGroups="admin" camunda:candidateStarterUsers="Darth.Vader" id="testDslProcess" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
+        
+    <bpmn2:exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" default="flowIsNotBar" gatewayDirection="Unspecified" id="gatewayFork" name="Fork">
+            
+      <bpmn2:incoming>flow2</bpmn2:incoming>
+            
+      <bpmn2:outgoing>flowIsNotBar</bpmn2:outgoing>
+            
+      <bpmn2:outgoing>flowIsBar</bpmn2:outgoing>
+          
+    </bpmn2:exclusiveGateway>
+        
+    <bpmn2:userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:candidateGroups="management, accounting" camunda:exclusive="false" completionQuantity="1" id="userTaskA" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
+      <extensionElements xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+        <camunda:formData>
+          <camunda:formField id="myField" label="MY FIELD" type="enum">
+            <camunda:properties/>
+            <camunda:validation>
+              <camunda:constraint name="required"/>
+            </camunda:validation>
+            <camunda:value id="k1" name="blau"/>
+            <camunda:value id="k2" name="grau"/>
+          </camunda:formField>
+          <camunda:formField defaultValue="Peter" id="textField" label="hello" type="string">
+            <camunda:properties/>
+            <camunda:validation>
+              <camunda:constraint name="readonly"/>
+            </camunda:validation>
+          </camunda:formField>
+          <camunda:formField defaultValue="10" id="numberField" label="My Number" type="long">
+            <camunda:properties/>
+            <camunda:validation>
+              <camunda:constraint config="3" name="min"/>
+              <camunda:constraint config="12" name="max"/>
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </extensionElements>
+            
+      <bpmn2:incoming>flowIsNotBar</bpmn2:incoming>
+            
+      <bpmn2:outgoing>flow5</bpmn2:outgoing>
+          
+    </bpmn2:userTask>
+        
+    <bpmn2:userTask camunda:assignee="demo" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="MyFormKey" completionQuantity="1" id="userTaskB" implementation="##unspecified" isForCompensation="false" name="User Task B" startQuantity="1">
+            
+      <bpmn2:incoming>flowIsBar</bpmn2:incoming>
+            
+      <bpmn2:outgoing>flow6</bpmn2:outgoing>
+          
+    </bpmn2:userTask>
+        
+    <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="gatewayJoin" name="Join">
+            
+      <bpmn2:incoming>flow6</bpmn2:incoming>
+            
+      <bpmn2:incoming>flow5</bpmn2:incoming>
+            
+      <bpmn2:outgoing>flow7</bpmn2:outgoing>
+          
+    </bpmn2:exclusiveGateway>
+        
+    <bpmn2:endEvent id="endEvent" name="End Process">
+            
+      <bpmn2:extensionElements>
+                
+        <camunda:executionListener event="start" expression="${execution.setVariable('finished', true)}"/>
+              
+      </bpmn2:extensionElements>
+            
+      <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
+          
+    </bpmn2:endEvent>
+        
+    <bpmn2:serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:expression="${fooVar.toString()}" camunda:resultVariable="myVar" completionQuantity="1" id="serviceTask" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
+            
+      <bpmn2:incoming>flow1</bpmn2:incoming>
+            
+      <bpmn2:outgoing>flow2</bpmn2:outgoing>
+          
+    </bpmn2:serviceTask>
+        
+    <bpmn2:startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="startEvent" isInterrupting="true" name="Start Process" parallelMultiple="false">
+      <extensionElements xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+        <camunda:formData>
+          <camunda:formField defaultValue="YES WE DO THIS!" id="fooVar" label="Add some Text" type="string">
+            <camunda:properties>
+              <camunda:property id="myProp" value="hello there"/>
+            </camunda:properties>
+            <camunda:validation/>
+          </camunda:formField>
+        </camunda:formData>
+      </extensionElements>
+            
+      <bpmn2:outgoing>flow1</bpmn2:outgoing>
+          
+    </bpmn2:startEvent>
+        
+    <bpmn2:scriptTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:resultVariable="scriptResult" completionQuantity="1" id="scriptTask" isForCompensation="false" name="Script Task" scriptFormat="Groovy" startQuantity="1">
+            
+      <bpmn2:incoming>flow7</bpmn2:incoming>
+            
+      <bpmn2:outgoing>SequenceFlow_9</bpmn2:outgoing>
+      <script xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">println 'hello Scala world'</script>
+          
+    </bpmn2:scriptTask>
+        
+    <bpmn2:sequenceFlow id="flow1" name="" sourceRef="startEvent" targetRef="serviceTask"/>
+        
+    <bpmn2:sequenceFlow id="flow2" name="" sourceRef="serviceTask" targetRef="gatewayFork"/>
+        
+    <bpmn2:sequenceFlow id="flowIsNotBar" name="is NOT bar" sourceRef="gatewayFork" targetRef="userTaskA"/>
+        
+    <bpmn2:sequenceFlow id="flowIsBar" name="is Bar" sourceRef="gatewayFork" targetRef="userTaskB">
+      <conditionExpression id="conditionExpression_cf5ca885-02d0-489e-8d7e-59385aa2981b" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">println 'hello'
+            fooVar == 'bar'</conditionExpression>
+    </bpmn2:sequenceFlow>
+        
+    <bpmn2:sequenceFlow id="flow6" name="" sourceRef="userTaskB" targetRef="gatewayJoin"/>
+        
+    <bpmn2:sequenceFlow id="flow5" name="" sourceRef="userTaskA" targetRef="gatewayJoin"/>
+        
+    <bpmn2:sequenceFlow id="flow7" name="" sourceRef="gatewayJoin" targetRef="scriptTask"/>
+        
+    <bpmn2:sequenceFlow id="SequenceFlow_9" name="" sourceRef="scriptTask" targetRef="endEvent"/>
+      
+  </bpmn2:process>
+    
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+        
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_1fhw5dw" id="BPMNPlane_1">
+            
+      <bpmndi:BPMNShape bpmnElement="Participant_006et1b" id="Participant_006et1b_di" isHorizontal="true">
+                
+        <dc:Bounds height="320" width="850" x="154" y="58"/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_SequenceFlow_1" sourceElement="_BPMNShape_StartEvent_2" targetElement="_BPMNShape_ServiceTask_2">
+                
+        <di:waypoint x="242" y="219"/>
+                
+        <di:waypoint x="292" y="219"/>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_SequenceFlow_2" sourceElement="_BPMNShape_ServiceTask_2" targetElement="_BPMNShape_ExclusiveGateway_2">
+                
+        <di:waypoint x="392" y="219"/>
+                
+        <di:waypoint x="442" y="219"/>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="flowIsNotBar" id="BPMNEdge_SequenceFlow_3" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_2">
+                
+        <di:waypoint x="467" y="194"/>
+                
+        <di:waypoint x="467" y="122"/>
+                
+        <di:waypoint x="546" y="122"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="14" width="54" x="473" y="173"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="flowIsBar" id="BPMNEdge_SequenceFlow_4" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_3">
+                
+        <di:waypoint x="467" y="244"/>
+                
+        <di:waypoint x="467" y="314"/>
+                
+        <di:waypoint x="546" y="314"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="14" width="29" x="485" y="276"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_SequenceFlow_5" sourceElement="_BPMNShape_UserTask_3" targetElement="_BPMNShape_ExclusiveGateway_3">
+                
+        <di:waypoint x="646" y="314"/>
+                
+        <di:waypoint x="671" y="314"/>
+                
+        <di:waypoint x="721" y="314"/>
+                
+        <di:waypoint x="721" y="243"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="6" width="6" x="998" y="364"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_SequenceFlow_6" sourceElement="_BPMNShape_UserTask_2" targetElement="_BPMNShape_ExclusiveGateway_3">
+                
+        <di:waypoint x="646" y="122"/>
+                
+        <di:waypoint x="671" y="122"/>
+                
+        <di:waypoint x="721" y="122"/>
+                
+        <di:waypoint x="721" y="193"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="6" width="6" x="1046" y="172"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_SequenceFlow_8" sourceElement="_BPMNShape_ExclusiveGateway_3" targetElement="Activity_16o34d6_di">
+                
+        <di:waypoint x="746" y="218"/>
+                
+        <di:waypoint x="796" y="218"/>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9" id="BPMNEdge_SequenceFlow_9" sourceElement="Activity_16o34d6_di" targetElement="_BPMNShape_EndEvent_3">
+                
+        <di:waypoint x="896" y="218"/>
+                
+        <di:waypoint x="946" y="218"/>
+              
+      </bpmndi:BPMNEdge>
+            
+      <bpmndi:BPMNShape bpmnElement="gatewayFork" id="_BPMNShape_ExclusiveGateway_2" isMarkerVisible="true">
+                
+        <dc:Bounds height="50" width="50" x="442" y="194"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="14" width="22" x="503" y="209"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="userTaskA" id="_BPMNShape_UserTask_2">
+                
+        <dc:Bounds height="80" width="100" x="546" y="82"/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="userTaskB" id="_BPMNShape_UserTask_3">
+                
+        <dc:Bounds height="80" width="100" x="546" y="274"/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="gatewayJoin" id="_BPMNShape_ExclusiveGateway_3" isMarkerVisible="true">
+                
+        <dc:Bounds height="50" width="50" x="696" y="193"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="14" width="21" x="672" y="208"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="endEvent" id="_BPMNShape_EndEvent_3">
+                
+        <dc:Bounds height="36" width="36" x="946" y="200"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="14" width="63" x="933" y="236"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="serviceTask" id="_BPMNShape_ServiceTask_2">
+                
+        <dc:Bounds height="80" width="100" x="292" y="179"/>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="startEvent" id="_BPMNShape_StartEvent_2">
+                
+        <dc:Bounds height="36" width="36" x="206" y="201"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="14" width="67" x="191" y="237"/>
+                  
+        </bpmndi:BPMNLabel>
+              
+      </bpmndi:BPMNShape>
+            
+      <bpmndi:BPMNShape bpmnElement="scriptTask" id="Activity_16o34d6_di">
+                
+        <dc:Bounds height="80" width="100" x="796" y="178"/>
+              
+      </bpmndi:BPMNShape>
+          
+    </bpmndi:BPMNPlane>
+      
+  </bpmndi:BPMNDiagram>
+  
+</bpmn2:definitions>

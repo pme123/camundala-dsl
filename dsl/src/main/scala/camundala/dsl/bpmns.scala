@@ -1,13 +1,17 @@
 package camundala.dsl
 
 import camundala.model.*
+import java.io.File
 
 trait bpmns:
 
   def bpmnsConfig =  BpmnsConfig.none
 
   extension (bpmnsConfig: BpmnsConfig)
-    def bpmns(bpmns: Bpmn*) =
+    def bpmns(bpmn: Bpmn, bpmns: Bpmn*) =
+      bpmnsConfig.copy(bpmns = Bpmns(bpmn +: bpmns))
+
+    def bpmns(bpmns: Seq[Bpmn]) =
       bpmnsConfig.copy(bpmns = Bpmns(bpmns))
 
     def groups(groups: BpmnGroup*) =
@@ -18,7 +22,8 @@ trait bpmns:
 
   type BpmnAttributes = BpmnProcess
 
-  def bpmn(path: String): Bpmn = Bpmn(BpmnPath(path), BpmnProcesses.none)
+  def bpmn(ident: String): Bpmn = Bpmn(Ident(ident), BpmnProcesses.none)
+  def bpmn(bpmnFile: File): Bpmn = Bpmn(Ident(bpmnFile), BpmnProcesses.none)
 
   extension (bpmn: Bpmn)
     def processes(processes: BpmnProcess*): Bpmn =

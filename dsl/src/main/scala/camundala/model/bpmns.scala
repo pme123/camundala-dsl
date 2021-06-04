@@ -19,7 +19,7 @@ case class Bpmns(bpmns: Seq[Bpmn]) :
 object Bpmns:
   def none = Bpmns(Nil)
 
-case class Bpmn(path: BpmnPath,
+case class Bpmn(ident: Ident,
                 processes: BpmnProcesses
                ) :
-  lazy val ident = Ident(path.toString.split("/").last.split("\\.").head)
+  lazy val path = ident.toString.replace("__", "-") + ".bpmn"

@@ -8,44 +8,44 @@
     <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="${emailAdapter}" camunda:exclusive="false" completionQuantity="1" id="SendRejectionNotification" implementation="##WebService" isForCompensation="false" name="Send rejection notification" startQuantity="1">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI-Ratio" value="Tweet Rejected"/>
+          <camunda:property name="KPI__Ratio" value="Tweet Rejected"/>
         </camunda:properties>
       </extensionElements>
                   
       
-      <incoming>No_Approved-SendRejectionNotification</incoming>
+      <incoming>No__Approved__SendRejectionNotification</incoming>
                   
       
-      <outgoing>SequenceFlow_4_SendRejectionNotification-Join</outgoing>
+      <outgoing>SequenceFlow_4__SendRejectionNotification__Join</outgoing>
                 
     
     </serviceTask>
             
     
-    <sequenceFlow id="SequenceFlow_4_SendRejectionNotification-Join" name="" sourceRef="SendRejectionNotification" targetRef="Join"/>
+    <sequenceFlow id="SequenceFlow_4__SendRejectionNotification__Join" name="" sourceRef="SendRejectionNotification" targetRef="Join"/>
             
     
     <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Approved" name="Approved?">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI-Cycle-End" value="Tweet Approval Time"/>
+          <camunda:property name="KPI__Cycle__End" value="Tweet Approval Time"/>
         </camunda:properties>
       </extensionElements>
                   
       
-      <incoming>SequenceFlow_2_ReviewTweet-Approved</incoming>
+      <incoming>SequenceFlow_2__ReviewTweet__Approved</incoming>
                   
       
-      <outgoing>No_Approved-SendRejectionNotification</outgoing>
+      <outgoing>No__Approved__SendRejectionNotification</outgoing>
                   
       
-      <outgoing>Yes_Approved-PublishOnTwitter</outgoing>
+      <outgoing>Yes__Approved__PublishOnTwitter</outgoing>
                 
     
     </exclusiveGateway>
             
     
-    <sequenceFlow id="No_Approved-SendRejectionNotification" name="no " sourceRef="Approved" targetRef="SendRejectionNotification">
+    <sequenceFlow id="No__Approved__SendRejectionNotification" name="no " sourceRef="Approved" targetRef="SendRejectionNotification">
                   
       
       <extensionElements>
@@ -64,64 +64,64 @@
           <camunda:property name="probability" value="13"/>
         </camunda:properties>
       </extensionElements>
-      <conditionExpression id="conditionExpression_4eb9ec9e-5e99-4fe2-956a-656681446890">${!approved}</conditionExpression>
+      <conditionExpression id="conditionExpression_5b23f5a3-e13f-4c0d-adba-76d0d8a76153">${!approved}</conditionExpression>
                 
     
     </sequenceFlow>
             
     
-    <sequenceFlow id="Yes_Approved-PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter">
+    <sequenceFlow id="Yes__Approved__PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter">
       <extensionElements>
         <camunda:properties>
           <camunda:property name="probability" value="87"/>
         </camunda:properties>
       </extensionElements>
-      <conditionExpression id="conditionExpression_02e6c6f1-c107-44a8-902e-a9d7b2d440cd">${approved}</conditionExpression>
+      <conditionExpression id="conditionExpression_cb64de52-2132-4099-b314-f884241bfc48">${approved}</conditionExpression>
     </sequenceFlow>
             
     
     <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Join" name="Join">
                   
       
-      <incoming>SequenceFlow_4_SendRejectionNotification-Join</incoming>
+      <incoming>SequenceFlow_4__SendRejectionNotification__Join</incoming>
                   
       
-      <incoming>SequenceFlow_3_PublishOnTwitter-Join</incoming>
+      <incoming>SequenceFlow_3__PublishOnTwitter__Join</incoming>
                   
       
-      <outgoing>SequenceFlow_5_Join-TweetHandled</outgoing>
+      <outgoing>SequenceFlow_5__Join__TweetHandled</outgoing>
                 
     
     </exclusiveGateway>
             
     
-    <sequenceFlow id="SequenceFlow_5_Join-TweetHandled" name="" sourceRef="Join" targetRef="TweetHandled"/>
+    <sequenceFlow id="SequenceFlow_5__Join__TweetHandled" name="" sourceRef="Join" targetRef="TweetHandled"/>
             
     
     <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="${tweetAdapter}" camunda:exclusive="false" completionQuantity="1" id="PublishOnTwitter" implementation="##WebService" isForCompensation="false" name="Publish on Twitter" startQuantity="1">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI-Ratio" value="Tweet Approved"/>
+          <camunda:property name="KPI__Ratio" value="Tweet Approved"/>
         </camunda:properties>
       </extensionElements>
                   
       
-      <incoming>Yes_Approved-PublishOnTwitter</incoming>
+      <incoming>Yes__Approved__PublishOnTwitter</incoming>
                   
       
-      <outgoing>SequenceFlow_3_PublishOnTwitter-Join</outgoing>
+      <outgoing>SequenceFlow_3__PublishOnTwitter__Join</outgoing>
                 
     
     </serviceTask>
             
     
-    <sequenceFlow id="SequenceFlow_3_PublishOnTwitter-Join" name="" sourceRef="PublishOnTwitter" targetRef="Join"/>
+    <sequenceFlow id="SequenceFlow_3__PublishOnTwitter__Join" name="" sourceRef="PublishOnTwitter" targetRef="Join"/>
             
     
     <endEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="TweetHandled" name="Tweet handled">
                   
       
-      <incoming>SequenceFlow_5_Join-TweetHandled</incoming>
+      <incoming>SequenceFlow_5__Join__TweetHandled</incoming>
                 
     
     </endEvent>
@@ -130,18 +130,18 @@
     <startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator" id="TweetWritten" isInterrupting="true" name="Tweet written" parallelMultiple="false">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI-Cycle-Start" value="Tweet Approval Time"/>
+          <camunda:property name="KPI__Cycle__Start" value="Tweet Approval Time"/>
         </camunda:properties>
       </extensionElements>
                   
       
-      <outgoing>SequenceFlow_9_TweetWritten-ReviewTweet</outgoing>
+      <outgoing>SequenceFlow_9__TweetWritten__ReviewTweet</outgoing>
                 
     
     </startEvent>
             
     
-    <sequenceFlow id="SequenceFlow_9_TweetWritten-ReviewTweet" name="" sourceRef="TweetWritten" targetRef="ReviewTweet"/>
+    <sequenceFlow id="SequenceFlow_9__TweetWritten__ReviewTweet" name="" sourceRef="TweetWritten" targetRef="ReviewTweet"/>
             
     
     <userTask camunda:assignee="demo" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/reviewTweet.html" completionQuantity="1" id="ReviewTweet" implementation="##unspecified" isForCompensation="false" name="Review Tweet" startQuantity="1">
@@ -153,16 +153,16 @@
       </extensionElements>
                   
       
-      <incoming>SequenceFlow_9_TweetWritten-ReviewTweet</incoming>
+      <incoming>SequenceFlow_9__TweetWritten__ReviewTweet</incoming>
                   
       
-      <outgoing>SequenceFlow_2_ReviewTweet-Approved</outgoing>
+      <outgoing>SequenceFlow_2__ReviewTweet__Approved</outgoing>
                 
     
     </userTask>
             
     
-    <sequenceFlow id="SequenceFlow_2_ReviewTweet-Approved" name="" sourceRef="ReviewTweet" targetRef="Approved"/>
+    <sequenceFlow id="SequenceFlow_2__ReviewTweet__Approved" name="" sourceRef="ReviewTweet" targetRef="Approved"/>
           
   
   </process>
@@ -174,7 +174,7 @@
     <bpmndi:BPMNPlane bpmnElement="TwitterDemoProcess" id="BPMNPlane_TwitterDemoProcess">
                   
       
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2_ReviewTweet-Approved" id="BPMNEdge_SequenceFlow_2" sourceElement="BPMNShape_Review_Tweet_3" targetElement="BPMNShape_Approved__3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2__ReviewTweet__Approved" id="BPMNEdge_SequenceFlow_2" sourceElement="BPMNShape_Review_Tweet_3" targetElement="BPMNShape_Approved__3">
                         
         
         <omgdi:waypoint x="386" y="194"/>
@@ -195,7 +195,7 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9_TweetWritten-ReviewTweet" id="BPMNEdge_SequenceFlow_9" sourceElement="BPMNShape_new_tweet_3" targetElement="BPMNShape_Review_Tweet_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9__TweetWritten__ReviewTweet" id="BPMNEdge_SequenceFlow_9" sourceElement="BPMNShape_new_tweet_3" targetElement="BPMNShape_Review_Tweet_3">
                         
         
         <omgdi:waypoint x="208" y="194"/>
@@ -216,7 +216,7 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3_PublishOnTwitter-Join" id="BPMNEdge_SequenceFlow_3" sourceElement="BPMNShape_Publish_on_Twitter_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3__PublishOnTwitter__Join" id="BPMNEdge_SequenceFlow_3" sourceElement="BPMNShape_Publish_on_Twitter_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
                         
         
         <omgdi:waypoint x="722" y="274"/>
@@ -240,7 +240,7 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_5_Join-TweetHandled" id="BPMNEdge_SequenceFlow_5" sourceElement="BPMNShape_Exclusive_Databased_Gateway_3" targetElement="BPMNShape_EndNoneEvent_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_5__Join__TweetHandled" id="BPMNEdge_SequenceFlow_5" sourceElement="BPMNShape_Exclusive_Databased_Gateway_3" targetElement="BPMNShape_EndNoneEvent_3">
                         
         
         <omgdi:waypoint x="797" y="194"/>
@@ -261,7 +261,7 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="Yes_Approved-PublishOnTwitter" id="BPMNEdge_yes" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Publish_on_Twitter_3">
+      <bpmndi:BPMNEdge bpmnElement="Yes__Approved__PublishOnTwitter" id="BPMNEdge_yes" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Publish_on_Twitter_3">
                         
         
         <omgdi:waypoint x="537" y="214"/>
@@ -285,7 +285,7 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="No_Approved-SendRejectionNotification" id="BPMNEdge_no" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Send_rejection_notification_3">
+      <bpmndi:BPMNEdge bpmnElement="No__Approved__SendRejectionNotification" id="BPMNEdge_no" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Send_rejection_notification_3">
                         
         
         <omgdi:waypoint x="537" y="174"/>
@@ -309,7 +309,7 @@
       </bpmndi:BPMNEdge>
                   
       
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4_SendRejectionNotification-Join" id="BPMNEdge_SequenceFlow_4" sourceElement="BPMNShape_Send_rejection_notification_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4__SendRejectionNotification__Join" id="BPMNEdge_SequenceFlow_4" sourceElement="BPMNShape_Send_rejection_notification_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
                         
         
         <omgdi:waypoint x="722" y="124"/>

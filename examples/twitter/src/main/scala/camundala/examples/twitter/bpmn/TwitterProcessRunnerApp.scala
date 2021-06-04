@@ -7,6 +7,7 @@ import camundala.examples.twitter.services.*
 import camundala.examples.twitter.dsl.*
 
 import java.io.File
+import camundala.model.BpmnsConfig
 
 object TwitterProcessRunnerApp extends zio.App with DSL:
 
@@ -16,29 +17,37 @@ object TwitterProcessRunnerApp extends zio.App with DSL:
   private lazy val runnerLogic =
     BpmnRunner(
       RunnerConfig(
-        path("./examples/twitter/cawemo/twitter-cawemo.bpmn"),
-        twitterExample.twitterBpmn,
-        path(
-          s"./examples/twitter/src/main/resources/${twitterExample.bpmnPath}"
-        )
+        "ExampleTwitter",
+        path("./examples/twitter/cawemo"),
+        path("./examples/twitter/cawemo/with-ids"),
+        path(twitterExample.outputPath),
+        twitterExample.twitterBpmnsConfig
       )
     ).run()
 
 object twitterExample extends DSL:
 
-  case class TweetInputs(email: String = "me@myself.com",
-                   content: String = "Test Tweet",
-                   approved: Boolean = true) :
+  final val outputPath = "./examples/twitter/src/main/resources"
+
+  lazy val twitterBpmnsConfig = bpmnsConfig
+    .bpmns(twitterBpmn)
+
+  case class TweetInputs(
+      email: String = "me@myself.com",
+      content: String = "Test Tweet",
+      approved: Boolean = true
+  ):
 
     val emailKey = "email"
     val contentKey = "content"
     val approvedKey = "approved"
-
-  private val kpiRatio = "KPI-Ratio"
-  final val bpmnPath = "twitter-process.bpmn"
   
+  end TweetInputs
+  
+  private val kpiRatio = "KPI-Ratio"
+
   lazy val twitterBpmn =
-    bpmn("./examples/twitter/cawemo/with-ids/twitter-cawemo.bpmn")
+    bpmn("twitter-process")
       .processes(
         twitterProcesss
       )
@@ -68,15 +77,15 @@ object twitterExample extends DSL:
       endEvent("TweetHandled")
     )
     .flows(
-      sequenceFlow(s"SequenceFlow_4_$sendRejectionNotificationIdent-Join"),
-      sequenceFlow(s"No_Approved-$sendRejectionNotificationIdent")
+      sequenceFlow(s"SequenceFlow_4__${sendRejectionNotificationIdent}__Join"),
+      sequenceFlow(s"No__Approved__$sendRejectionNotificationIdent")
         .expression("!approved")
         .probability(13),
-      sequenceFlow(s"Yes_Approved-$publishOnTwitterIdent")
+      sequenceFlow(s"Yes__Approved__$publishOnTwitterIdent")
         .expression("approved")
         .probability(87),
-      sequenceFlow("SequenceFlow_5_Join-TweetHandled"),
-      sequenceFlow(s"SequenceFlow_3_$publishOnTwitterIdent-Join"),
-      sequenceFlow("SequenceFlow_9_TweetWritten-ReviewTweet"),
-      sequenceFlow("SequenceFlow_2_ReviewTweet-Approved")
+      sequenceFlow("SequenceFlow_5__Join__TweetHandled"),
+      sequenceFlow(s"SequenceFlow_3__${publishOnTwitterIdent}__Join"),
+      sequenceFlow("SequenceFlow_9__TweetWritten__ReviewTweet"),
+      sequenceFlow("SequenceFlow_2__ReviewTweet__Approved")
     )

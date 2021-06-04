@@ -35,11 +35,17 @@ trait ToCamundaBpmn:
   // context function def f(using BpmnModelInstance): T
   type ToCamundable[T] = BpmnModelInstance ?=> T
 
+  extension (runnerConfig: RunnerConfig)
+    def toCamunda(): IO[ToCamundaException, Seq[Unit]] = 
+      IO.foreach(runnerConfig.bpmnsConfig.bpmns.bpmns){(bpmn:Bpmn) => 
+        bpmn.toCamunda(runnerConfig.withIdFolder, runnerConfig.generatedFolder)
+      }
+
   extension (bpmn: Bpmn)
-    def toCamunda(outputPath: BpmnPath): IO[ToCamundaException, Unit] = {
+    def toCamunda(withIdFolder: BpmnPath, generatedFolder: BpmnPath): IO[ToCamundaException, Unit] = {
       (for {
         modelInstance <- ZIO(
-          camundaBpmn.Bpmn.readModelFromFile(new File(bpmn.path))
+          camundaBpmn.Bpmn.readModelFromFile(new File(s"$withIdFolder/${bpmn.path}"))
         )
         cProcesses <- ZIO(
           modelInstance
@@ -52,7 +58,7 @@ trait ToCamundaBpmn:
             .mapError(Some(_))
         }
         _ <- ZIO(
-          camundaBpmn.Bpmn.writeModelToFile(new File(outputPath), modelInstance)
+          camundaBpmn.Bpmn.writeModelToFile(new File(s"$generatedFolder/${bpmn.path}"), modelInstance)
         )
       } yield ())
         .mapError {
@@ -338,7 +344,6 @@ trait ToCamundaBpmn:
     def merge(elem: camunda.SequenceFlow): ToCamundable[Unit] =
       val expression =
         summon[BpmnModelInstance].newInstance(classOf[ConditionExpression])
-      println(s"FLOW: ${elem} - $flow")
       flow.condition
         .map {
           case ExpressionCond(expr) =>

@@ -42,7 +42,7 @@ class TwitterProcessTest:
   @Test
   @Deployment(
     resources = Array(
-      bpmnPath,
+      outputPath + "/twitter-process.bpmn",
       "static/" + createTweetFormPath,
       "static/" + reviewTweetFormPath
     )
@@ -54,7 +54,7 @@ class TwitterProcessTest:
   @Test
   @Deployment(
     resources = Array(
-      bpmnPath,
+      outputPath + "/twitter-process.bpmn",
       "static/" + createTweetFormPath,
       "static/" + reviewTweetFormPath
     )

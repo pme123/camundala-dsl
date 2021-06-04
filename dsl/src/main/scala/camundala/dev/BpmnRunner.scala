@@ -6,7 +6,7 @@ import zio.console.*
 import zio.*
 import scala.language.postfixOps
 
-case class BpmnRunner(config: RunnerConfig)
+case class BpmnRunner(runnerConfig: RunnerConfig)
     extends FromCamundaBpmn
     with CompareBpmns
     with ToCamundaBpmn
@@ -15,22 +15,18 @@ case class BpmnRunner(config: RunnerConfig)
   def run() =
     for {
       _ <- putStrLn("Start Bpmn Runner")
-      bpmn <- fromCamunda()
-      _ <- putStrLn(bpmn.printObjects().asString(0))
-      audit <- UIO(config.workingBpmnDsl.compareWith(bpmn))
+      bpmnsConfig <- fromCamunda(runnerConfig)
+      _ <- putStrLn(bpmnsConfig.print(runnerConfig.projectName).asString(0))
+      audit <- UIO(runnerConfig.bpmnsConfig.compareWith(bpmnsConfig))
       _ <- putStrLn(audit.log(AuditLevel.WARN))
-    // at the moment Printer only for the import from Cawemo _ <- putStrLn("BPMN DSL:\n" + config.workingBpmnDsl.print().asString(0))
-      _ <- config.workingBpmnDsl.toCamunda(config.generatedBpmnPath)
-      _ <- putStrLn(s"Generated BPMN to ${config.generatedBpmnPath}")
+      _ <- runnerConfig.toCamunda()
+      _ <- putStrLn(s"Generated BPMN to ${runnerConfig.generatedFolder}")
     } yield ()
 
-  def fromCamunda(): IO[FromCamundaException, Bpmn] =
-    fromCamunda(config.bpmnPath, config.workingBpmnDsl.path)
-
 case class RunnerConfig(
-    bpmnPath: BpmnPath,
-    workingBpmnDsl: Bpmn,
-    generatedBpmnPath: BpmnPath
+    projectName: String,
+    cawemoFolder: BpmnPath,
+    withIdFolder: BpmnPath,
+    generatedFolder: BpmnPath,
+    bpmnsConfig: BpmnsConfig
 )
-
-

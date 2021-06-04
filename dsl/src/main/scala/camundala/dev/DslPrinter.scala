@@ -106,7 +106,7 @@ trait DslPrinter:
     def printObjects(): Print =
       pa2(
         po(
-          pl(s"""val ${bpmn.ident} = bpmn("${bpmn.path}")"""),
+          pl(s"""val ${bpmn.ident} = bpmn("${bpmn.ident}")"""),
           po(
             bpmn.processes.print()
           )
@@ -215,7 +215,8 @@ trait DslPrinter:
   def poo(objectName: String, prints: Seq[Print]): Print =
     po(
       pl(s"object $objectName :\n"),
-      pa2(prints)
+      pa2(prints),
+      pl(s"end $objectName")
     )
   def poo(objectName: String, print: Print, prints: Print*): Print =
     poo(objectName, print +: prints)

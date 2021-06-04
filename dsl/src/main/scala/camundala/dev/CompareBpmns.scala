@@ -3,31 +3,50 @@ package camundala.dev
 import camundala.dsl.DSL
 import camundala.model.*
 
-trait CompareBpmns
-  extends DSL :
+trait CompareBpmns extends DSL:
 
   import AuditEntry.*
 
-  extension (bpmn: Bpmn)
-    def compareWith(newBpmn: Bpmn): CompareAudit =
+  extension (bpmnsConfig: BpmnsConfig)
+    def compareWith(newBpmnsConfig: BpmnsConfig): CompareAudit =
       CompareAudit(
-        Seq((bpmn.path == newBpmn.path) match
-          case true => info(s"BPMN path match (${bpmn.path}).")
-          case false => warn(s"BPMN path has changed: ${bpmn.path} -> new: ${newBpmn.path}.")) ++
-          bpmn.processes.compareWith(newBpmn.processes)
+        bpmnsConfig.bpmns.bpmns.flatMap { bpmn =>
+          newBpmnsConfig.bpmns.bpmns
+            .find(_.ident == bpmn.ident)
+            .map(newBpmn =>
+              info(s"BPMN ident match (${bpmn.ident}).") +: bpmn.processes
+                .compareWith(newBpmn.processes)
+            )
+            .getOrElse(
+              Seq(
+                warn(
+                  s"BPMN ident has changed: ${bpmn.ident} -> new Bpmns: ${newBpmnsConfig.bpmns.bpmns.map(_.ident).mkString(", ")}."
+                )
+              )
+            )
+        }
       )
 
   extension (processes: BpmnProcesses)
     def compareWith(newProcesses: BpmnProcesses): Seq[AuditEntry] =
       processes.processes.collect {
         case proc if newProcesses.processes.exists(_.ident == proc.ident) =>
-          proc.compareWith(newProcesses.processes.filter(_.ident == proc.ident).head)
+          proc.compareWith(
+            newProcesses.processes.filter(_.ident == proc.ident).head
+          )
         case proc =>
-          Seq(warn(s"There is no Process with id '${proc.ident}' in the new BPMN."))
+          Seq(
+            warn(
+              s"There is no Process with id '${proc.ident}' in the new BPMN."
+            )
+          )
       }.flatten ++
         newProcesses.processes.collect {
-          case newProc if !processes.processes.exists(_.ident == newProc.ident) =>
-            warn(s"There is no Process with id '${newProc.ident}' in the existing BPMN.")
+          case newProc
+              if !processes.processes.exists(_.ident == newProc.ident) =>
+            warn(
+              s"There is no Process with id '${newProc.ident}' in the existing BPMN."
+            )
         }
 
   extension (process: BpmnProcess)
@@ -36,7 +55,7 @@ trait CompareBpmns
     ) ++
       process.nodes.compareWith(newProcess.nodes) ++
       process.flows.compareWith(newProcess.flows)
-  
+
   extension (elements: ProcessElements)
     def compareWith(newElements: ProcessElements): Seq[AuditEntry] =
       elements.elements.collect {
@@ -66,11 +85,12 @@ case class CompareAudit(entries: Seq[AuditEntry]):
   def log(auditLevel: AuditLevel = AuditLevel.INFO) =
     (
       Seq("** Compare Audit Log:     **") ++
-        entries.sortBy(_.level.rank)
+        entries
+          .sortBy(_.level.rank)
           .filter(_.level.rank <= auditLevel.rank)
           .map(_.log()) ++
         Seq("** End Compare Audit Log: **")
-      ).mkString("\n")
+    ).mkString("\n")
 
 end CompareAudit
 
