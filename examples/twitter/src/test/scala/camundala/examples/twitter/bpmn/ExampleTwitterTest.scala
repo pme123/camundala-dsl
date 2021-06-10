@@ -18,10 +18,10 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.camunda.bpm.engine.test.ProcessEngineRule
 import org.camunda.bpm.engine.test.mock.Mocks
-import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.serviceTasks
-import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.userTasks
+import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.processes._
+import ExampleTwitter.TweetInputs
 
-class TwitterProcessTest:
+class ExampleTwitterTest:
 
   @Rule
   def processEngineRule = new ProcessEngineRule
@@ -85,7 +85,7 @@ class TwitterProcessTest:
 
   private def startProcess(tweet: TweetInputs) =
     runtimeService.startProcessInstanceByKey(
-      ExampleTwitter.bpmns.processIdent,
+      TwitterDemoProcess.ident.toString,
       withVariables(
         tweet.emailKey,
         tweet.email,

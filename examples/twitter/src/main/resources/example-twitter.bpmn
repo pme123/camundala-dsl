@@ -5,12 +5,7 @@
   <process camunda:candidateStarterGroups="" camunda:candidateStarterUsers="" id="TwitterDemoProcess" isClosed="false" isExecutable="true" name="TwitterDemoProcess" processType="None">
             
     
-    <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="${emailAdapter}" camunda:exclusive="false" completionQuantity="1" id="SendRejectionNotification" implementation="##WebService" isForCompensation="false" name="Send rejection notification" startQuantity="1">
-      <extensionElements>
-        <camunda:properties>
-          <camunda:property name="KPI__Ratio" value="Tweet Rejected"/>
-        </camunda:properties>
-      </extensionElements>
+    <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="#{emailAdapter}" camunda:exclusive="false" camunda:topic="my-topic" camunda:type="external" completionQuantity="1" id="SendRejectionNotification" implementation="##WebService" isForCompensation="false" name="Send rejection notification" startQuantity="1">
                   
       
       <incoming>No__Approved__SendRejectionNotification</incoming>
@@ -26,11 +21,6 @@
             
     
     <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Approved" name="Approved?">
-      <extensionElements>
-        <camunda:properties>
-          <camunda:property name="KPI__Cycle__End" value="Tweet Approval Time"/>
-        </camunda:properties>
-      </extensionElements>
                   
       
       <incoming>SequenceFlow_2__ReviewTweet__Approved</incoming>
@@ -60,24 +50,13 @@
         </camunda:properties>
                       
       
-        <camunda:properties>
-          <camunda:property name="probability" value="13"/>
-        </camunda:properties>
       </extensionElements>
-      <conditionExpression id="conditionExpression_54800c74-dbbc-475d-b55c-d4a63ecff85f">${!approved}</conditionExpression>
                 
     
     </sequenceFlow>
             
     
-    <sequenceFlow id="Yes__Approved__PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter">
-      <extensionElements>
-        <camunda:properties>
-          <camunda:property name="probability" value="87"/>
-        </camunda:properties>
-      </extensionElements>
-      <conditionExpression id="conditionExpression_7f307675-0278-427e-b8bb-ce54b64e6213">${approved}</conditionExpression>
-    </sequenceFlow>
+    <sequenceFlow id="Yes__Approved__PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter"/>
             
     
     <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Join" name="Join">
@@ -98,12 +77,7 @@
     <sequenceFlow id="SequenceFlow_5__Join__TweetHandled" name="" sourceRef="Join" targetRef="TweetHandled"/>
             
     
-    <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="${tweetAdapter}" camunda:exclusive="false" completionQuantity="1" id="PublishOnTwitter" implementation="##WebService" isForCompensation="false" name="Publish on Twitter" startQuantity="1">
-      <extensionElements>
-        <camunda:properties>
-          <camunda:property name="KPI__Ratio" value="Tweet Approved"/>
-        </camunda:properties>
-      </extensionElements>
+    <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="#{tweetAdapter}" camunda:exclusive="false" camunda:topic="my-topic" camunda:type="external" completionQuantity="1" id="PublishOnTwitter" implementation="##WebService" isForCompensation="false" name="Publish on Twitter" startQuantity="1">
                   
       
       <incoming>Yes__Approved__PublishOnTwitter</incoming>
@@ -128,11 +102,6 @@
             
     
     <startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator" id="TweetWritten" isInterrupting="true" name="Tweet written" parallelMultiple="false">
-      <extensionElements>
-        <camunda:properties>
-          <camunda:property name="KPI__Cycle__Start" value="Tweet Approval Time"/>
-        </camunda:properties>
-      </extensionElements>
                   
       
       <outgoing>SequenceFlow_9__TweetWritten__ReviewTweet</outgoing>
@@ -145,12 +114,6 @@
             
     
     <userTask camunda:assignee="demo" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/reviewTweet.html" completionQuantity="1" id="ReviewTweet" implementation="##unspecified" isForCompensation="false" name="Review Tweet" startQuantity="1">
-      <extensionElements>
-        <camunda:properties>
-          <camunda:property name="durationMean" value="10000"/>
-          <camunda:property name="durationSd" value="5000"/>
-        </camunda:properties>
-      </extensionElements>
                   
       
       <incoming>SequenceFlow_9__TweetWritten__ReviewTweet</incoming>

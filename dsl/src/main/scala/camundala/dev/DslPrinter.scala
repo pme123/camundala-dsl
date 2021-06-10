@@ -10,16 +10,43 @@ trait DslPrinter:
   extension (runnerConfig: RunnerConfig)
     def print(): Print =
       val bpmnsConfig = runnerConfig.bpmnsConfig
+      val projectName = runnerConfig.projectName
+
       pa2(
-        pl(s"""|
-               |import camundala.dsl.DSL
-               |
-               |object ${runnerConfig.projectName} extends DSL:
-               |""".stripMargin),
+        pl("import camundala.dev.*"),
+        pl("import camundala.dsl.DSL"),
+        pl("import java.io.File"),
+        pl("import camundala.model.BpmnsConfig\n"),
+        pl(s"object ${projectName}RunnerApp extends zio.App, DSL:\n"),
+        pa2(
+          pl("def run(args: List[String]) ="),
+          pl("    runnerLogic.exitCode\n"),
+          pl(s"import $projectName._\n"),
+          pl("private lazy val runnerLogic ="),
+          po(
+            pl("BpmnRunner("),
+            po(
+              pl("RunnerConfig("),
+              pa(
+                pl(s""""$projectName""""),
+                pl("path(cawemoFolder)"),
+                pl("path(withIdFolder)"),
+                pl("path(generatedFolder)"),
+                pl("config")
+              ),
+              pl(")")
+            ),
+            pl(").run()")
+          )
+        ),
+        pl(s"end ${projectName}RunnerApp"),
+        pl(s"object $projectName extends DSL:"),
         pa2(
           pl(s"""final val cawemoFolder = "${runnerConfig.cawemoFolder}""""),
           pl(s"""final val withIdFolder = "${runnerConfig.withIdFolder}""""),
-          pl(s"""final val generatedFolder = "${runnerConfig.generatedFolder}""""),
+          pl(
+            s"""final val generatedFolder = "${runnerConfig.generatedFolder}""""
+          ),
           po(
             pl("val config = bpmnsConfig"),
             bpmnsConfig.users.print(),
@@ -30,7 +57,7 @@ trait DslPrinter:
           bpmnsConfig.groups.printObjects(),
           bpmnsConfig.bpmns.printObjects()
         ),
-        pl(s"""|end ${runnerConfig.projectName}
+        pl(s"""|end $projectName
                |""".stripMargin)
       )
 
@@ -115,7 +142,7 @@ trait DslPrinter:
             bpmn.processes.print()
           )
         ),
-        bpmn.processes.printObjects(): _*
+        bpmn.processes.printObjects()
       )
   end extension
 
@@ -126,24 +153,32 @@ trait DslPrinter:
         pa(processes.processes.map(_.print())),
         pl(")")
       )
-    def printObjects(): Seq[Print] =
-      processes.processes.flatMap(p => p.printObjects())
+    def printObjects(): Print =
+      poo(
+        "processes",
+        processes.processes.map(p => p.printObjects())
+      )
 
   end extension
 
   extension (process: BpmnProcess)
     def print(): Print =
-      po(
-        pl(s"""process("${process.ident}")"""),
-        process.starterGroups.print(),
-        process.starterUsers.print(),
-        process.nodes.print(),
-        process.flows.print()
-      )
+      pl(s"processes.${process.ident}")
 
-    def printObjects(): Seq[Print] =
-      process.nodes.printObjects() :+
-        process.flows.printObjects()
+    def printObjects(): Print =
+      pa2(
+        po(
+          pl(s"""val ${process.ident} = process("${process.ident}")"""),
+          process.starterGroups.print(),
+          process.starterUsers.print(),
+          process.nodes.print(),
+          process.flows.print(),
+          pa2(
+            process.nodes.printObjects() :+
+              process.flows.printObjects()
+          )
+        )
+      )
 
   end extension
 
@@ -221,7 +256,12 @@ trait DslPrinter:
       pl(s"object $objectName :\n"),
       pa2(
         if (prints.nonEmpty) (prints)
-        else Seq(pl(s""""//TODO Add $objectName here and remove this line""""))
+        else
+          Seq(
+            pl(
+              s"""println("//TODO Add $objectName here or remove this object")"""
+            )
+          )
       ),
       pl(s"end $objectName")
     )
