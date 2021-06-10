@@ -17,7 +17,7 @@ object DslPrinterSuites extends DefaultRunnableSpec with DslPrinter:
   def spec = suite("DslPrinterSuites")(
     test("run printer") {
 
-      val result = bpmnsProjectConfig.print("TestDemo")
+      val result = DemoProcessRunnerApp.demoConfig.print()
       println(result.asString())
       assert(result)(
         hasField(

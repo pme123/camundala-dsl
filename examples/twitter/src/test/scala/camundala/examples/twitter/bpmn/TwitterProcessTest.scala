@@ -7,7 +7,7 @@ import org.junit.{Rule, Test}
 import org.junit.After
 import org.junit.Before
 import org.camunda.bpm.engine.runtime.ProcessInstance
-import camundala.examples.twitter.bpmn.twitterExample._
+import camundala.examples.twitter.bpmn.ExampleTwitter._
 import camundala.examples.twitter.services.{
   RejectionNotificationDelegate,
   TweetContentOfflineDelegate
@@ -18,6 +18,8 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.camunda.bpm.engine.test.ProcessEngineRule
 import org.camunda.bpm.engine.test.mock.Mocks
+import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.serviceTasks
+import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.userTasks
 
 class TwitterProcessTest:
 
@@ -42,26 +44,26 @@ class TwitterProcessTest:
   @Test
   @Deployment(
     resources = Array(
-      "twitter-process.bpmn",
+      "example-twitter.bpmn",
       "static/" + createTweetFormPath,
       "static/" + reviewTweetFormPath
     )
   )
   def testApprovedPath(): Unit =
     val tweet = TweetInputs()
-    runTest(tweet, publishOnTwitterIdent, sendRejectionNotificationIdent)
+    runTest(tweet, serviceTasks.PublishOnTwitterIdent, serviceTasks.SendRejectionNotificationIdent)
 
   @Test
   @Deployment(
     resources = Array(
-      "twitter-process.bpmn",
+      "example-twitter.bpmn",
       "static/" + createTweetFormPath,
       "static/" + reviewTweetFormPath
     )
   )
   def testRejectedPath(): Unit =
     val tweet = TweetInputs(approved = false)
-    runTest(tweet, sendRejectionNotificationIdent, publishOnTwitterIdent)
+    runTest(tweet, serviceTasks.SendRejectionNotificationIdent, serviceTasks.PublishOnTwitterIdent)
 
   private def runTest(
       tweet: TweetInputs,
@@ -72,9 +74,9 @@ class TwitterProcessTest:
     assertThat(processInstance)
       .isStarted()
       .task()
-      .hasDefinitionKey(reviewTweetUserTaskIdent)
+      .hasDefinitionKey(userTasks.ReviewTweetIdent)
       .hasFormKey(EmbeddedStaticForm(reviewTweetFormPath).formPathStr)
-    val task = getTask(reviewTweetUserTaskIdent)
+    val task = getTask(userTasks.ReviewTweetIdent)
     complete(task, withVariables(tweet.approvedKey, tweet.approved))
     assertThat(processInstance)
       .isEnded()
@@ -83,7 +85,7 @@ class TwitterProcessTest:
 
   private def startProcess(tweet: TweetInputs) =
     runtimeService.startProcessInstanceByKey(
-      twitterExample.twitterProcesss.ident.toString,
+      ExampleTwitter.bpmns.processIdent,
       withVariables(
         tweet.emailKey,
         tweet.email,

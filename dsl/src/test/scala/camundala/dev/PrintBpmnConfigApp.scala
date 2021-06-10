@@ -7,27 +7,26 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
 
   val adminGroup: BpmnGroup =
     group("admin")
-    .name("Administrator")
-    .groupType("MyGROUPS")
+      .name("Administrator")
+      .groupType("MyGROUPS")
 
   private val testUser = user("pme123")
     .name("Muster")
     .firstName("Pascal")
     .email("pascal@muster.ch")
     .group(adminGroup.ref)
-  
-    private val testUser2 = 
-      user("admin")
-    .group(      adminGroup.ref)
-  
+
+  private val testUser2 =
+    user("admin")
+      .group(adminGroup.ref)
 
   private val bpmnExample =
     bpmn("myPath")
       .processes(
         process("myIdent")
           .starterGroup(adminGroup.ref)
-          .starterUser(            testUser.ref)
-          .starterUser(  testUser2.ref          )
+          .starterUser(testUser.ref)
+          .starterUser(testUser2.ref)
           .nodes(
             startEvent("LetsStart")
               .form(formKey("MyForm")),
@@ -73,7 +72,7 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
       .groups(adminGroup)
 
   bpmnsConfig
-  .users(
+    .users(
       user("pme123")
         .name("Muster")
         .firstName("Pascal")
@@ -81,59 +80,55 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
         .group("admin"),
       user("admin")
         .group("admin")
-  )
-  .groups(
+    )
+    .groups(
       group("admin")
         .groupType("MyGROUPS")
         .name("Administrator")
-  )
-  .bpmns(
+    )
+    .bpmns(
       bpmn("myPath")
         .processes(
-            process("myIdent")
-              .starterGroup("admin")
-              .starterUser("pme123")
-              .starterUser("admin")
-              .nodes(
-                startEvent("LetsStart"),
-                serviceTask("ExpressionService"),
-                serviceTask("ExternalTask"),
-                sendTask("DelegateSendTask"),
-                sendTask("DelegateSendTask"),
-                userTask("MyUserTask"),
-                businessRuleTask("MyBusinessRule")
-              ),
-            process("process2")
-
-
-              .nodes(
-
-              )
+          process("myIdent")
+            .starterGroup("admin")
+            .starterUser("pme123")
+            .starterUser("admin")
+            .nodes(
+              startEvent("LetsStart"),
+              serviceTask("ExpressionService"),
+              serviceTask("ExternalTask"),
+              sendTask("DelegateSendTask"),
+              sendTask("DelegateSendTask"),
+              userTask("MyUserTask"),
+              businessRuleTask("MyBusinessRule")
+            ),
+          process("process2")
+            .nodes(
+            )
         ),
       bpmn("myPath")
         .processes(
-            process("myIdent")
-              .starterGroup("admin")
-              .starterUser("pme123")
-              .starterUser("admin")
-              .nodes(
-                startEvent("LetsStart"),
-                serviceTask("ExpressionService"),
-                serviceTask("ExternalTask"),
-                sendTask("DelegateSendTask"),
-                sendTask("DelegateSendTask"),
-                userTask("MyUserTask"),
-                businessRuleTask("MyBusinessRule")
-              ),
-            process("process2")
-
-
-              .nodes(
-
-              )
+          process("myIdent")
+            .starterGroup("admin")
+            .starterUser("pme123")
+            .starterUser("admin")
+            .nodes(
+              startEvent("LetsStart"),
+              serviceTask("ExpressionService"),
+              serviceTask("ExternalTask"),
+              sendTask("DelegateSendTask"),
+              sendTask("DelegateSendTask"),
+              userTask("MyUserTask"),
+              businessRuleTask("MyBusinessRule")
+            ),
+          process("process2")
+            .nodes(
+            )
         )
-  )
+    )
 
   println(
-    config.print("bpmnExample").asString(-1)
+    DemoProcessRunnerApp.demoConfig
+      .print()
+      .asString(-1)
   )

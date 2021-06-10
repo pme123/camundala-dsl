@@ -56,7 +56,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       val audit = bpmn1.compareWith(bpmn1)
       audit.print()
       assert(audit.entries.head.msg)(
-        equalTo("BPMN path match (myBpmn.bpmn).")
+        equalTo("BPMN ident match (myBpmn.bpmn).")
       ) &&
       assert(audit.entries.drop(1).head.msg)(
         equalTo("Process 'myProcess' exists.")
@@ -72,7 +72,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       val audit = bpmn1.compareWith(bpmn2)
       audit.print()
       assert(audit.entries.head.msg)(
-        equalTo("BPMN path has changed: myBpmn.bpmn -> new Bpmns: myBpmn2.bpmn.")
+        equalTo("BPMN ident has changed: myBpmn.bpmn -> new Bpmns: myBpmn2.bpmn.")
       ) &&
       assert(audit.entries.size)(equalTo(1)) &&
       assert(audit.maxLevel())(equalTo(AuditLevel.WARN))
@@ -81,7 +81,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       val audit = bpmn1.compareWith(bpmn3)
       audit.print()
       assert(audit.entries.head.msg)(
-        equalTo("BPMN path match (myBpmn.bpmn).")
+        equalTo("BPMN ident match (myBpmn.bpmn).")
       ) &&
       assert(audit.entries.drop(1).head.msg)(
         equalTo("Process 'myProcess' exists.")

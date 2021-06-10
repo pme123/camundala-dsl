@@ -7,17 +7,21 @@ trait DslPrinter:
 
   import Print.*
 
-  extension (bpmnsConfig: BpmnsConfig)
-    def print(projectName: String): Print =
+  extension (runnerConfig: RunnerConfig)
+    def print(): Print =
+      val bpmnsConfig = runnerConfig.bpmnsConfig
       pa2(
         pl(s"""|
                |import camundala.dsl.DSL
                |
-               |object $projectName extends DSL:
+               |object ${runnerConfig.projectName} extends DSL:
                |""".stripMargin),
         pa2(
+          pl(s"""final val cawemoFolder = "${runnerConfig.cawemoFolder}""""),
+          pl(s"""final val withIdFolder = "${runnerConfig.withIdFolder}""""),
+          pl(s"""final val generatedFolder = "${runnerConfig.generatedFolder}""""),
           po(
-            pl("bpmnsConfig"),
+            pl("val config = bpmnsConfig"),
             bpmnsConfig.users.print(),
             bpmnsConfig.groups.print(),
             bpmnsConfig.bpmns.print()
@@ -26,8 +30,8 @@ trait DslPrinter:
           bpmnsConfig.groups.printObjects(),
           bpmnsConfig.bpmns.printObjects()
         ),
-        pl("""|
-              |""".stripMargin)
+        pl(s"""|end ${runnerConfig.projectName}
+               |""".stripMargin)
       )
 
   end extension
@@ -215,9 +219,13 @@ trait DslPrinter:
   def poo(objectName: String, prints: Seq[Print]): Print =
     po(
       pl(s"object $objectName :\n"),
-      pa2(prints),
+      pa2(
+        if (prints.nonEmpty) (prints)
+        else Seq(pl(s""""//TODO Add $objectName here and remove this line""""))
+      ),
       pl(s"end $objectName")
     )
+
   def poo(objectName: String, print: Print, prints: Print*): Print =
     poo(objectName, print +: prints)
 

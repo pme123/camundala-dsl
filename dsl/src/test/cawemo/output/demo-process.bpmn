@@ -136,12 +136,12 @@
             
     
     <bpmn2:sequenceFlow id="IsNOTBar__Fork__UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA">
-      <conditionExpression id="conditionExpression_204b0d08-0ba2-4022-8297-99f75dac6055" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
+      <conditionExpression id="conditionExpression_5a8cad92-a0b7-44f4-a5d9-40abde1c9ec6" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
     <bpmn2:sequenceFlow id="IsBar__Fork__UserTaskB" name="is Bar" sourceRef="Fork" targetRef="UserTaskB">
-      <conditionExpression id="conditionExpression_d8a6bec1-187d-4a5a-ac34-d63fa65f763d" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
+      <conditionExpression id="conditionExpression_209a1b90-d151-4c70-a3c7-e40169f449a3" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
