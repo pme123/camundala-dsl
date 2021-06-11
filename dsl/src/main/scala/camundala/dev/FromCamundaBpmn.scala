@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 import scala.language.postfixOps
 import zio.*
 import scala.jdk.CollectionConverters._
-
+import zio.console.*
 // scala
 import scala.jdk.CollectionConverters.*
 import java.util.List
@@ -32,22 +32,21 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
   type ZIdent = IO[FromCamundaException, String]
 
   def fromCamunda(
-      runnerConfig: RunnerConfig
-  ): IO[FromCamundaException, BpmnsConfig] =
+      fromCamundaConfig: FromCamundaConfig
+  ): IO[FromCamundaException, Seq[Bpmn]] =
     for {
       cawemoFolder <- UIO(
-        new File(runnerConfig.cawemoFolder)
+        new File(fromCamundaConfig.cawemoFolder)
       )
       cawemoFiles <- cawemoBpmns(cawemoFolder)
 
       bpmns <- ZIO.foreach(cawemoFiles) { bpmnFile =>
         fromCamunda(
           bpmnFile,
-          path(s"${runnerConfig.withIdFolder}/${bpmnFile.getName}")
+          path(s"${fromCamundaConfig.withIdFolder}/${bpmnFile.getName}")
         )
       }
-    } yield bpmnsConfig
-      .bpmns(bpmns)
+    } yield bpmns
 
   private def cawemoBpmns(cawemoFolder: File) =
     if (cawemoFolder.isDirectory)
@@ -201,5 +200,32 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
         ex.printStackTrace
         FromCamundaException(s"Could not create an Ident for $elemKey / $name")
         )
+
+end FromCamundaBpmn
+
+case class FromCamundaRunner(fromCamundaConfig: FromCamundaConfig)
+    extends FromCamundaBpmn:
+
+  def run(): ZIO[zio.console.Console, FromCamundaException, Seq[Bpmn]] =
+    (for {
+      _: Any <- putStrLn(
+        s"Start From Camunda BPMNs from ${fromCamundaConfig.cawemoFolder}"
+      )
+      bpmns: Seq[Bpmn] <- fromCamunda(fromCamundaConfig)
+      _: Any <- putStrLn(
+        s"Generated BPMNs to ${fromCamundaConfig.withIdFolder}"
+      )
+    } yield (bpmns))
+      .mapError { case t: Throwable =>
+        t.printStackTrace
+        FromCamundaException(t.getMessage)
+      }
+
+end FromCamundaRunner
+
+case class FromCamundaConfig(
+    cawemoFolder: BpmnPath,
+    withIdFolder: BpmnPath
+)
 
 case class FromCamundaException(msg: String)

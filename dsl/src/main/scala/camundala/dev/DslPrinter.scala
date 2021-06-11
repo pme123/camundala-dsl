@@ -2,6 +2,9 @@ package camundala.dev
 
 import camundala.model.*
 import camundala.dev.Print.PrintObject
+import zio.ZIO
+import zio.console.*
+import camundala.dsl.DSL
 
 trait DslPrinter:
 
@@ -280,6 +283,37 @@ trait DslPrinter:
 
   def pl(text: String) = PrintLine(text)
 
+end DslPrinter
+
+case class DslPrinterRunner(runnerConfig: RunnerConfig) extends DslPrinter, DSL:
+
+  def run(): ZIO[zio.console.Console, DslPrinterException, Seq[Bpmn]] =
+    (for {
+      _ <- putStrLn(
+        s"Start DSL Printer"
+      )
+      bpmns <- FromCamundaRunner(
+        FromCamundaConfig(runnerConfig.cawemoFolder, runnerConfig.withIdFolder)
+      ).run()
+      newRunnerConfig = runnerConfig.copy(bpmnsConfig =
+        bpmnsConfig.bpmns(bpmns)
+      )
+      _ <- putStrLn(s"/* ${"*" * 40} */")
+      _ <- putStrLn(newRunnerConfig.print().asString(0))
+      _ <- putStrLn(s"/* ${"*" * 40} */")
+      _ <- putStrLn(
+        s"DSL Printed - copy content above to Scala file"
+      )
+    } yield (bpmns))
+      .mapError { case t: Throwable =>
+        t.printStackTrace
+        DslPrinterException(t.getMessage)
+      }
+
+end DslPrinterRunner
+
+case class DslPrinterException(msg: String)
+
 sealed trait Print:
   def nonEmpty: Boolean
   def asString(intent: Int = -2): String
@@ -310,3 +344,5 @@ object Print:
       s"${" " * 2 * intent}$text"
 
   end PrintLine
+
+end Print

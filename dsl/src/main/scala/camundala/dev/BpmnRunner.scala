@@ -7,17 +7,18 @@ import zio.*
 import scala.language.postfixOps
 
 case class BpmnRunner(runnerConfig: RunnerConfig)
-    extends FromCamundaBpmn
-    with CompareBpmns
-    with ToCamundaBpmn
-    with DslPrinter:
+    extends FromCamundaBpmn,
+      CompareBpmns,
+      ToCamundaBpmn,
+      DslPrinter,
+      DSL:
 
   def run() =
     for {
       _ <- putStrLn("Start Bpmn Runner")
-      bpmnsConfig <- fromCamunda(runnerConfig)
-      newRunnerConfig = runnerConfig.copy(bpmnsConfig = bpmnsConfig)
-      _ <- putStrLn(newRunnerConfig.print().asString(0))
+      _ <- DslPrinterRunner(
+        runnerConfig
+      ).run()
       audit <- UIO(runnerConfig.bpmnsConfig.compareWith(bpmnsConfig))
       _ <- putStrLn(audit.log(AuditLevel.WARN))
       _ <- runnerConfig.toCamunda()
@@ -31,3 +32,20 @@ case class RunnerConfig(
     generatedFolder: BpmnPath,
     bpmnsConfig: BpmnsConfig
 )
+
+object RunnerConfig extends DSL:
+
+  final val cawemoFolder = "cawemo"
+
+  final val withIdFolder = "cawemo/with-ids"
+
+  final val generatedFolder = "src/main/resources"
+
+  def apply(projectName: String, baseFolder: String = "."): RunnerConfig =
+    RunnerConfig(
+      projectName,
+      path(s"$baseFolder/$cawemoFolder"),
+      path(s"$baseFolder/$withIdFolder"),
+      path(s"$baseFolder/$generatedFolder"),
+      bpmnsConfig
+    )

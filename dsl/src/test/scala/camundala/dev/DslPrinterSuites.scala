@@ -26,7 +26,7 @@ object DslPrinterSuites extends DefaultRunnableSpec with DslPrinter:
             p match {
               case Print.PrintArray(prints, _) => prints.size
               case _ => -1
-            }, equalTo(3)
+            }, equalTo(10)
         )
       )
     }
