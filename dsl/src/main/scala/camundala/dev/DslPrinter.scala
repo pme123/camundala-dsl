@@ -1,4 +1,5 @@
-package camundala.dev
+package camundala
+package dev
 
 import camundala.model.*
 import camundala.dev.Print.PrintObject

@@ -1,10 +1,8 @@
-package camundala.examples.twitter.services
+package camundala
+package examples.twitter
+package services
 
-import camundala.examples.twitter.dsl.delecateExpr
-import org.camunda.bpm.engine.delegate.{DelegateExecution, JavaDelegate}
-import org.springframework.stereotype.Service
-
-@Service(delecateExpr.emailAdapter)
+@Service(dsl.emailAdapter)
 class RejectionNotificationDelegate extends JavaDelegate :
 
   @throws[Exception]

@@ -1,6 +1,5 @@
 package camundala.examples.twitter.services
 
-import org.camunda.bpm.engine.delegate.{DelegateExecution, JavaDelegate}
 import twitter4j.auth.AccessToken
 import twitter4j.{Twitter, TwitterFactory}
 

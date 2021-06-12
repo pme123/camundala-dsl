@@ -1,11 +1,6 @@
-package camundala.examples.twitter.bpmn
-
-import camundala.dev.*
-
-import camundala.dsl.DSL
-
-import java.io.File
-import camundala.model.BpmnsConfig
+package camundala
+package examples.twitter
+package bpmn
 
 object ExampleTwitterDslPrinterApp extends zio.App, DSL:
 
