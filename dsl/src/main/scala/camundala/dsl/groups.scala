@@ -1,7 +1,7 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.model._
-import camundala.model.BpmnGroup._
+import model.Name
 
 trait groups:
 
@@ -16,6 +16,6 @@ trait groups:
     def name(name: String): BpmnGroup =
       group.copy(maybeName = Some(Name(name)))
     def groupType(gType: String): BpmnGroup =
-      group.copy(`type` = GroupType(gType))
+      group.copy(`type` = BpmnGroup.GroupType(gType))
 
   end extension

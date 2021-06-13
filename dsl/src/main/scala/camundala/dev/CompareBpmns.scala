@@ -1,7 +1,5 @@
-package camundala.dev
-
-import camundala.dsl.DSL
-import camundala.model.*
+package camundala
+package dev
 
 trait CompareBpmns extends DSL:
 

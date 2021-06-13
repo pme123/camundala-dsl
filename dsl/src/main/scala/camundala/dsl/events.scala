@@ -1,6 +1,5 @@
-package camundala.dsl
-
-import camundala.model.*
+package camundala
+package dsl
 
 trait events:
 

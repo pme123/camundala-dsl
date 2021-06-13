@@ -1,7 +1,5 @@
-package camundala.dsl
-
-import camundala.model.*
-import java.io.File
+package camundala
+package dsl
 
 trait bpmns:
 

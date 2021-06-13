@@ -1,7 +1,8 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.model.{BpmnUser, UserRef, _}
-import camundala.model.BpmnUser._
+import camundala.model.{UserRef, GroupRef, Name}
+import camundala.model.BpmnUser.{Username, FirstName, Email}
 
 trait users:
 

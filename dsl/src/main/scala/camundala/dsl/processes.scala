@@ -1,6 +1,7 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.model._
+import model.{GroupRef, UserRef}
 
 trait processes:
 

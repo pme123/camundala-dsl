@@ -1,13 +1,14 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.model.BusinessRuleTaskImpl.{DecisionRef, Dmn}
-import camundala.model.ScriptImplementation.*
-import camundala.model.TaskImplementation.*
-import camundala.model.*
+import BusinessRuleTaskImpl.*
+import ScriptImplementation.*
+import TaskImplementation.*
+import model.{Ident, TenantId}
 
 trait tasks:
-  
-  extension [T](hasTaskImpl: HasTaskImplementation[T])
+
+  extension[T](hasTaskImpl: HasTaskImplementation[T])
     def expression(expr: String) =
       hasTaskImpl.taskImplementation(Expression(expr))
 
@@ -30,8 +31,8 @@ trait tasks:
     SendTask(Task(ident))
 
   def scriptTask(ident: String) =
-  //   scriptImplementation: ScriptImplementation,
-  // resultVariable: Option[Ident] = None) =
+    //   scriptImplementation: ScriptImplementation,
+    // resultVariable: Option[Ident] = None) =
     ScriptTask(Task(ident))
 
   extension (sTask: ScriptTask)
@@ -89,7 +90,6 @@ trait taskImplementations:
     Dmn(DecisionRef(decisionRef))
 
   extension (dmn: Dmn)
-
     def binding(refBinding: RefBinding): Dmn =
       dmn.copy(binding = refBinding)
 

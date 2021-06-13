@@ -1,22 +1,9 @@
-package camundala.dev
+package camundala
+package dev
 
-import camundala.dsl.DSL
-import camundala.model.*
-import org.camunda.bpm.model.bpmn.impl.instance.SequenceFlowImpl
-import org.camunda.bpm.model.bpmn.instance.FlowElement
-import org.camunda.bpm.model.{bpmn => camundaBpmn}
-import org.camunda.bpm.model.bpmn.{BpmnModelInstance, instance => camunda}
+import model.*
 
-import java.io._
 import scala.language.implicitConversions
-import scala.language.postfixOps
-import zio.*
-import scala.jdk.CollectionConverters._
-import zio.console.*
-// scala
-import scala.jdk.CollectionConverters.*
-import java.util.List
-import java.util.ArrayList
 
 def testList =
   println("Using a Java List in Scala")
@@ -28,7 +15,7 @@ def testList =
 trait FromCamundaBpmn extends DSL with DSL.Givens:
 
   // context function def f(using BpmnModelInstance): T
-  type FromCamundable[T] = BpmnModelInstance ?=> T
+  type FromCamundable[T] = camunda.BpmnModelInstance ?=> T
   type ZIdent = IO[FromCamundaException, String]
 
   def fromCamunda(
@@ -71,11 +58,11 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
   ): IO[FromCamundaException, Bpmn] = {
     (for {
       modelInstance <- ZIO(
-        camundaBpmn.Bpmn.readModelFromFile(bpmnFile)
+        camunda.Bpmn.readModelFromFile(bpmnFile)
       )
       cProcesses <- ZIO(
         modelInstance
-          .getModelElementsByType(classOf[camunda.Process])
+          .getModelElementsByType(classOf[cBpmnInstance.Process])
           .asScala
           .toSeq
       )
@@ -84,7 +71,7 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
           .mapError(Some(_))
       }
       _ <- ZIO(
-        camundaBpmn.Bpmn.writeModelToFile(new File(outputPath), modelInstance)
+        camunda.Bpmn.writeModelToFile(new File(outputPath), modelInstance)
       )
     } yield bpmn(bpmnFile).processes(processes: _*))
       .mapError {
@@ -95,32 +82,32 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
       }
   }
 
-  extension (camundaProcess: camunda.Process)
+  extension (camundaProcess: cBpmnInstance.Process)
     def fromCamunda(): FromCamundable[IO[FromCamundaException, BpmnProcess]] =
       for {
         ident <- camundaProcess.createIdent()
-        startEvents <- createElements(classOf[camunda.StartEvent], startEvent)
-        userTasks <- createElements(classOf[camunda.UserTask], userTask)
+        startEvents <- createElements(classOf[cBpmnInstance.StartEvent], startEvent)
+        userTasks <- createElements(classOf[cBpmnInstance.UserTask], userTask)
         serviceTasks <- createElements(
-          classOf[camunda.ServiceTask],
+          classOf[cBpmnInstance.ServiceTask],
           serviceTask
         )
-        scriptTasks <- createElements(classOf[camunda.ScriptTask], scriptTask)
+        scriptTasks <- createElements(classOf[cBpmnInstance.ScriptTask], scriptTask)
         businessRuleTasks <- createElements(
-          classOf[camunda.BusinessRuleTask],
+          classOf[cBpmnInstance.BusinessRuleTask],
           businessRuleTask
         )
         exclusiveGateways <- createElements(
-          classOf[camunda.ExclusiveGateway],
+          classOf[cBpmnInstance.ExclusiveGateway],
           exclusiveGateway
         )
         parallelGateways <- createElements(
-          classOf[camunda.ParallelGateway],
+          classOf[cBpmnInstance.ParallelGateway],
           parallelGateway
         )
-        endEvents <- createElements(classOf[camunda.EndEvent], endEvent)
+        endEvents <- createElements(classOf[cBpmnInstance.EndEvent], endEvent)
         sequenceFlows <- createElements(
-          classOf[camunda.SequenceFlow],
+          classOf[cBpmnInstance.SequenceFlow],
           sequenceFlow
         )
       } yield process(ident)
@@ -136,12 +123,12 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
         )
         .flows(sequenceFlows: _*)
 
-  def createElements[T <: camunda.FlowElement, C](
+  def createElements[T <: cBpmnInstance.FlowElement, C](
       clazz: Class[T],
       constructor: String => C
   ): FromCamundable[IO[FromCamundaException, Seq[C]]] = {
     ZIO.collect(
-      summon[BpmnModelInstance].getModelElementsByType(clazz).asScala.toSeq
+      summon[camunda.BpmnModelInstance].getModelElementsByType(clazz).asScala.toSeq
     ) { fe =>
       val zident: ZIdent = fe.createIdent()
       zident
@@ -150,14 +137,14 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
     }
   }
 
-  extension (process: camunda.Process)
+  extension (process: cBpmnInstance.Process)
     def createIdent(): ZIdent =
       for {
         ident <- identString(Option(process.getName), process)
         _ = process.setId(ident)
       } yield ident
 
-  extension (element: camunda.FlowElement)
+  extension (element: cBpmnInstance.FlowElement)
     def generateIdent(): ZIdent =
       identString(Option(element.getName), element)
 
@@ -165,14 +152,14 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
       for {
         ident <-
           element match
-            case flow: SequenceFlowImpl =>
+            case flow: cBpmnInstance.SequenceFlow =>
               flow.createIdent()
             case _ =>
               generateIdent()
         _ = element.setId(ident)
       } yield ident
 
-  extension (element: camunda.SequenceFlow)
+  extension (element: cBpmnInstance.SequenceFlow)
     def createIdent(): ZIdent = {
       for {
         ident <- element.generateIdent()
@@ -183,7 +170,7 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
       } yield newIdent
     }
 
-  def identString(name: Option[String], camObj: camunda.BaseElement): ZIdent =
+  def identString(name: Option[String], camObj: cBpmnInstance.BaseElement): ZIdent =
     val elemKey = camObj.getElementType.getTypeName
     zio
       .Task(

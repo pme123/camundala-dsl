@@ -1,6 +1,5 @@
-package camundala.dsl
-
-import camundala.model._
+package camundala
+package dsl
 
 trait props :
   

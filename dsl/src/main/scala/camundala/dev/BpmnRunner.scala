@@ -1,10 +1,7 @@
-package camundala.dev
+package camundala
+package dev
 
-import camundala.dsl.DSL
-import camundala.model.*
-import zio.console.*
-import zio.*
-import scala.language.postfixOps
+import camundala.model.BpmnPath
 
 case class BpmnRunner(runnerConfig: RunnerConfig)
     extends FromCamundaBpmn,
@@ -33,7 +30,7 @@ case class RunnerConfig(
     bpmnsConfig: BpmnsConfig
 )
 
-object RunnerConfig extends DSL:
+object RunnerConfig :
 
   final val cawemoFolder = "cawemo"
 
@@ -44,8 +41,8 @@ object RunnerConfig extends DSL:
   def apply(projectName: String, baseFolder: String = "."): RunnerConfig =
     RunnerConfig(
       projectName,
-      path(s"$baseFolder/$cawemoFolder"),
-      path(s"$baseFolder/$withIdFolder"),
-      path(s"$baseFolder/$generatedFolder"),
-      bpmnsConfig
+      camundala.model.BpmnPath(s"$baseFolder/$cawemoFolder"),
+      BpmnPath(s"$baseFolder/$withIdFolder"),
+      BpmnPath(s"$baseFolder/$generatedFolder"),
+      BpmnsConfig.none
     )

@@ -1,8 +1,8 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.model._
-import VariableAssignment._
-import ScriptImplementation._
+import VariableAssignment.*
+import ScriptImplementation.*
 
 trait parameters:
 

@@ -1,8 +1,9 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.model.*
-import camundala.model.Condition.*
-import camundala.model.ScriptImplementation.ScriptPath
+import Condition.*
+
+import camundala.model.ProcessElementRef
 
 trait flows:
 
@@ -20,7 +21,7 @@ trait flows:
     def expression(expr: String): SequenceFlow = 
       condition( ExpressionCond(expr))
 
-    def groovy(scriptPath: ScriptPath): SequenceFlow = 
+    def groovy(scriptPath: ScriptImplementation.ScriptPath): SequenceFlow =
       condition( ScriptCond(s"$scriptPath.groovy"))
 
     def inlineGroovy(script: String): SequenceFlow = 

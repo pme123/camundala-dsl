@@ -1,30 +1,16 @@
-package camundala.dsl
+package camundala
+package dsl
 
-import camundala.dsl.forms.{EnumFieldAttr, FieldAttr}
-import camundala.model.Constraint._
-import camundala.model.GeneratedForm.FormFieldType.{
-  BooleanType,
-  DateType,
-  EnumType,
-  LongType,
-  StringType
-}
-import camundala.model.GeneratedForm.{
-  DefaultValue,
-  EnumValue,
-  EnumValues,
-  FormField,
-  FormFieldType,
-  Label
-}
-import camundala.model._
+import dsl.forms.{EnumFieldAttr, FieldAttr}
+import model.{FormKey, Ident, Name}
+import GeneratedForm.FormFieldType.*
 
 trait forms:
 
   extension[T](hasForm: HasMaybeForm[T])
     def form(formRef: FormKey): T =
       hasForm.withForm(EmbeddedForm(formRef))
-    
+
     def staticForm(path: String): T =
       hasForm.withForm(EmbeddedStaticForm(path))
 
@@ -81,7 +67,8 @@ object forms:
   type EnumFieldAttr = FieldAttr | EnumValue
 
   trait constraints:
-    extension(field: FormField)
+    import Constraint.*
+    extension (field: FormField)
       def readonly: FormField =
         field.copy(constraints = field.constraints :+ Readonly)
 

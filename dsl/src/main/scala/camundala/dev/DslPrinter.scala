@@ -1,11 +1,7 @@
 package camundala
 package dev
 
-import camundala.model.*
-import camundala.dev.Print.PrintObject
-import zio.ZIO
-import zio.console.*
-import camundala.dsl.DSL
+import model.*
 
 trait DslPrinter:
 
