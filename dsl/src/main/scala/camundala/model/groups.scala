@@ -1,6 +1,6 @@
-package camundala.model
+package camundala
+package model
 
-import camundala.model.BpmnGroup.GroupType
 import camundala.model.BpmnUser.{Email, FirstName, Username}
 
 opaque type GroupRef = String
@@ -24,7 +24,7 @@ object BpmnGroups:
 case class BpmnGroup(
     ident: Ident,
     maybeName: Option[Name] = None,
-    `type`: GroupType = BpmnGroup.Camundala
+    `type`: BpmnGroup.GroupType = BpmnGroup.Camundala
 ):
 
   def ref: GroupRef = GroupRef(ident.toString)

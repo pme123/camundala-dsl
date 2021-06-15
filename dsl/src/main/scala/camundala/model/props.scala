@@ -1,7 +1,5 @@
 package camundala.model
 
-import camundala.dsl.forms.FieldAttr
-
 // Camunda Extension
 case class Property(key: Ident, value: String)
 
