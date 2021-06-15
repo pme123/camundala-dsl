@@ -2,8 +2,9 @@ package camundala
 
 export dsl.DSL
 export camundala.model.{Ident, Name, TenantId, BpmnPath}
-export model.{BpmnsConfig, BpmnProcess, Bpmns, Bpmn, BpmnProcesses, ProcessElements, ProcessElementRef}
+export model.{BpmnsConfig, BpmnProcess, Bpmns, Bpmn, BpmnProcesses, ProcessElements}
 export model.{BpmnUsers, BpmnUser, BpmnGroups, BpmnGroup, CandidateGroups,CandidateUsers}
+import camundala.model.Condition._
 // tasks
 export model.{ 
   Task,
@@ -16,7 +17,8 @@ export model.{
   MapDecisionResult,
   ResultVariable
 }
-export model.{ProcessNodes, SequenceFlows, 
+export model.{ProcessNodes,
+  SequenceFlows,
   SequenceFlow, 
   EndEvent, 
   StartEvent, 
@@ -44,7 +46,7 @@ export model.{
     HasTaskImplementation,
     HasTransactionBoundary
   }
-export model.BpmnProcess.ElemKey
+
 export model.GeneratedForm.{DefaultValue,
   EnumValue,
   EnumValues,
@@ -56,5 +58,7 @@ export model.ScriptLanguage
 export dev.DslPrinterRunner
 export dev.BpmnRunner
 export dev.RunnerConfig
+
+export scala.annotation.targetName
 
 export java.io.File

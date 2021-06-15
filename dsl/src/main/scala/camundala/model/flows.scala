@@ -1,8 +1,5 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.ElemKey
-import camundala.model.Condition._
-
 case class SequenceFlows(flows: Seq[SequenceFlow])
   extends ProcessElements :
   

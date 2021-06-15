@@ -1,8 +1,7 @@
-package camundala.model
+package camundala
+package model
 
-import camundala.model.BpmnProcess.ElemKey
-import camundala.model.GeneratedForm.FormField
-import camundala.model.TaskImplementation._
+import TaskImplementation.*
 
 case class Activity(
     processNode: ProcessNode,

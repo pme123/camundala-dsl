@@ -1,7 +1,5 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.ElemKey
-
 sealed trait HasEvent[T] extends HasProcessNode[T]
 
 case class StartEvent(

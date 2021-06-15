@@ -1,7 +1,5 @@
 package camundala.model
 
-import camundala.model.BpmnProcess.ElemKey
-
 trait HasGateway[T] extends HasProcessNode[T] 
 
 

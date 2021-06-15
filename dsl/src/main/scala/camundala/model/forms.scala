@@ -1,10 +1,5 @@
-package camundala.model
-
-import camundala.dsl.forms.{EnumFieldAttr, FieldAttr}
-import camundala.model.*
-import camundala.model.Constraint.*
-import camundala.model.GeneratedForm.*
-import scala.annotation.targetName
+package camundala
+package model
 
 sealed trait BpmnForm
 
@@ -31,7 +26,7 @@ object EmbeddedStaticForm:
       )
     )
 
-case class GeneratedForm(fields: Seq[FormField] = Seq.empty) extends BpmnForm
+case class GeneratedForm(fields: Seq[GeneratedForm.FormField] = Seq.empty) extends BpmnForm
 
 object GeneratedForm:
 
