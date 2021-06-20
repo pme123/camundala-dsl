@@ -1,38 +1,38 @@
 package camundala
 package dev
 
-import model.*
 
-import org.camunda.bpm.model.bpmn.{
-  BpmnModelInstance,
-  Bpmn => BpmnCamunda,
-  instance => camunda
-}
-import org.camunda.bpm.model.{bpmn => camundaBpmn}
+import org.camunda.bpm.model.bpmn.Bpmn as CBpmn
+import org.camunda.bpm.model.bpmn.instance.camunda.*
 
 import dsl.DSL.Givens.given
 import scala.language.implicitConversions
 
 trait ToCamundaBpmn:
 
-  // context function def f(using BpmnModelInstance): T
-  type ToCamundable[T] = BpmnModelInstance ?=> T
+  // context function def f(using CBpmnModelInstance): T
+  type ToCamundable[T] = CBpmnModelInstance ?=> T
 
   extension (runnerConfig: RunnerConfig)
-    def toCamunda(): IO[ToCamundaException, Seq[Unit]] = 
-      IO.foreach(runnerConfig.bpmnsConfig.bpmns.bpmns){(bpmn:Bpmn) => 
+    def toCamunda(): IO[ToCamundaException, Seq[Unit]] =
+      IO.foreach(runnerConfig.bpmnsConfig.bpmns.bpmns) { (bpmn: Bpmn) =>
         bpmn.toCamunda(runnerConfig.withIdFolder, runnerConfig.generatedFolder)
       }
 
   extension (bpmn: Bpmn)
-    def toCamunda(withIdFolder: BpmnPath, generatedFolder: BpmnPath): IO[ToCamundaException, Unit] = {
+    def toCamunda(
+        withIdFolder: BpmnPath,
+        generatedFolder: BpmnPath
+    ): IO[ToCamundaException, Unit] = {
       (for {
         modelInstance <- ZIO(
-          camundaBpmn.Bpmn.readModelFromFile(new File(s"$withIdFolder/${bpmn.path}"))
+          CBpmn.readModelFromFile(
+            new File(s"$withIdFolder/${bpmn.path}")
+          )
         )
         cProcesses <- ZIO(
           modelInstance
-            .getModelElementsByType(classOf[camunda.Process])
+            .getModelElementsByType(classOf[CProcess])
             .asScala
             .toSeq
         )
@@ -41,7 +41,10 @@ trait ToCamundaBpmn:
             .mapError(Some(_))
         }
         _ <- ZIO(
-          camundaBpmn.Bpmn.writeModelToFile(new File(s"$generatedFolder/${bpmn.path}"), modelInstance)
+          CBpmn.writeModelToFile(
+            new File(s"$generatedFolder/${bpmn.path}"),
+            modelInstance
+          )
         )
       } yield ())
         .mapError {
@@ -59,9 +62,9 @@ trait ToCamundaBpmn:
           n.toCamunda().mapError(Some(_))
         }
         cProcess <- ZIO(
-          summon[BpmnModelInstance]
+          summon[CBpmnModelInstance]
             .getModelElementById(process.ident)
-            .asInstanceOf[camunda.Process]
+            .asInstanceOf[CProcess]
         )
           .mapError(ex => ToCamundaException(ex.getMessage()))
         groups <- UIO(process.starterGroups.groups.map(_.toString))
@@ -70,7 +73,7 @@ trait ToCamundaBpmn:
         _ <- UIO(cProcess.setCamundaCandidateStarterUsersList(users.asJava))
       } yield ()
 
-  extension (procElement: HasProcessElement[_])
+  extension [A](procElement: HasProcessElement[A])
 
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
       for {
@@ -82,9 +85,9 @@ trait ToCamundaBpmn:
       } yield ()
 
     private def checkElem()
-        : ToCamundable[IO[ToCamundaException, camunda.BaseElement]] =
-      val elem: camunda.BaseElement =
-        summon[BpmnModelInstance].getModelElementById(procElement.ident)
+        : ToCamundable[IO[ToCamundaException, CBaseElement]] =
+      val elem: CBaseElement =
+        summon[CBpmnModelInstance].getModelElementById(procElement.ident)
       if (elem == null)
         ZIO.fail(
           ToCamundaException(
@@ -98,37 +101,37 @@ trait ToCamundaBpmn:
       ZIO(
         procElement match
           case pe: StartEvent =>
-            val elem: camunda.StartEvent =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CStartEvent =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
           case pe: ServiceTask =>
-            val elem: camunda.ServiceTask =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CServiceTask =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
           case pe: UserTask =>
-            val elem: camunda.UserTask =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CUserTask =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
           case pe: ScriptTask =>
-            val elem: camunda.ScriptTask =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CScriptTask =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
           case pe: SequenceFlow =>
-            val elem: camunda.SequenceFlow =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CSequenceFlow =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
           case eg: ExclusiveGateway =>
-            val elem: camunda.ExclusiveGateway =
-              summon[BpmnModelInstance].getModelElementById(eg.ident)
+            val elem: CExclusiveGateway =
+              summon[CBpmnModelInstance].getModelElementById(eg.ident)
             eg.merge(elem)
           case pe: EndEvent =>
-            val elem: camunda.EndEvent =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CEndEvent =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
       ).mapError(handleException(procElement.elemKey.name))
 
     private def mergeProperties(
-        elem: camunda.BaseElement
+        elem: CBaseElement
     ): ToCamundable[IO[ToCamundaException, Unit]] =
       // HasProperties
       procElement match
@@ -139,9 +142,9 @@ trait ToCamundaBpmn:
     private def mergeParameters: ToCamundable[IO[ToCamundaException, Unit]] =
       ZIO { // HasInputParameters / HasOutputParameters
         val inout =
-          summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaInputOutput])
-        val elem: camunda.BaseElement =
-          summon[BpmnModelInstance].getModelElementById(procElement.ident)
+          summon[CBpmnModelInstance].newInstance(classOf[CamundaInputOutput])
+        val elem: CBaseElement =
+          summon[CBpmnModelInstance].getModelElementById(procElement.ident)
         procElement match
           case iop: (HasInputParameters[_] & HasOutputParameters[_]) =>
             if (iop.inputParameters.nonEmpty || iop.outputParameters.nonEmpty)
@@ -164,8 +167,8 @@ trait ToCamundaBpmn:
       ZIO(
         procElement match
           case pe: HasTransactionBoundary[_] =>
-            val elem: camunda.FlowNode =
-              summon[BpmnModelInstance].getModelElementById(pe.ident)
+            val elem: CFlowNode =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
             elem.setCamundaAsyncBefore(pe.isAsyncBefore)
             elem.setCamundaExclusive(pe.isAsyncBefore) // just support exclusive
             elem.setCamundaAsyncAfter(pe.isAsyncAfter)
@@ -181,19 +184,19 @@ trait ToCamundaBpmn:
       )
     }
 
-  extension (hasProperties: HasProperties[_])
+  extension [A](hasProperties: HasProperties[A])
     def propsToCamunda(
-        elem: camunda.BaseElement
+        elem: CBaseElement
     ): ToCamundable[zio.Task[Unit]] =
       zio.Task {
         if (hasProperties.properties.nonEmpty) {
-          val props: cBpmnInstanceC.CamundaProperties =
-            summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaProperties])
+          val props: CamundaProperties =
+            summon[CBpmnModelInstance].newInstance(classOf[CamundaProperties])
           elem.builder.addExtensionElement(props).done
           hasProperties.properties.properties
             .foreach { case Property(ident, value) =>
               val cp =
-                summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaProperty])
+                summon[CBpmnModelInstance].newInstance(classOf[CamundaProperty])
               cp.setCamundaName(ident.toString)
               cp.setCamundaValue(value)
               props.getCamundaProperties().add(cp)
@@ -201,30 +204,30 @@ trait ToCamundaBpmn:
         }
       }
 
-  extension (hasInputParams: HasInputParameters[_])
+  extension [A](hasInputParams: HasInputParameters[A])
     def inputParamsToCamunda(
-        elem: camunda.BaseElement,
-        inout: cBpmnInstanceC.CamundaInputOutput
+        elem: CBaseElement,
+        inout: CamundaInputOutput
     ): ToCamundable[Unit] =
       hasInputParams.inputParameters
         .foreach { case InOutParameter(ident, value) =>
-          val cp = summon[BpmnModelInstance].newInstance(
-            classOf[cBpmnInstanceC.CamundaInputParameter]
+          val cp = summon[CBpmnModelInstance].newInstance(
+            classOf[CamundaInputParameter]
           )
           cp.setCamundaName(ident.toString)
           inout.getCamundaInputParameters().add(cp)
           value.paramsToCamunda(cp)
         }
 
-  extension (hasOutputParams: HasOutputParameters[_])
+  extension [A](hasOutputParams: HasOutputParameters[A])
     def outputParamsToCamunda(
-        elem: camunda.BaseElement,
-        inout: cBpmnInstanceC.CamundaInputOutput
+        elem: CBaseElement,
+        inout: CamundaInputOutput
     ): ToCamundable[Unit] =
       hasOutputParams.outputParameters
         .foreach { case InOutParameter(ident, value) =>
-          val cp = summon[BpmnModelInstance].newInstance(
-            classOf[cBpmnInstanceC.CamundaOutputParameter]
+          val cp = summon[CBpmnModelInstance].newInstance(
+            classOf[CamundaOutputParameter]
           )
           cp.setCamundaName(ident.toString)
           inout.getCamundaOutputParameters().add(cp)
@@ -233,7 +236,7 @@ trait ToCamundaBpmn:
 
   extension (value: VariableAssignment | ScriptImplementation)
     def paramsToCamunda(
-        cp: cBpmnInstanceC.CamundaGenericValueElement & ModelElementInstance
+        cp: CamundaGenericValueElement & ModelElementInstance
     ): ToCamundable[Unit] =
       import ScriptImplementation.*
       value match
@@ -242,25 +245,25 @@ trait ToCamundaBpmn:
         case VariableAssignment.Expression(str) =>
           cp.setTextContent(str)
         case InlineScript(lang, str) =>
-          val script: cBpmnInstanceC.CamundaScript =
-            summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaScript])
+          val script: CamundaScript =
+            summon[CBpmnModelInstance].newInstance(classOf[CamundaScript])
           script.setCamundaScriptFormat(lang.toString)
           script.setTextContent(str)
           cp.setValue(script)
         case ExternalScript(lang, resource) =>
-          val script: cBpmnInstanceC.CamundaScript =
-            summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaScript])
+          val script: CamundaScript =
+            summon[CBpmnModelInstance].newInstance(classOf[CamundaScript])
           script.setCamundaScriptFormat(lang.toString)
           script.setCamundaResource(resource)
           cp.setValue(script)
 
   extension (task: ServiceTask)
-    def merge(elem: camunda.ServiceTask): Unit =
+    def merge(elem: CServiceTask): Unit =
       task.taskImplementation
         .merge(elem)
 
   extension (taskImpl: TaskImplementation)
-    def merge(elem: camunda.ServiceTask): Unit =
+    def merge(elem: CServiceTask): Unit =
       import TaskImplementation.*
       taskImpl match
         case Expression(expresssion, resultVariable) =>
@@ -275,7 +278,7 @@ trait ToCamundaBpmn:
           elem.setCamundaTopic(topic)
 
   extension (event: StartEvent)
-    def merge(elem: camunda.StartEvent): ToCamundable[Unit] =
+    def merge(elem: CStartEvent): ToCamundable[Unit] =
       val builder = elem.builder()
       event.maybeForm.foreach {
         case EmbeddedForm(formRef) =>
@@ -289,11 +292,11 @@ trait ToCamundaBpmn:
       }
 
   extension (event: EndEvent)
-    def merge(elem: camunda.EndEvent): ToCamundable[Unit] =
+    def merge(elem: CEndEvent): ToCamundable[Unit] =
       (/* nothing to do yet*/ )
 
   extension (task: UserTask)
-    def merge(elem: camunda.UserTask): ToCamundable[Unit] =
+    def merge(elem: CUserTask): ToCamundable[Unit] =
       val builder = elem.builder()
 
       task.maybeForm.foreach {
@@ -308,7 +311,7 @@ trait ToCamundaBpmn:
       }
 
   extension (task: ScriptTask)
-    def merge(elem: camunda.ScriptTask): Unit =
+    def merge(elem: CScriptTask): Unit =
       import ScriptImplementation.*
       val builder = elem.builder()
       task.scriptImplementation match {
@@ -327,10 +330,10 @@ trait ToCamundaBpmn:
         )
 
   extension (flow: SequenceFlow)
-    def merge(elem: camunda.SequenceFlow): ToCamundable[Unit] =
+    def merge(elem: CSequenceFlow): ToCamundable[Unit] =
       import Condition.*
       val expression =
-        summon[BpmnModelInstance].newInstance(classOf[cBpmnInstance.ConditionExpression])
+        summon[CBpmnModelInstance].newInstance(classOf[CConditionExpression])
       flow.condition
         .map {
           case ExpressionCond(expr) =>
@@ -347,17 +350,17 @@ trait ToCamundaBpmn:
         .foreach(_ => elem.setConditionExpression(expression))
 
   extension (gateway: ExclusiveGateway)
-    def merge(elem: camunda.ExclusiveGateway): ToCamundable[Unit] =
+    def merge(elem: CExclusiveGateway): ToCamundable[Unit] =
       gateway.defaultFlow
         .map { f =>
-          val flow: camunda.SequenceFlow =
-            summon[BpmnModelInstance].getModelElementById(f.toString)
+          val flow: CSequenceFlow =
+            summon[CBpmnModelInstance].getModelElementById(f.toString)
           elem.setDefault(flow)
         }
 
   private def createFormField(
       formField: FormField,
-      cff: cBpmnInstanceC.CamundaFormField
+      cff: CamundaFormField
   ): ToCamundable[Unit] =
     val FormField(
       id,
@@ -374,26 +377,26 @@ trait ToCamundaBpmn:
     defaultValue.foreach(v => cff.setCamundaDefaultValue(v.toString))
     cff.getCamundaValues
       .addAll(values.enums.map { case GeneratedForm.EnumValue(k, v) =>
-        val cv = summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaValue])
+        val cv = summon[CBpmnModelInstance].newInstance(classOf[CamundaValue])
         cv.setCamundaId(k)
         cv.setCamundaName(v)
         cv
       }.asJava)
-    val cvd = summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaValidation])
+    val cvd = summon[CBpmnModelInstance].newInstance(classOf[CamundaValidation])
     cff.setCamundaValidation(cvd)
     cvd.getCamundaConstraints
       .addAll(constraints.constraints.map { c =>
         val cc =
-          summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaConstraint])
+          summon[CBpmnModelInstance].newInstance(classOf[CamundaConstraint])
         cc.setCamundaName(c.name)
         c.config.foreach(cc.setCamundaConfig)
         cc
       }.asJava)
-    val cps = summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaProperties])
+    val cps = summon[CBpmnModelInstance].newInstance(classOf[CamundaProperties])
     cff.setCamundaProperties(cps)
     cps.getCamundaProperties
       .addAll(properties.properties.map { case Property(k, v) =>
-        val cv = summon[BpmnModelInstance].newInstance(classOf[cBpmnInstanceC.CamundaProperty])
+        val cv = summon[CBpmnModelInstance].newInstance(classOf[CamundaProperty])
         cv.setCamundaId(k)
         cv.setCamundaValue(v)
         cv

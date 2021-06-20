@@ -1,4 +1,5 @@
-package camundala.dev
+package camundala
+package dev
 
 import camundala.dev
 import camundala.dsl.DSL

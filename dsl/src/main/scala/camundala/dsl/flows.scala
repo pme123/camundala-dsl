@@ -3,8 +3,6 @@ package dsl
 
 import Condition.*
 
-import camundala.model.ProcessElementRef
-
 trait flows:
 
   def sequenceFlow(ident: String) =

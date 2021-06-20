@@ -1,6 +1,6 @@
 val projectVersion = "0.1.0-SNAPSHOT"
 val scala2Version = "2.13.4"
-val scala3Version = "3.0.0"
+val scala3Version = "3.0.1-RC1"
 val zioVersion = "1.0.8"
 val org = "io.github.pme123"
 
