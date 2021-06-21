@@ -2,7 +2,7 @@ package camundala
 package dev
 
 export zio.{ZIO, UIO, IO}
-export zio.console.putStrLn
+export zio.console.{putStrLn, Console}
 
 export scala.jdk.CollectionConverters.*
 

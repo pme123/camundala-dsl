@@ -1,8 +1,6 @@
 package camundala
 package dev
-
-import camundala.dev
-import camundala.dsl.DSL
+package test
 
 object DemoProcessRunnerApp extends zio.App with DSL:
 

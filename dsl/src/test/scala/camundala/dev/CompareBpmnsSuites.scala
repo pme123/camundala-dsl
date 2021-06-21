@@ -1,11 +1,6 @@
-package camundala.dev
-
-import camundala.dsl.DSL
-import camundala.model.*
-import org.junit.Test
-import org.junit.Assert.*
-import zio.test.*
-import zio.test.Assertion.*
+package camundala
+package dev
+package test
 
 object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
 

@@ -1,10 +1,6 @@
-package camundala.dev
-
-import camundala.dsl.DSL
-import camundala.model.*
-import zio.test.*
-import zio.*
-import zio.test.Assertion.*
+package camundala
+package dev
+package test
 
 object FromCamundaBpmnSuites
     extends DefaultRunnableSpec

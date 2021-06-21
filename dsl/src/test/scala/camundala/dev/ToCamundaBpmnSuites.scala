@@ -1,17 +1,6 @@
-package camundala.dev
-
-import camundala.dsl.DSL
-import camundala.model.TaskImplementation.*
-import camundala.model.*
-import org.camunda.bpm.model.bpmn.{Bpmn => BpmnCamunda, instance => camunda}
-import org.camunda.bpm.model.xml.instance.ModelElementInstance
-
-import java.io.File
-import scala.jdk.CollectionConverters._
-import camundala.dsl.DSL._
-import zio.test.*
-import zio.*
-import zio.test.Assertion.*
+package camundala
+package dev
+package test
 
 object ToCamundaBpmnSuites
   extends DefaultRunnableSpec

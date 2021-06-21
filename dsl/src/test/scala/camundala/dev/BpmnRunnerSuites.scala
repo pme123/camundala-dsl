@@ -1,15 +1,6 @@
 package camundala
 package dev
-
-import camundala.dsl.DSL
-import zio.test.*
-import zio.*
-import Assertion.*
-import zio.test.mock.MockConsole
-import zio.test.mock.Expectation.*
-import zio.test.mock.MockSystem
-import zio.console.Console
-import camundala.dev.demoProcess.bpmnsProjectConfig
+package test
 
 object BpmnRunnerSuites extends DefaultRunnableSpec with DSL:
 

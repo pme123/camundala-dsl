@@ -3,7 +3,7 @@ package camundala
 export dsl.DSL
 export camundala.model.{Ident, Name, TenantId, BpmnPath}
 export model.{BpmnsConfig, BpmnProcess, Bpmns, Bpmn, BpmnProcesses, ProcessElements,
-  ProcessElementRef}
+  ProcessElementRef, ProcessVarString}
 export model.{BpmnUsers, BpmnUser, BpmnGroups, BpmnGroup, CandidateGroups,CandidateUsers}
 import camundala.model.Condition._
 // tasks
