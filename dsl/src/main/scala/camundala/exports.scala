@@ -16,7 +16,8 @@ export model.{
   BusinessRuleTask,
   RefBinding,
   MapDecisionResult,
-  ResultVariable
+  ResultVariable,
+  CallActivity
 }
 export model.{ProcessNodes,
   SequenceFlows,
@@ -33,15 +34,20 @@ export model.{
   ScriptImplementation
 }
 export model.{FormKey, 
-Condition, GeneratedForm, Constraint, Constraints, 
-Property, VariableAssignment, EmbeddedForm, EmbeddedStaticForm,
-InOutParameter}
+  Condition, GeneratedForm, Constraint, Constraints,
+  Property, VariableAssignment, EmbeddedForm, EmbeddedStaticForm,
+  InOutVariable,
+  InOutParameter,
+  VariableName
+}
 
 export model.{
     HasProcessElement, 
     HasMaybeForm, 
     HasInputParameters,
     HasOutputParameters,
+    HasInVariables,
+    HasOutVariables,
     HasProcessNode,
     HasProperties,
     HasTaskImplementation,

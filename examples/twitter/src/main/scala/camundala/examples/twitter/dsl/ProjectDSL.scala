@@ -2,9 +2,7 @@ package camundala
 package examples.twitter
 package dsl
 
-import model.{HasProperties, HasMaybeForm}
-import model.{HasTaskImplementation, ServiceTask}
-import model.TaskImplementation.DelegateExpression
+import TaskImplementation.DelegateExpression
 
 final val emailAdapter = "emailAdapter"
 final val tweetAdapter = "tweetAdapter"

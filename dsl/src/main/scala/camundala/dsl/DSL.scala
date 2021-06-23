@@ -12,9 +12,11 @@ trait DSL
     with forms
     with forms.constraints
     with tasks
+    with callActivities
     with props
     with taskImplementations
     with parameters
+    with variables
     with transactions:
 
   def ident(id: String): Ident =

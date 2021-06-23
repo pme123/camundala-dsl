@@ -2,7 +2,6 @@ package camundala
 package examples.twitter
 package services
 
-
 @Service(dsl.tweetAdapter)
 class TweetContentOfflineDelegate extends JavaDelegate :
 

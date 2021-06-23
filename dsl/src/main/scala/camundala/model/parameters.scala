@@ -1,9 +1,12 @@
-package camundala.model
+package camundala
+package model
 
-opaque type VariableName = Ident
+opaque type VariableName = String
+
+object VariableName:
+  def apply(variableName: String): VariableName = variableName.replace("-", "__")
 
 case class InOutParameter(name:Name, value: VariableAssignment | ScriptImplementation)
-
 
 sealed trait VariableAssignment
 
