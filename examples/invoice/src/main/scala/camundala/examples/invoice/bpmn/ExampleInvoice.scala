@@ -39,7 +39,7 @@ object ExampleInvoice2 extends DSL:
 
   object invoice_v2:
 
-    val _bpmn = bpmn("invoice.v2")
+    val _bpmn = bpmn("invoice_v2")
       .processes(
         processes.InvoiceReceipt
       )
@@ -201,14 +201,14 @@ object ExampleInvoice2 extends DSL:
         )
       end flows
     end processes
+  end invoice_v2
 
   object reviewInvoice:
 
-    val _bpmn =
-      bpmn("reviewInvoice")
-        .processes(
-          processes.ReviewInvoiceProcess
-        )
+    val _bpmn = bpmn("reviewInvoice")
+      .processes(
+        processes.ReviewInvoiceProcess
+      )
 
     object processes:
 
@@ -281,4 +281,5 @@ object ExampleInvoice2 extends DSL:
       end flows
     end processes
   end reviewInvoice
+
 end ExampleInvoice2
