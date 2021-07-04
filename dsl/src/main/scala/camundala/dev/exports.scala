@@ -17,7 +17,7 @@ export org.camunda.bpm.model.bpmn.{Bpmn as CBpmn}
 export org.camunda.bpm.model.bpmn.instance.{
   Process as CProcess,
   BaseElement as CBaseElement,
-CallActivity as CCallActivity,
+  CallActivity as CCallActivity,
   FlowNode as CFlowNode,
   FlowElement as CFlowElement,
   SequenceFlow as CSequenceFlow,
