@@ -9,7 +9,7 @@ object ExampleInvoiceDslPrinterApp extends zio.App, DSL:
   def run(args: List[String]) =
     runnerLogic.exitCode
 
-  import ExampleInvoice._ 
+  import ExampleInvoice2._ 
 
   private lazy val runnerLogic =
     DslPrinterRunner(

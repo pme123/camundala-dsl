@@ -2,23 +2,29 @@ package camundala
 package examples.invoice
 package bpmn
 
-object ExampleInvoiceRunnerApp extends zio.App, DSL:
+object ExampleInvoice2RunnerApp extends zio.App, DSL:
+
 
   def run(args: List[String]) =
+
     runnerLogic.exitCode
 
-  import ExampleInvoice._ 
+
+  import ExampleInvoice2._
+
 
   private lazy val runnerLogic =
+
     BpmnRunner(
       RunnerConfig(
-        "ExampleInvoice",
+        "ExampleInvoice2",
         path(cawemoFolder),
         path(withIdFolder),
         path(generatedFolder),
         config
       )
     ).run()
-end ExampleInvoiceRunnerApp
+
+end ExampleInvoice2RunnerApp
 
 

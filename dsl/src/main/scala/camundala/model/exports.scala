@@ -12,7 +12,10 @@ object BpmnPath:
 opaque type Ident = String
 
 object Ident:
-  def apply(ident: String): Ident = ident.replaceAll("-", "__")
+  def apply(ident: String): Ident =
+    ident
+      .replace("-", "__")
+      .replace(".", "_")
 
   def apply(file: File): Ident = apply(file.getName.replace(".bpmn", ""))
 

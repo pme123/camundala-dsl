@@ -124,8 +124,7 @@ trait DslPrinter:
       )
 
     def printObjects(): Print =
-      poo(
-        "bpmns",
+      pa(
         bpmns.bpmns.map(_.printObjects())
       )
   end extension
@@ -136,8 +135,9 @@ trait DslPrinter:
 
     def printObjects(): Print =
       pa2(
-        po(
-          pl(s"""val ${bpmn.ident} = bpmn("${bpmn.ident}")"""),
+        poo(
+          bpmn.ident.toString,
+          pl(s"""val _${bpmn.ident} = bpmn("${bpmn.ident}")"""),
           po(
             bpmn.processes.print()
           )

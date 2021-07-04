@@ -27,3 +27,5 @@ meta.json
 /.vscode/settings.json
 /.vscode/launch.json
 /camunda-db.mv.db
+/examples/invoice/project/build.properties
+/camunda-h2-default/process-engine.mv.db
