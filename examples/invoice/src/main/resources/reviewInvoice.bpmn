@@ -5,7 +5,7 @@
   <bpmn:process camunda:candidateStarterGroups="" camunda:candidateStarterUsers="" camunda:isStartableInTasklist="false" id="ReviewInvoiceProcess" isClosed="false" isExecutable="true" name="Review Invoice Process" processType="None">
             
     
-    <bpmn:startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="StartEvent_1" isInterrupting="true" parallelMultiple="false">
+    <bpmn:startEvent id="StartEvent_1" isInterrupting="true" parallelMultiple="false">
                   
       
       <bpmn:outgoing>SequenceFlow_1ggutts__StartEvent_1__AssignReviewer</bpmn:outgoing>
@@ -20,7 +20,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_144f11w__AssignReviewer__ReviewInvoice" sourceRef="AssignReviewer" targetRef="ReviewInvoice"/>
             
     
-    <bpmn:endEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="EndEvent_1og1zom">
+    <bpmn:endEvent id="EndEvent_1og1zom">
                   
       
       <bpmn:incoming>SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom</bpmn:incoming>

@@ -4,8 +4,18 @@ export dsl.DSL
 export camundala.model.{Ident, Name, TenantId, BpmnPath}
 export model.{BpmnsConfig, BpmnProcess, Bpmns, Bpmn, BpmnProcesses, ProcessElements,
   ProcessElementRef, ProcessVarString}
-export model.{BpmnUsers, BpmnUser, BpmnGroups, BpmnGroup, CandidateGroups,CandidateUsers}
-import camundala.model.Condition._
+
+export model.{
+  BpmnUsers,
+  BpmnUser, 
+  BpmnGroups, 
+  BpmnGroup, 
+  CandidateGroups,
+  CandidateUsers,
+  GroupRef,
+  UserRef
+}
+
 // tasks
 export model.{ 
   Task,
@@ -38,7 +48,13 @@ export model.{FormKey,
   Property, VariableAssignment, EmbeddedForm, EmbeddedStaticForm,
   InOutVariable,
   InOutParameter,
-  VariableName
+  VariableName,
+  TaskListener,
+  TaskListeners,
+  ExecutionListener,
+  ExecutionListeners,
+  TaskListenerEventType,
+  CalledElement
 }
 
 export model.{
@@ -51,7 +67,9 @@ export model.{
     HasProcessNode,
     HasProperties,
     HasTaskImplementation,
-    HasTransactionBoundary
+    HasTransactionBoundary,
+    HasTaskListeners,
+    HasExecutionListeners
   }
 
 export model.GeneratedForm.{DefaultValue,

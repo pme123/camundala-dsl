@@ -93,6 +93,7 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
           serviceTask
         )
         scriptTasks <- createElements(classOf[CScriptTask], scriptTask)
+        callActivities <- createElements(classOf[CCallActivity], callActivity)
         businessRuleTasks <- createElements(
           classOf[CBusinessRuleTask],
           businessRuleTask
@@ -116,6 +117,7 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
             userTasks ++
             serviceTasks ++
             scriptTasks ++
+            callActivities ++
             businessRuleTasks ++
             exclusiveGateways ++
             parallelGateways ++

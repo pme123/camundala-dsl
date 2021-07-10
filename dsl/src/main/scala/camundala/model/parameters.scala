@@ -13,10 +13,6 @@ sealed trait VariableAssignment
 object VariableAssignment:
   case class StringVal(value: String) extends VariableAssignment
   case class Expression(value: String) extends VariableAssignment
-  
-  object Expression :
-    def apply(expr: String):Expression =
-      new Expression(wrapExpression(expr))
 
 trait HasInputParameters[T]:
   def inputParameters: Seq[InOutParameter]

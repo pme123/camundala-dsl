@@ -22,4 +22,4 @@ object Bpmns:
 case class Bpmn(ident: Ident,
                 processes: BpmnProcesses
                ) :
-  lazy val path = ident.toString.replace("__", "-") + ".bpmn"
+  lazy val path = ident.toOriginal() + ".bpmn"

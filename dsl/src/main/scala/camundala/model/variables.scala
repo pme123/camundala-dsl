@@ -2,16 +2,13 @@ package camundala
 package model
 
 
-sealed trait InOutVariable
+sealed trait InOutVariable:
+  def local: Boolean
 
 object InOutVariable:
-  case class Source(source: VariableName, target: VariableName) extends InOutVariable
-  case class SourceExpression(private val sourceExpression: String, target: VariableName) extends InOutVariable
-  case object All extends InOutVariable
-
-  object SourceExpression :
-    def apply(expr: String, target: VariableName):SourceExpression =
-      new SourceExpression(wrapExpression(expr), target)
+  case class Source(source: VariableName, target: VariableName, local: Boolean = false) extends InOutVariable
+  case class SourceExpression(sourceExpression: String, target: VariableName, local: Boolean = false) extends InOutVariable
+  case class All(local: Boolean = false) extends InOutVariable
 
 trait HasInVariables[T]:
   def inVariables: Seq[InOutVariable]

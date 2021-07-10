@@ -3,21 +3,22 @@ package dsl
 import model.*
 
 trait DSL
-    extends bpmns
-    with processes
-    with groups
-    with users
-    with events
-    with flows
-    with forms
-    with forms.constraints
-    with tasks
-    with callActivities
-    with props
-    with taskImplementations
-    with parameters
-    with variables
-    with transactions:
+    extends bpmns,
+      processes,
+      groups,
+      users,
+      events,
+      flows,
+      forms,
+      forms.constraints,
+      tasks,
+      callActivities,
+      props,
+      taskImplementations,
+      parameters,
+      variables,
+      listeners,
+      transactions:
 
   def ident(id: String): Ident =
     Ident(id)

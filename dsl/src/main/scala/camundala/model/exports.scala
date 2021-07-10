@@ -9,13 +9,22 @@ opaque type BpmnPath = String
 object BpmnPath:
   def apply(path: String): BpmnPath = path
 
-opaque type Ident = String
+opaque type Ident = String 
+
+extension (ident: Ident)
+
+  def toOriginal(): String =
+    ident
+      .toString
+      .replace("__", "-")
+      .replace("$$", ".")
 
 object Ident:
+
   def apply(ident: String): Ident =
     ident
       .replace("-", "__")
-      .replace(".", "_")
+      .replace(".", "$$")
 
   def apply(file: File): Ident = apply(file.getName.replace(".bpmn", ""))
 
@@ -46,8 +55,3 @@ opaque type ProcessVarString = Ident
 object ProcessVarString:
   def apply(variable: String): ProcessVarString = variable
 
-def wrapExpression(expr: String): String =
-  if (expr.startsWith("$"))
-    expr
-  else
-    s"$${$expr}"

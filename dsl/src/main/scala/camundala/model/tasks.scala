@@ -67,30 +67,16 @@ object TaskImplementation:
   case class Expression(
       private val expression: String,
       resultVariable: Option[String] = None
-  ) extends TaskImplementation
-      with BusinessRuleTaskImpl
-
-  object Expression:
-    def apply(expr: String): Expression =
-      new Expression(
-        wrapExpression(expr)
-      )
+  ) extends TaskImplementation, BusinessRuleTaskImpl
 
   case class DelegateExpression(expresssion: String)
-      extends TaskImplementation
-      with BusinessRuleTaskImpl
-
-  object DelegateExpression:
-    def apply(expr: String): DelegateExpression =
-      new DelegateExpression(
-        wrapExpression(expr)
-      )
+      extends TaskImplementation, BusinessRuleTaskImpl
 
   case class JavaClass(className: String)
-      extends TaskImplementation
-      with BusinessRuleTaskImpl
+    extends TaskImplementation, BusinessRuleTaskImpl
 
-  case class ExternalTask(topic: String) extends TaskImplementation
+  case class ExternalTask(topic: String) 
+    extends TaskImplementation, BusinessRuleTaskImpl
 
 end TaskImplementation
 
@@ -193,13 +179,27 @@ case class BusinessRuleTask(
   ): BusinessRuleTask =
     this //TODO copy(taskImplementation = taskImplementation)
 
-case class UserTask(task: Task, maybeForm: Option[BpmnForm] = None)
-    extends HasTask[UserTask]
-    with HasMaybeForm[UserTask]:
+case class UserTask(
+    task: Task,
+    taskListeners: TaskListeners = TaskListeners.none,
+    maybeAssigne: Option[UserRef] = None,
+    candidateUsers: CandidateUsers = CandidateUsers.none,
+    candidateGroups: CandidateGroups = CandidateGroups.none,
+    maybeDueDate: Option[Expression] = None,
+    maybeFollowUpDate: Option[Expression] = None,
+    maybeForm: Option[BpmnForm] = None
+) extends HasTask[UserTask],
+      HasMaybeForm[UserTask],
+      HasTaskListeners[UserTask]:
 
   val elemKey = ElemKey.userTasks
 
   def withTask(task: Task): UserTask = copy(task = task)
+
+  def withTaskListener(listener: TaskListener): UserTask =
+    copy(taskListeners = taskListeners :+ listener)
+  def withTaskListeners(listeners: TaskListeners): UserTask =
+    copy(taskListeners = listeners)
 
   def withForm(form: BpmnForm): UserTask = copy(maybeForm = Some(form))
 

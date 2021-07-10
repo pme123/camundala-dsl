@@ -1,7 +1,16 @@
 package camundala
 package model
 
+opaque type CalledElement = String
+
+object CalledElement:
+  def apply(calledElement: String): CalledElement = calledElement
+
 case class CallActivity(
+    calledElement: CalledElement,
+    binding: RefBinding = RefBinding.Latest,
+    businessKey: Option[VariableAssignment.Expression] = None,
+    tenantId: Option[TenantId] = None,
     activity: Activity,
     inVariables: Seq[InOutVariable] = Seq.empty,
     outVariables: Seq[InOutVariable] = Seq.empty
@@ -21,4 +30,4 @@ case class CallActivity(
 object CallActivity:
 
   def apply(ident: String): CallActivity =
-    CallActivity(Activity(ident))
+    CallActivity(CalledElement(ident), activity = Activity(ident))

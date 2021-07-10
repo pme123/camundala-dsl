@@ -1,13 +1,9 @@
 package camundala
 package examples.invoice
 package bpmn
-import camundala.dev.*
 
-import camundala.dsl.DSL
-
-import java.io.File
-
-import camundala.model.BpmnsConfig
+import camundala.dev
+import org.camunda.bpm.example.invoice.service.ArchiveInvoiceService
 
 object ExampleInvoice2 extends DSL:
 
@@ -21,9 +17,10 @@ object ExampleInvoice2 extends DSL:
     .users(
     )
     .groups(
+      groups.accounting
     )
     .bpmns(
-      invoice_v2._bpmn,
+      invoice$$v2._bpmn,
       reviewInvoice._bpmn
     )
 
@@ -34,12 +31,12 @@ object ExampleInvoice2 extends DSL:
 
   object groups:
 
-    println("//TODO Add groups here or remove this object")
+    val accounting = group("accounting")
   end groups
 
-  object invoice_v2:
+  object invoice$$v2:
 
-    val _bpmn = bpmn("invoice_v2")
+    val _bpmn = bpmn("invoice$$v2")
       .processes(
         processes.InvoiceReceipt
       )
@@ -56,6 +53,7 @@ object ExampleInvoice2 extends DSL:
           userTasks.ApproveInvoice,
           userTasks.PrepareBankTransfer,
           serviceTasks.ArchiveInvoice,
+          callActivities.ReviewInvoice,
           businessRuleTasks.AssignApproverGroup,
           exclusiveGateways.Invoiceapproved,
           exclusiveGateways.Reviewsuccessful,
@@ -74,16 +72,46 @@ object ExampleInvoice2 extends DSL:
           flows.sequenceFlow_180__ApproveInvoice__Invoiceapproved,
           flows.No__Invoiceapproved__ReviewInvoice
         )
+
       object userTasks:
 
         val ApproveInvoiceIdent = "ApproveInvoice"
 
         lazy val ApproveInvoice = userTask(ApproveInvoiceIdent)
+          .candidateGroup("${approverGroups}")
+          .staticForm("forms/approve-invoice.html")
+          .dueDate("${dateTime().plusWeeks(1).toDate()}")
+          .listeners(
+            taskListener.create
+              .inlineJavascript("""if(!!task.getVariable('approver')) {
+                                  |  task.setAssignee(approver);
+                                  |}""".stripMargin),
+            taskListener.assignment
+              .inlineJavascript(
+                "task.setVariable('approver', task.getAssignee());"
+              )
+          )
 
         val PrepareBankTransferIdent = "PrepareBankTransfer"
 
         lazy val PrepareBankTransfer = userTask(PrepareBankTransferIdent)
+          .staticForm("forms/prepare-bank-transfer.html")
       end userTasks
+
+      object callActivities:
+
+        val ReviewInvoiceIdent = "ReviewInvoice"
+
+        lazy val ReviewInvoice =
+          callActivity(ReviewInvoiceIdent).processBusinessKey
+            .inSource("invoiceDocument")
+            .inSource("creditor")
+            .inSource("amount")
+            .inSource("invoiceCategory")
+            .inSource("invoiceNumber")
+            .outSource("clarified")
+
+      end callActivities
 
       object businessRuleTasks:
 
@@ -91,6 +119,9 @@ object ExampleInvoice2 extends DSL:
 
         lazy val AssignApproverGroup = businessRuleTask(
           AssignApproverGroupIdent
+        ).impl(
+          dmn("invoice-assign-approver").latest
+            .collectEntries("approverGroups")
         )
       end businessRuleTasks
 
@@ -110,13 +141,18 @@ object ExampleInvoice2 extends DSL:
         val ArchiveInvoiceIdent = "ArchiveInvoice"
 
         lazy val ArchiveInvoice = serviceTask(ArchiveInvoiceIdent)
+          .javaClass(ArchiveInvoiceService.className)
+          .asyncBefore
+
       end serviceTasks
 
       object startEvents:
 
         val InvoicereceivedIdent = "Invoicereceived"
 
-        lazy val Invoicereceived = startEvent(InvoicereceivedIdent)
+        lazy val Invoicereceived =
+          startEvent(InvoicereceivedIdent)
+            .staticForm("forms/start-form.html")
       end startEvents
 
       object exclusiveGateways:
@@ -201,7 +237,7 @@ object ExampleInvoice2 extends DSL:
         )
       end flows
     end processes
-  end invoice_v2
+  end invoice$$v2
 
   object reviewInvoice:
 
@@ -213,20 +249,9 @@ object ExampleInvoice2 extends DSL:
     object processes:
 
       val ReviewInvoiceProcess = process("ReviewInvoiceProcess")
-        .starterGroups(
-        )
-        .starterUsers(
-        )
         .nodes(
-          startEvents.StartEvent_1,
           userTasks.AssignReviewer,
-          userTasks.ReviewInvoice,
-          endEvents.EndEvent_1og1zom
-        )
-        .flows(
-          flows.SequenceFlow_1ggutts__StartEvent_1__AssignReviewer,
-          flows.SequenceFlow_144f11w__AssignReviewer__ReviewInvoice,
-          flows.SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom
+          userTasks.ReviewInvoice
         )
       object userTasks:
 
@@ -242,43 +267,6 @@ object ExampleInvoice2 extends DSL:
           userTask(ReviewInvoiceIdent)
             .staticForm("forms/review-invoice.html")
       end userTasks
-
-      object endEvents:
-
-        val EndEvent_1og1zomIdent = "EndEvent_1og1zom"
-
-        lazy val EndEvent_1og1zom = endEvent(EndEvent_1og1zomIdent)
-      end endEvents
-
-      object startEvents:
-
-        val StartEvent_1Ident = "StartEvent_1"
-
-        lazy val StartEvent_1 = startEvent(StartEvent_1Ident)
-      end startEvents
-
-      object flows:
-
-        val SequenceFlow_1ggutts__StartEvent_1__AssignReviewerIdent =
-          "SequenceFlow_1ggutts__StartEvent_1__AssignReviewer"
-
-        lazy val SequenceFlow_1ggutts__StartEvent_1__AssignReviewer =
-          sequenceFlow(SequenceFlow_1ggutts__StartEvent_1__AssignReviewerIdent)
-
-        val SequenceFlow_144f11w__AssignReviewer__ReviewInvoiceIdent =
-          "SequenceFlow_144f11w__AssignReviewer__ReviewInvoice"
-
-        lazy val SequenceFlow_144f11w__AssignReviewer__ReviewInvoice =
-          sequenceFlow(SequenceFlow_144f11w__AssignReviewer__ReviewInvoiceIdent)
-
-        val SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zomIdent =
-          "SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom"
-
-        lazy val SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom =
-          sequenceFlow(
-            SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zomIdent
-          )
-      end flows
     end processes
   end reviewInvoice
 

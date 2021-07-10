@@ -7,7 +7,6 @@ import org.junit.{Rule, Test}
 import org.junit.After
 import org.junit.Before
 import org.camunda.bpm.engine.runtime.ProcessInstance
-import camundala.examples.twitter.bpmn.ExampleTwitter._
 import camundala.examples.twitter.services.{
   RejectionNotificationDelegate,
   TweetContentOfflineDelegate
@@ -45,8 +44,8 @@ class ExampleTwitterTest:
   @Deployment(
     resources = Array(
       "example-twitter.bpmn",
-      "static/" + createTweetFormPath,
-      "static/" + reviewTweetFormPath
+      "static/" + ExampleTwitter.createTweetFormPath,
+      "static/" + ExampleTwitter.reviewTweetFormPath
     )
   )
   def testApprovedPath(): Unit =
@@ -57,8 +56,8 @@ class ExampleTwitterTest:
   @Deployment(
     resources = Array(
       "example-twitter.bpmn",
-      "static/" + createTweetFormPath,
-      "static/" + reviewTweetFormPath
+      "static/" + ExampleTwitter.createTweetFormPath,
+      "static/" + ExampleTwitter.reviewTweetFormPath
     )
   )
   def testRejectedPath(): Unit =
@@ -75,7 +74,7 @@ class ExampleTwitterTest:
       .isStarted()
       .task()
       .hasDefinitionKey(userTasks.ReviewTweetIdent)
-      .hasFormKey(EmbeddedStaticForm(reviewTweetFormPath).formPathStr)
+      .hasFormKey(EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr)
     val task = getTask(userTasks.ReviewTweetIdent)
     complete(task, withVariables(tweet.approvedKey, tweet.approved))
     assertThat(processInstance)

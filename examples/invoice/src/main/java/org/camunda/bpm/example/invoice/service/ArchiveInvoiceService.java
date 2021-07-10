@@ -29,6 +29,7 @@ import org.camunda.bpm.engine.variable.value.FileValue;
  */
 public class ArchiveInvoiceService implements JavaDelegate {
 
+  public static String className = new ArchiveInvoiceService().getClass().getName();
   private final Logger LOGGER = Logger.getLogger(ArchiveInvoiceService.class.getName());
 
   public void execute(DelegateExecution execution) throws Exception {

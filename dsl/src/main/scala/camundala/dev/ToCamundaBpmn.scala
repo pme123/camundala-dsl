@@ -1,9 +1,9 @@
 package camundala
 package dev
 
-
 import org.camunda.bpm.model.bpmn.Bpmn as CBpmn
 import org.camunda.bpm.model.bpmn.instance.camunda.*
+import TaskImplementation.*
 
 import dsl.DSL.Givens.given
 import scala.language.implicitConversions
@@ -108,14 +108,26 @@ trait ToCamundaBpmn:
             val elem: CServiceTask =
               summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
+          case pe: SendTask =>
+            val elem: CSendTask =
+              summon[CBpmnModelInstance].getModelElementById(pe.ident)
+            pe.merge(elem)
           case pe: UserTask =>
             val elem: CUserTask =
               summon[CBpmnModelInstance].getModelElementById(pe.ident)
             pe.merge(elem)
-          case pe: ScriptTask =>
+          case st: ScriptTask =>
             val elem: CScriptTask =
-              summon[CBpmnModelInstance].getModelElementById(pe.ident)
-            pe.merge(elem)
+              summon[CBpmnModelInstance].getModelElementById(st.ident)
+            st.merge(elem)
+          case ca: CallActivity =>
+            val elem: CCallActivity =
+              summon[CBpmnModelInstance].getModelElementById(ca.ident)
+            ca.merge(elem)
+          case brt: BusinessRuleTask =>
+            val elem: CBusinessRuleTask =
+              summon[CBpmnModelInstance].getModelElementById(brt.ident)
+            brt.merge(elem)
           case pe: SequenceFlow =>
             val elem: CSequenceFlow =
               summon[CBpmnModelInstance].getModelElementById(pe.ident)
@@ -259,13 +271,115 @@ trait ToCamundaBpmn:
 
   extension (task: ServiceTask)
     def merge(elem: CServiceTask): Unit =
-      task.taskImplementation
-        .merge(elem)
+      task.taskImplementation match
+        case Expression(expresssion, resultVariable) =>
+          elem.setCamundaExpression(expresssion)
+          resultVariable.foreach(elem.setCamundaResultVariable)
+        case DelegateExpression(expresssion) =>
+          elem.setCamundaDelegateExpression(expresssion)
+        case JavaClass(className) =>
+          elem.setCamundaClass(className)
+        case ExternalTask(topic) =>
+          elem.setCamundaType("external")
+          elem.setCamundaTopic(topic)
 
-  extension (taskImpl: TaskImplementation)
-    def merge(elem: CServiceTask): Unit =
-      import TaskImplementation.*
-      taskImpl match
+  extension (task: SendTask) // equal to ServiceTask
+    def merge(elem: CSendTask): Unit =
+      task.taskImplementation match
+        case Expression(expresssion, resultVariable) =>
+          elem.setCamundaExpression(expresssion)
+          resultVariable.foreach(elem.setCamundaResultVariable)
+        case DelegateExpression(expresssion) =>
+          elem.setCamundaDelegateExpression(expresssion)
+        case JavaClass(className) =>
+          elem.setCamundaClass(className)
+        case ExternalTask(topic) =>
+          elem.setCamundaType("external")
+          elem.setCamundaTopic(topic)
+
+  extension (ca: CallActivity)
+    def merge(elem: CCallActivity): ToCamundable[Unit] =
+      val builder = elem.builder()
+      builder
+        .calledElement(ca.ident.toString)
+        .camundaCalledElementBinding(ca.binding.binding)
+      ca.binding match {
+        case RefBinding.Version(v) =>
+          builder.camundaCalledElementVersion(v)
+        case RefBinding.VersionTag(vt) =>
+          builder.camundaCalledElementVersionTag(vt)
+        case _ => // nothing to do
+      }
+      ca.tenantId.map(_.toString).foreach(builder.camundaCalledElementTenantId)
+      ca.businessKey.foreach { bk =>
+        val param = summon[CBpmnModelInstance].newInstance(classOf[CamundaIn])
+        param.setCamundaBusinessKey(bk.value)
+        builder.addExtensionElement(param)
+      }
+      println(": " + ca.inVariables)
+      mergeIn(ca.inVariables)
+      mergeOut(ca.outVariables)
+      def mergeIn(inoutVariables: Seq[InOutVariable]): ToCamundable[Unit] =
+        inoutVariables.foreach { v =>
+          val param: CamundaIn =
+            summon[CBpmnModelInstance].newInstance(classOf[CamundaIn])
+          v match {
+            case InOutVariable.Source(source, target, _) =>
+              param.setCamundaSource(source.toString)
+              param.setCamundaTarget(target.toString)
+            case InOutVariable.SourceExpression(sourceExpression, target, _) =>
+              param.setCamundaSourceExpression(sourceExpression)
+              param.setCamundaTarget(target.toString)
+            case InOutVariable.All(_) =>
+              param.setCamundaVariables("all")
+          }
+          param.setCamundaLocal(v.local)
+          builder.addExtensionElement(param)
+        }
+
+      def mergeOut(inoutVariables: Seq[InOutVariable]): ToCamundable[Unit] =
+        inoutVariables.foreach { v =>
+          val param: CamundaOut =
+            summon[CBpmnModelInstance].newInstance(classOf[CamundaOut])
+          v match {
+            case InOutVariable.Source(source, target, _) =>
+              param.setCamundaSource(source.toString)
+              param.setCamundaTarget(target.toString)
+            case InOutVariable.SourceExpression(sourceExpression, target, _) =>
+              param.setCamundaSourceExpression(sourceExpression)
+              param.setCamundaTarget(target.toString)
+            case InOutVariable.All(_) =>
+              param.setCamundaVariables("all")
+          }
+          param.setCamundaLocal(v.local)
+          builder.addExtensionElement(param)
+        }
+
+  extension (task: BusinessRuleTask)
+    def merge(elem: CBusinessRuleTask): Unit =
+      task.taskImplementation match
+        case BusinessRuleTaskImpl.Dmn(
+              decisionRef,
+              binding,
+              resultVariable,
+              tenantId
+            ) =>
+          elem.setCamundaDecisionRef(decisionRef.toString)
+          elem.setCamundaDecisionRefBinding(binding.binding)
+          binding match {
+            case RefBinding.Version(v) =>
+              elem.setCamundaDecisionRefVersion(v)
+            case RefBinding.VersionTag(vt) =>
+              elem.setCamundaDecisionRefVersionTag(vt)
+            case _ => // nothing to do
+          }
+          resultVariable.map { case ResultVariable(name, mapDecisionResult) =>
+            elem.setCamundaResultVariable(name)
+            elem.setCamundaMapDecisionResult(mapDecisionResult.label)
+          }
+          elem.setCamundaDecisionRefTenantId(
+            tenantId.map(_.toString).getOrElse("")
+          )
         case Expression(expresssion, resultVariable) =>
           elem.setCamundaExpression(expresssion)
           resultVariable.foreach(elem.setCamundaResultVariable)
@@ -396,7 +510,8 @@ trait ToCamundaBpmn:
     cff.setCamundaProperties(cps)
     cps.getCamundaProperties
       .addAll(properties.properties.map { case Property(k, v) =>
-        val cv = summon[CBpmnModelInstance].newInstance(classOf[CamundaProperty])
+        val cv =
+          summon[CBpmnModelInstance].newInstance(classOf[CamundaProperty])
         cv.setCamundaId(k)
         cv.setCamundaValue(v)
         cv

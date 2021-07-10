@@ -69,6 +69,25 @@ trait tasks:
   def userTask(ident: String) =
     UserTask(ident)
 
+  extension (userTask: UserTask)
+    def assignee(ref: UserRef | String) =
+      userTask.copy(maybeAssigne = Some(UserRef(ref.toString)))
+
+    def candidateGroup(ref: (GroupRef | String)) =
+      userTask.copy(candidateGroups =
+        userTask.candidateGroups :+ GroupRef(ref.toString)
+      )
+    def candidateUser(ref: UserRef | String) =
+      userTask.copy(candidateUsers =
+        userTask.candidateUsers :+ UserRef(ref.toString)
+      )
+    def dueDate(date: String) =
+      userTask.copy(maybeDueDate = Some(Expression(date)))
+      
+    def followUpDate(date: String) =
+      userTask.copy(maybeFollowUpDate = Some(Expression(date)))
+
+
 trait taskImplementations:
 
   def expression(expr: String) =
@@ -94,23 +113,23 @@ trait taskImplementations:
       dmn.copy(binding = refBinding)
 
     def latest: Dmn =
-      dmn.copy(binding = RefBinding.Latest)
+      binding(RefBinding.Latest)
 
     def deployment: Dmn =
-      dmn.copy(binding = RefBinding.Deployment)
+      binding(RefBinding.Deployment)
 
-    def tenantId(id: String): Dmn =
-      dmn.copy(tenantId = Some(TenantId(id)))
-
-    def version(v: String): Dmn = dmn.copy(binding = RefBinding.Version(v))
+    def version(v: String): Dmn = binding(RefBinding.Version(v))
 
     def versionTag(tag: String): Dmn =
-      dmn.copy(binding = RefBinding.VersionTag(tag))
+      binding(RefBinding.VersionTag(tag))
 
     def resultVariable(name: String, mapDecisionResult: MapDecisionResult) =
       dmn.copy(resultVariable =
         Some(ResultVariable(Name(name), mapDecisionResult))
       )
+
+    def tenantId(id: String): Dmn =
+      dmn.copy(tenantId = Some(TenantId(id)))
 
     def singleEntry(name: String): Dmn =
       resultVariable(name, MapDecisionResult.SingleEntry)

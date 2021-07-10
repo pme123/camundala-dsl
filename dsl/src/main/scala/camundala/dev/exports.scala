@@ -24,6 +24,7 @@ export org.camunda.bpm.model.bpmn.instance.{
   StartEvent as CStartEvent,
   UserTask as CUserTask,
   ServiceTask as CServiceTask,
+  SendTask as CSendTask,
   ScriptTask as CScriptTask,
   BusinessRuleTask as CBusinessRuleTask,
   ExclusiveGateway as CExclusiveGateway,
