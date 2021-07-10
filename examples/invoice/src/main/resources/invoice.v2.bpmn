@@ -83,10 +83,20 @@
     <dataStoreReference dataStoreRef="FinancialAccountingSystem" id="DataStoreReference_1" name="Financial Accounting System"/>
             
     
-    <userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:candidateGroups="${approverGroups}, ${sss}" camunda:candidateUsers="${ussser}, ${ussse222r}" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}" camunda:exclusive="false" camunda:formKey="embedded:app:forms/approve-invoice.html" completionQuantity="1" id="ApproveInvoice" implementation="##unspecified" isForCompensation="false" name="Approve Invoice" startQuantity="1">
+    <userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:candidateGroups="${approverGroups}" camunda:candidateUsers="" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}" camunda:exclusive="false" camunda:formKey="embedded:app:forms/approve-invoice.html" completionQuantity="1" id="ApproveInvoice" implementation="##unspecified" isForCompensation="false" name="Approve Invoice" startQuantity="1">
                   
       
       <documentation textFormat="text/plain">Approve the invoice (or not).</documentation>
+      <extensionElements>
+        <camunda:taskListener event="create">
+          <camunda:script scriptFormat="Javascript">if(!!task.getVariable('approver')) {
+  task.setAssignee(approver);
+}</camunda:script>
+        </camunda:taskListener>
+        <camunda:taskListener event="assignment">
+          <camunda:script scriptFormat="Javascript">task.setVariable('approver', task.getAssignee());</camunda:script>
+        </camunda:taskListener>
+      </extensionElements>
                   
       
       <incoming>sequenceFlow_178__AssignApproverGroup__ApproveInvoice</incoming>
@@ -102,15 +112,6 @@
             
     
     <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Diverging" id="Invoiceapproved" name="Invoice&#10;approved?">
-                  
-      
-      <extensionElements>
-                        
-        
-        <camunda:executionListener class="" event="start"/>
-                      
-      
-      </extensionElements>
                   
       
       <incoming>sequenceFlow_180__ApproveInvoice__Invoiceapproved</incoming>

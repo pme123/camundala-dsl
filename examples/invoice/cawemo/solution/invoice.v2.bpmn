@@ -89,7 +89,7 @@
         <camunda:in source="invoiceCategory" target="invoiceCategory" />
         <camunda:in source="invoiceNumber" target="invoiceNumber" />
         <camunda:inputOutput>
-          <camunda:inputParameter name="xxxx">hello</camunda:inputParameter>
+          <camunda:inputParameter name="xxxx">h</camunda:inputParameter>
         </camunda:inputOutput>
       </extensionElements>
       <incoming>invoiceNotApproved</incoming>

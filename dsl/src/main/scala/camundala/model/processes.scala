@@ -1,4 +1,5 @@
-package camundala.model
+package camundala
+package model
 
 case class BpmnProcesses(processes: Seq[BpmnProcess]):
 
@@ -100,17 +101,23 @@ object ProcessNodes:
 
 case class ProcessElement(
     ident: Ident,
-    properties: Properties = Properties.none
+    properties: Properties = Properties.none,
+    executionListeners: ExecutionListeners = ExecutionListeners.none
 ):
 
   def prop(prop: Property): ProcessElement =
     copy(properties = properties :+ prop)
 
+  def executionListener(listener: ExecutionListener): ProcessElement =
+    copy(executionListeners = executionListeners :+ listener)
+  def executionListeners(listeners: Seq[ExecutionListener]): ProcessElement =
+    copy(executionListeners = ExecutionListeners(listeners))
+
 object ProcessElement:
   def apply(ident: String): ProcessElement =
     ProcessElement(Ident(ident))
 
-trait HasProcessElement[T] extends HasProperties[T]:
+trait HasProcessElement[T] extends HasProperties[T], HasExecutionListeners[T]:
   def processElement: ProcessElement
   def withProcessElement(processElement: ProcessElement): T
 
@@ -121,6 +128,14 @@ trait HasProcessElement[T] extends HasProperties[T]:
   def properties: Properties = processElement.properties
 
   def prop(prop: Property): T = withProcessElement(processElement.prop(prop))
+
+  def executionListeners: ExecutionListeners = processElement.executionListeners
+
+  def withExecutionListener(listener: ExecutionListener): T =
+    withProcessElement(processElement.executionListener(listener))
+    
+  def withExecutionListeners(listeners: Seq[ExecutionListener]): T =
+    withProcessElement(processElement.executionListeners(listeners))
 
 opaque type ProcessElementRef = String
 
@@ -140,7 +155,6 @@ case class ProcessNode(
 
   def asyncAfter: ProcessNode = copy(isAsyncAfter = true)
 
-
 object ProcessNode:
   def apply(ident: String): ProcessNode =
     ProcessNode(ProcessElement(ident))
@@ -151,7 +165,9 @@ trait HasProcessNode[T]
   def processNode: ProcessNode
   def withProcessNode(processNode: ProcessNode): T
 
-  def withProcessElement(processElement: ProcessElement): T = withProcessNode(processNode.copy(processElement = processElement))
+  def withProcessElement(processElement: ProcessElement): T = withProcessNode(
+    processNode.copy(processElement = processElement)
+  )
 
   def processElement: ProcessElement = processNode.processElement
 

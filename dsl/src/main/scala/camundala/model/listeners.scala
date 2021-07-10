@@ -3,8 +3,10 @@ package camundala.model
 // Camunda Extension
 case class TaskListener(
     eventType: TaskListenerEventType = TaskListenerEventType.create,
-    listenerType: ListenerType = TaskImplementation.Expression("TODO")
-)
+    listenerType: ListenerType = TaskImplementation.Expression("")
+) extends HasListenerType[TaskListener] :
+  def withListenerType(listenerType: ListenerType): TaskListener =
+    copy(listenerType = listenerType)
 
 enum TaskListenerEventType:
   case create, assignment, complete, delete, update, timeout
@@ -27,14 +29,17 @@ trait HasTaskListeners[T]:
 
   def withTaskListener(listener: TaskListener): T
 
-  def withTaskListeners(listener: TaskListeners): T
+  def withTaskListeners(listener: Seq[TaskListener]): T
 
 case class ExecutionListener(
-    eventType: ExecutionListenerEventType,
-    listenerType: ListenerType
-)
+    eventType: ExecListenerEventType = ExecListenerEventType.start,
+    listenerType: ListenerType = TaskImplementation.Expression("")
+) extends HasListenerType[ExecutionListener]:
 
-enum ExecutionListenerEventType:
+  def withListenerType(listenerType: ListenerType): ExecutionListener =
+    copy(listenerType = listenerType)
+
+enum ExecListenerEventType:
   case start, end
 
 case class ExecutionListeners(listeners: Seq[ExecutionListener] = Seq.empty):
@@ -44,12 +49,17 @@ case class ExecutionListeners(listeners: Seq[ExecutionListener] = Seq.empty):
     listeners :+ listener
   )
 
-object ExecutionListeners {
+object ExecutionListeners :
   val none: ExecutionListeners = ExecutionListeners()
-}
 
 trait HasExecutionListeners[T]:
   def executionListeners: ExecutionListeners
 
   def withExecutionListener(listener: ExecutionListener): T
   def withExecutionListeners(listener: Seq[ExecutionListener]): T
+
+trait HasListenerType[T]:
+  def listenerType: ListenerType
+  def withListenerType(listenerType: ListenerType): T
+
+

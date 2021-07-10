@@ -199,8 +199,8 @@ case class UserTask(
 
   def withTaskListener(listener: TaskListener): UserTask =
     copy(taskListeners = taskListeners :+ listener)
-  def withTaskListeners(listeners: TaskListeners): UserTask =
-    copy(taskListeners = listeners)
+  def withTaskListeners(listeners: Seq[TaskListener]): UserTask =
+    copy(taskListeners = TaskListeners(listeners))
 
   def withForm(form: BpmnForm): UserTask = copy(maybeForm = Some(form))
 

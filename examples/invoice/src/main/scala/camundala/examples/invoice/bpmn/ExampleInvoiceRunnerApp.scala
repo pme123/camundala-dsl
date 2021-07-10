@@ -6,9 +6,7 @@ object ExampleInvoice2RunnerApp extends zio.App, DSL:
 
 
   def run(args: List[String]) =
-
     runnerLogic.exitCode
-
 
   import ExampleInvoice2._
 

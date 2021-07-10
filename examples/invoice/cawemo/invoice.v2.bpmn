@@ -34,9 +34,6 @@
       <outgoing>sequenceFlow_180</outgoing>
     </userTask>
     <exclusiveGateway id="invoice_approved" name="Invoice&#10;approved?" gatewayDirection="Diverging">
-      <extensionElements>
-        <camunda:executionListener class="" event="start" />
-      </extensionElements>
       <incoming>sequenceFlow_180</incoming>
       <outgoing>invoiceNotApproved</outgoing>
       <outgoing>invoiceApproved</outgoing>

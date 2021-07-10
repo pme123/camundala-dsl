@@ -69,12 +69,6 @@
         
     <exclusiveGateway gatewayDirection="Diverging" id="Invoiceapproved" name="Invoice&#10;approved?">
             
-      <extensionElements>
-                
-        <camunda:executionListener class="" event="start"/>
-              
-      </extensionElements>
-            
       <incoming>sequenceFlow_180__ApproveInvoice__Invoiceapproved</incoming>
             
       <outgoing>No__Invoiceapproved__ReviewInvoice</outgoing>

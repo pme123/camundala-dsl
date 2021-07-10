@@ -54,6 +54,8 @@ export model.{FormKey,
   ExecutionListener,
   ExecutionListeners,
   TaskListenerEventType,
+  ExecListenerEventType,
+  ListenerType,
   CalledElement
 }
 
@@ -69,7 +71,8 @@ export model.{
     HasTaskImplementation,
     HasTransactionBoundary,
     HasTaskListeners,
-    HasExecutionListeners
+    HasExecutionListeners,
+    HasListenerType
   }
 
 export model.GeneratedForm.{DefaultValue,

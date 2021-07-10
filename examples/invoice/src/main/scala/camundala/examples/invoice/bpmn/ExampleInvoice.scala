@@ -81,7 +81,7 @@ object ExampleInvoice2 extends DSL:
           .candidateGroup("${approverGroups}")
           .staticForm("forms/approve-invoice.html")
           .dueDate("${dateTime().plusWeeks(1).toDate()}")
-          .listeners(
+          .taskListeners(
             taskListener.create
               .inlineJavascript("""if(!!task.getVariable('approver')) {
                                   |  task.setAssignee(approver);
@@ -90,7 +90,7 @@ object ExampleInvoice2 extends DSL:
               .inlineJavascript(
                 "task.setVariable('approver', task.getAssignee());"
               )
-          )
+          )       
 
         val PrepareBankTransferIdent = "PrepareBankTransfer"
 

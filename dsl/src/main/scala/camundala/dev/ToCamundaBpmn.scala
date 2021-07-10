@@ -81,6 +81,8 @@ trait ToCamundaBpmn:
         _ <- mergeSpecElem
         //  _ <- mergeNode
         _ <- mergeProperties(elem)
+        _ <- mergeExecutionListeners(elem)
+        _ <- mergeTaskListeners(elem)
         _ <- mergeTransactionBoundaries
       } yield ()
 
@@ -145,11 +147,29 @@ trait ToCamundaBpmn:
     private def mergeProperties(
         elem: CBaseElement
     ): ToCamundable[IO[ToCamundaException, Unit]] =
-      // HasProperties
       procElement match
         case pe: HasProperties[_] =>
           pe.propsToCamunda(elem)
             .mapError(handleException("Properties"))
+
+    private def mergeExecutionListeners(
+        elem: CBaseElement
+    ): ToCamundable[IO[ToCamundaException, Unit]] =
+      procElement match
+        case pe: HasExecutionListeners[_] =>
+          pe.mergeELs(elem)
+            .mapError(handleException("ExecutionListeners"))
+
+    private def mergeTaskListeners(
+        elem: CBaseElement
+    ): ToCamundable[IO[ToCamundaException, Unit]] =
+      ZIO(
+        procElement match
+          case pe: HasTaskListeners[_] =>
+            pe.mergeTLs(elem)
+          case _ => ()
+        )
+        .mapError(handleException("ExecutionListeners"))
 
     private def mergeParameters: ToCamundable[IO[ToCamundaException, Unit]] =
       ZIO { // HasInputParameters / HasOutputParameters
@@ -230,6 +250,87 @@ trait ToCamundaBpmn:
           inout.getCamundaInputParameters().add(cp)
           value.paramsToCamunda(cp)
         }
+
+  extension [A](hasListeners: HasTaskListeners[A])
+    def mergeTLs(
+        elem: CBaseElement
+    ): ToCamundable[Unit] =
+      val builder = elem.builder
+      hasListeners.taskListeners.listeners
+        .foreach { case TaskListener(eventType, listenerType) =>
+          val cl =
+            summon[CBpmnModelInstance].newInstance(
+              classOf[CamundaTaskListener]
+            )
+          cl.setCamundaEvent(eventType.toString)
+          listenerType.toCamunda(cl)
+          builder.addExtensionElement(cl)
+        }
+
+  extension [A](hasListeners: HasExecutionListeners[A])
+    def mergeELs(
+        elem: CBaseElement
+    ): ToCamundable[zio.Task[Unit]] =
+      zio.Task {
+        val builder = elem.builder
+        hasListeners.executionListeners.listeners
+          .foreach { case ExecutionListener(eventType, listenerType) =>
+            val cl =
+              summon[CBpmnModelInstance].newInstance(
+                classOf[CamundaExecutionListener]
+              )
+            cl.setCamundaEvent(eventType.toString)
+            listenerType.toCamunda(cl)
+            builder.addExtensionElement(cl)
+          }
+      }
+
+  extension (listenerType: ListenerType)
+    def toCamunda(
+        cl: (CamundaTaskListener)
+    ): ToCamundable[Unit] =
+      listenerType match {
+        case TaskImplementation.Expression(expr, _) =>
+          cl.setCamundaExpression(expr)
+        case TaskImplementation.DelegateExpression(expr) =>
+          cl.setCamundaDelegateExpression(expr)
+        case TaskImplementation.JavaClass(clazz) =>
+          cl.setCamundaClass(clazz)
+        case ScriptImplementation.InlineScript(lang, str) =>
+          script(lang, cl.setCamundaScript(_))
+            .setTextContent(str)
+        case ScriptImplementation.ExternalScript(lang, resource) =>
+          script(lang, cl.setCamundaScript(_))
+            .setCamundaResource(resource)
+      }
+
+    def toCamunda(
+        cl: (CamundaExecutionListener)
+    ): ToCamundable[Unit] =
+      listenerType match {
+        case TaskImplementation.Expression(expr, _) =>
+          cl.setCamundaExpression(expr)
+        case TaskImplementation.DelegateExpression(expr) =>
+          cl.setCamundaDelegateExpression(expr)
+        case TaskImplementation.JavaClass(clazz) =>
+          cl.setCamundaClass(clazz)
+        case ScriptImplementation.InlineScript(lang, str) =>
+          script(lang, cl.setCamundaScript(_))
+            .setTextContent(str)
+        case ScriptImplementation.ExternalScript(lang, resource) =>
+          script(lang, cl.setCamundaScript(_))
+            .setCamundaResource(resource)
+      }
+
+    def script(
+        lang: ScriptLanguage,
+        setter: CamundaScript => Unit
+    ): ToCamundable[CamundaScript] =
+      val script: CamundaScript =
+        summon[CBpmnModelInstance].newInstance(classOf[CamundaScript])
+      script.setCamundaScriptFormat(lang.toString)
+      setter(script)
+      script
 
   extension [A](hasOutputParams: HasOutputParameters[A])
     def outputParamsToCamunda(

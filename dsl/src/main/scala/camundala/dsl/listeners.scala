@@ -4,12 +4,19 @@ package dsl
 trait listeners:
 
   def taskListener = TaskListener()
+  def execListener = ExecutionListener()
 
   extension [T](hasListener: HasTaskListeners[T])
     //create, assignment, complete, delete, update, timeout
 
-    def listeners(listeners: TaskListener*): T =
-      hasListener.withTaskListeners(TaskListeners(listeners))
+    def taskListeners(listeners: (TaskListener)*): T =
+      hasListener.withTaskListeners(listeners)
+
+  extension [T](hasListener: HasExecutionListeners[T])
+    //create, assignment, complete, delete, update, timeout
+
+    def execListeners(listeners: ExecutionListener*): T =
+      hasListener.withExecutionListeners(listeners)
 
   extension (listener: TaskListener)
 
@@ -20,39 +27,48 @@ trait listeners:
     def update = listener.copy(eventType = TaskListenerEventType.update)
     def timeout = listener.copy(eventType = TaskListenerEventType.timeout)
 
+  extension [T](hasListenerType: HasListenerType[T])
+
     def expression(expr: String) =
-      listener.copy(listenerType = TaskImplementation.Expression(expr))
+      hasListenerType.withListenerType(TaskImplementation.Expression(expr))
 
     def delegateExpression(expr: String) =
-      listener.copy(listenerType = TaskImplementation.DelegateExpression(expr))
+      hasListenerType.withListenerType(
+        TaskImplementation.DelegateExpression(expr)
+      )
 
     def javaClass(className: String) =
-      listener.copy(listenerType = TaskImplementation.JavaClass(className))
+      hasListenerType.withListenerType(TaskImplementation.JavaClass(className))
 
-    def groovyRef(scriptPath: ScriptImplementation.ScriptPath): TaskListener =
-      listener.copy(listenerType =
+    def groovyRef(scriptPath: ScriptImplementation.ScriptPath): T =
+      hasListenerType.withListenerType(
         ScriptImplementation.ExternalScript(
           ScriptLanguage.Groovy,
           s"$scriptPath.groovy"
         )
       )
 
-    def inlineGroovy(script: String): TaskListener =
-      listener.copy(listenerType =
+    def inlineGroovy(script: String): T =
+      hasListenerType.withListenerType(
         ScriptImplementation.InlineScript(ScriptLanguage.Groovy, script)
       )
 
     def javascriptRef(
         scriptPath: ScriptImplementation.ScriptPath
-    ): TaskListener =
-      listener.copy(listenerType =
+    ): T =
+      hasListenerType.withListenerType(
         ScriptImplementation.ExternalScript(
           ScriptLanguage.Javascript,
           s"$scriptPath.groovy"
         )
       )
 
-    def inlineJavascript(script: String): TaskListener =
-      listener.copy(listenerType =
+    def inlineJavascript(script: String): T =
+      hasListenerType.withListenerType(
         ScriptImplementation.InlineScript(ScriptLanguage.Javascript, script)
       )
+
+  extension (listener: ExecutionListener)
+
+    def start = listener.copy(eventType = ExecListenerEventType.start)
+    def end = listener.copy(eventType = ExecListenerEventType.end)
