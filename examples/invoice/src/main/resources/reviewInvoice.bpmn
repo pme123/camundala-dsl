@@ -32,7 +32,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom" sourceRef="ReviewInvoice" targetRef="EndEvent_1og1zom"/>
             
     
-    <bpmn:userTask camunda:assignee="demo" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/assign-reviewer.html" completionQuantity="1" id="AssignReviewer" implementation="##unspecified" isForCompensation="false" name="Assign Reviewer" startQuantity="1">
+    <bpmn:userTask camunda:assignee="demo" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:candidateGroups="" camunda:candidateUsers="" camunda:exclusive="false" camunda:formKey="embedded:app:forms/assign-reviewer.html" completionQuantity="1" id="AssignReviewer" implementation="##unspecified" isForCompensation="false" name="Assign Reviewer" startQuantity="1">
                   
       
       <bpmn:incoming>SequenceFlow_1ggutts__StartEvent_1__AssignReviewer</bpmn:incoming>
@@ -44,7 +44,7 @@
     </bpmn:userTask>
             
     
-    <bpmn:userTask camunda:assignee="${reviewer}" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:dueDate="${dateTime().plusDays(2).toDate()}" camunda:exclusive="false" camunda:formKey="embedded:app:forms/review-invoice.html" completionQuantity="1" id="ReviewInvoice" implementation="##unspecified" isForCompensation="false" name="Review Invoice" startQuantity="1">
+    <bpmn:userTask camunda:assignee="${reviewer}" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:candidateGroups="" camunda:candidateUsers="" camunda:dueDate="${dateTime().plusDays(2).toDate()}" camunda:exclusive="false" camunda:formKey="embedded:app:forms/review-invoice.html" completionQuantity="1" id="ReviewInvoice" implementation="##unspecified" isForCompensation="false" name="Review Invoice" startQuantity="1">
                   
       
       <bpmn:incoming>SequenceFlow_144f11w__AssignReviewer__ReviewInvoice</bpmn:incoming>

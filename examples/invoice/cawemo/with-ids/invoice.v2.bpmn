@@ -55,31 +55,9 @@
         
     <dataStoreReference dataStoreRef="FinancialAccountingSystem" id="DataStoreReference_1" name="Financial Accounting System"/>
         
-    <userTask camunda:candidateGroups="${approverGroups}" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}" completionQuantity="1" id="ApproveInvoice" implementation="##unspecified" isForCompensation="false" name="Approve Invoice" startQuantity="1">
+    <userTask completionQuantity="1" id="ApproveInvoice" implementation="##unspecified" isForCompensation="false" name="Approve Invoice" startQuantity="1">
             
       <documentation textFormat="text/plain">Approve the invoice (or not).</documentation>
-            
-      <extensionElements>
-                
-        <camunda:taskListener event="create">
-                    
-          <camunda:script scriptFormat="javascript">if(!!task.getVariable('approver')) {
-  task.setAssignee(approver);
-}</camunda:script>
-                  
-        </camunda:taskListener>
-                
-        <camunda:taskListener event="assignment">
-                    
-          <camunda:script scriptFormat="javascript">task.setVariable('approver', task.getAssignee());</camunda:script>
-                  
-        </camunda:taskListener>
-                
-        <camunda:taskListener class="" event="create"/>
-                
-        <camunda:executionListener event="start" expression=""/>
-              
-      </extensionElements>
             
       <incoming>sequenceFlow_178__AssignApproverGroup__ApproveInvoice</incoming>
             

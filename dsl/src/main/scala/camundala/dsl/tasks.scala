@@ -71,7 +71,7 @@ trait tasks:
 
   extension (userTask: UserTask)
     def assignee(ref: UserRef | String) =
-      userTask.copy(maybeAssigne = Some(UserRef(ref.toString)))
+      userTask.copy(maybeAssignee = Some(UserRef(ref.toString)))
 
     def candidateGroup(ref: (GroupRef | String)) =
       userTask.copy(candidateGroups =
@@ -83,9 +83,13 @@ trait tasks:
       )
     def dueDate(date: String) =
       userTask.copy(maybeDueDate = Some(Expression(date)))
-      
+
     def followUpDate(date: String) =
       userTask.copy(maybeFollowUpDate = Some(Expression(date)))
+
+    def priority(prio: String) =
+      userTask.copy(maybePriority = Some(Expression(prio)))
+
 
 
 trait taskImplementations:

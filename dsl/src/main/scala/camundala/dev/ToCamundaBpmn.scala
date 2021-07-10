@@ -412,6 +412,18 @@ trait ToCamundaBpmn:
   extension (task: UserTask)
     def merge(elem: CUserTask): ToCamundable[Unit] =
       val builder = elem.builder()
+      task.maybeAssignee.foreach(a => builder.camundaAssignee(a.toString))
+      task.maybeDueDate.foreach(d => builder.camundaDueDate(d.expression))
+      task.maybeFollowUpDate.foreach(d =>
+        builder.camundaFollowUpDate(d.expression)
+      )
+      task.maybePriority.foreach(p => builder.camundaPriority(p.expression))
+      builder.camundaCandidateGroups(
+        task.candidateGroups.groups.mkString(", ")
+      )
+      builder.camundaCandidateUsers(
+        task.candidateUsers.users.mkString(", ")
+      )
 
       task.maybeForm.foreach {
         case EmbeddedForm(formRef) =>

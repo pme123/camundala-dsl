@@ -65,7 +65,7 @@ sealed trait TaskImplementation
 object TaskImplementation:
 
   case class Expression(
-      private val expression: String,
+      expression: String,
       resultVariable: Option[String] = None
   ) extends TaskImplementation, BusinessRuleTaskImpl
 
@@ -182,11 +182,12 @@ case class BusinessRuleTask(
 case class UserTask(
     task: Task,
     taskListeners: TaskListeners = TaskListeners.none,
-    maybeAssigne: Option[UserRef] = None,
+    maybeAssignee: Option[UserRef] = None,
     candidateUsers: CandidateUsers = CandidateUsers.none,
     candidateGroups: CandidateGroups = CandidateGroups.none,
     maybeDueDate: Option[Expression] = None,
     maybeFollowUpDate: Option[Expression] = None,
+    maybePriority: Option[Expression] = None,
     maybeForm: Option[BpmnForm] = None
 ) extends HasTask[UserTask],
       HasMaybeForm[UserTask],
