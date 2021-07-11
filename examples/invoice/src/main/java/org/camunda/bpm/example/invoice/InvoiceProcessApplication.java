@@ -66,32 +66,6 @@ public class InvoiceProcessApplication extends ServletProcessApplication {
     processEngineConfiguration.setDbMetricsReporterActivate(false);
   }
 
-  @Override
-  public void createDeployment(String processArchiveName, DeploymentBuilder deploymentBuilder) {
-    ProcessEngine processEngine = BpmPlatform.getProcessEngineService().getProcessEngine("default");
-
-    // Hack: deploy the first version of the invoice process once before the process application
-    //   is deployed the first time
-    if (processEngine != null) {
-
-      RepositoryService repositoryService = processEngine.getRepositoryService();
-
-      if (!isProcessDeployed(repositoryService, "InvoiceReceipt")) {
-        ClassLoader classLoader = getProcessApplicationClassloader();
-
-        repositoryService.createDeployment(this.getReference())
-          .addInputStream("invoice.v2.bpmn", classLoader.getResourceAsStream("invoice.v2.bpmn"))
-          .addInputStream("invoiceBusinessDecisions.dmn", classLoader.getResourceAsStream("invoiceBusinessDecisions.dmn"))
-          .addInputStream("reviewInvoice.bpmn", classLoader.getResourceAsStream("reviewInvoice.bpmn"))
-          .deploy();
-      }
-    }
-  }
-
-  protected boolean isProcessDeployed(RepositoryService repositoryService, String key) {
-    return repositoryService.createProcessDefinitionQuery().processDefinitionKey("InvoiceReceipt").count() > 0;
-  }
-
   private void startProcessInstances(ProcessEngine processEngine, String processDefinitionKey, Integer version) {
 
     ProcessEngineConfigurationImpl processEngineConfiguration = (ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration();

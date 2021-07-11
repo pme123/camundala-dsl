@@ -402,7 +402,7 @@ trait ToCamundaBpmn:
     def merge(elem: CCallActivity): ToCamundable[Unit] =
       val builder = elem.builder()
       builder
-        .calledElement(ca.ident.toString)
+        .calledElement(ca.calledElement.toString)
         .camundaCalledElementBinding(ca.binding.binding)
       ca.binding match {
         case RefBinding.Version(v) =>

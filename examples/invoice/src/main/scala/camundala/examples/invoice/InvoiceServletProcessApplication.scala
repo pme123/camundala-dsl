@@ -23,8 +23,8 @@ object InvoiceServletProcessApplication:
     SpringApplication.run(classOf[InvoiceServletProcessApplication], args: _*)
 
   val invoicePa = new InvoiceProcessApplication()
-   
+
   @EventListener
-  def onPostDeploy(event: PostDeployEvent): Unit = {
+  def onPostDeploy(event: PostDeployEvent): Unit =
+    println("event.getProcessEngine: " + event.getProcessEngine)
     invoicePa.startFirstProcess(event.getProcessEngine)
-  }

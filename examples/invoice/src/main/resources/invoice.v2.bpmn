@@ -222,7 +222,7 @@
     </serviceTask>
             
     
-    <callActivity calledElement="ReviewInvoice" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:calledElementBinding="latest" camunda:exclusive="false" completionQuantity="1" id="ReviewInvoice" isForCompensation="false" name="Review Invoice" startQuantity="1">
+    <callActivity calledElement="ReviewInvoiceProcess" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:calledElementBinding="latest" camunda:exclusive="false" completionQuantity="1" id="ReviewInvoice" isForCompensation="false" name="Review Invoice" startQuantity="1">
       <extensionElements>
         <camunda:in businessKey="#{execution.processBusinessKey}"/>
         <camunda:in local="false" source="invoiceDocument" target="invoiceDocument"/>
