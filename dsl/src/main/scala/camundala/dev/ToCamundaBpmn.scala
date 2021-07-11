@@ -417,7 +417,6 @@ trait ToCamundaBpmn:
         param.setCamundaBusinessKey(bk.value)
         builder.addExtensionElement(param)
       }
-      println(": " + ca.inVariables)
       mergeIn(ca.inVariables)
       mergeOut(ca.outVariables)
       def mergeIn(inoutVariables: Seq[InOutVariable]): ToCamundable[Unit] =

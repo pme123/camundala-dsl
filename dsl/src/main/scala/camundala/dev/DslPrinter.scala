@@ -283,7 +283,7 @@ end DslPrinter
 
 case class DslPrinterRunner(runnerConfig: RunnerConfig) extends DslPrinter, DSL:
 
-  def                           run(): ZIO[zio.console.Console, DslPrinterException, Seq[Bpmn]] =
+  def run(): ZIO[zio.console.Console, DslPrinterException, Seq[Bpmn]] =
     (for {
       _ <- putStrLn(
         s"Start DSL Printer"

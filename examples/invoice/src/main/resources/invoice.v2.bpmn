@@ -256,29 +256,17 @@
             
     
     <sequenceFlow id="Yes__Reviewsuccessful__ApproveInvoice" isImmediate="true" name="yes" sourceRef="Reviewsuccessful" targetRef="ApproveInvoice">
-                  
-      
-      <conditionExpression xsi:type="tFormalExpression">${clarified}</conditionExpression>
-                
-    
+      <conditionExpression id="conditionExpression_0af1ae22-be6f-4b39-bd75-fb6fd570275b">${clarified}</conditionExpression>
     </sequenceFlow>
             
     
     <sequenceFlow id="No__Reviewsuccessful__InvoiceNotprocessed" isImmediate="true" name="no" sourceRef="Reviewsuccessful" targetRef="InvoiceNotprocessed">
-                  
-      
-      <conditionExpression xsi:type="tFormalExpression">${!clarified}</conditionExpression>
-                
-    
+      <conditionExpression id="conditionExpression_53928b5d-3b07-4469-b853-3606d207bd4b">${!clarified}</conditionExpression>
     </sequenceFlow>
             
     
     <sequenceFlow id="Yes__Invoiceapproved__PrepareBankTransfer" isImmediate="true" name="yes" sourceRef="Invoiceapproved" targetRef="PrepareBankTransfer">
-                  
-      
-      <conditionExpression id="conditionExpression_63" xsi:type="tFormalExpression">${approved}</conditionExpression>
-                
-    
+      <conditionExpression id="conditionExpression_5c0a166a-1e64-42f3-bc1f-b62a6e8574df">${approved}</conditionExpression>
     </sequenceFlow>
             
     
@@ -289,11 +277,7 @@
             
     
     <sequenceFlow id="No__Invoiceapproved__ReviewInvoice" isImmediate="true" name="no" sourceRef="Invoiceapproved" targetRef="ReviewInvoice">
-                  
-      
-      <conditionExpression id="conditionExpression_56" xsi:type="tFormalExpression">${!approved}</conditionExpression>
-                
-    
+      <conditionExpression id="conditionExpression_fefd2dde-f63b-4346-a46b-3af6ef27e9d0">${!approved}</conditionExpression>
     </sequenceFlow>
           
   

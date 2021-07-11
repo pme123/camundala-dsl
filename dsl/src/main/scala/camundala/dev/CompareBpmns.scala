@@ -6,10 +6,10 @@ trait CompareBpmns extends DSL:
   import AuditEntry.*
 
   extension (bpmnsConfig: BpmnsConfig)
-    def compareWith(newBpmnsConfig: BpmnsConfig): CompareAudit =
+    def compareWith(newBpmns: Seq[Bpmn]): CompareAudit =
       CompareAudit(
         bpmnsConfig.bpmns.bpmns.flatMap { bpmn =>
-          newBpmnsConfig.bpmns.bpmns
+         newBpmns
             .find(_.ident == bpmn.ident)
             .map(newBpmn =>
               info(s"BPMN ident match (${bpmn.ident}).") +: bpmn.processes
@@ -18,7 +18,7 @@ trait CompareBpmns extends DSL:
             .getOrElse(
               Seq(
                 warn(
-                  s"BPMN ident has changed: ${bpmn.ident} -> new Bpmns: ${newBpmnsConfig.bpmns.bpmns.map(_.ident).mkString(", ")}."
+                  s"BPMN ident has changed: ${bpmn.ident} -> new Bpmns: ${newBpmns.map(_.ident).mkString(", ")}."
                 )
               )
             )

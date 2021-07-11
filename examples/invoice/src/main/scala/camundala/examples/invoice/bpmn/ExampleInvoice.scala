@@ -15,6 +15,7 @@ object ExampleInvoice2 extends DSL:
 
   val config = bpmnsConfig
     .users(
+      users.demo
     )
     .groups(
       groups.accounting
@@ -26,7 +27,8 @@ object ExampleInvoice2 extends DSL:
 
   object users:
 
-    println("//TODO Add users here or remove this object")
+    val demo = user("demo")
+
   end users
 
   object groups:
@@ -90,7 +92,7 @@ object ExampleInvoice2 extends DSL:
               .inlineJavascript(
                 "task.setVariable('approver', task.getAssignee());"
               )
-          )       
+          )
 
         val PrepareBankTransferIdent = "PrepareBankTransfer"
 
@@ -203,21 +205,21 @@ object ExampleInvoice2 extends DSL:
 
         lazy val Yes__Reviewsuccessful__ApproveInvoice = sequenceFlow(
           Yes__Reviewsuccessful__ApproveInvoiceIdent
-        )
+        ).expression("${clarified}")
 
         val No__Reviewsuccessful__InvoiceNotprocessedIdent =
           "No__Reviewsuccessful__InvoiceNotprocessed"
 
         lazy val No__Reviewsuccessful__InvoiceNotprocessed = sequenceFlow(
           No__Reviewsuccessful__InvoiceNotprocessedIdent
-        )
+        ).expression("${!clarified}")
 
         val Yes__Invoiceapproved__PrepareBankTransferIdent =
           "Yes__Invoiceapproved__PrepareBankTransfer"
 
         lazy val Yes__Invoiceapproved__PrepareBankTransfer = sequenceFlow(
           Yes__Invoiceapproved__PrepareBankTransferIdent
-        )
+        ).expression("${approved}")
 
         val sequenceFlow_183__ReviewInvoice__ReviewsuccessfulIdent =
           "sequenceFlow_183__ReviewInvoice__Reviewsuccessful"
@@ -236,8 +238,7 @@ object ExampleInvoice2 extends DSL:
 
         lazy val No__Invoiceapproved__ReviewInvoice = sequenceFlow(
           No__Invoiceapproved__ReviewInvoiceIdent
-        )
-      end flows
+        ).expression("${!approved}")
     end processes
   end invoice$$v2
 
@@ -261,14 +262,17 @@ object ExampleInvoice2 extends DSL:
 
         lazy val AssignReviewer =
           userTask(AssignReviewerIdent)
+            .assignee(users.demo.ref)
             .staticForm("forms/assign-reviewer.html")
 
         val ReviewInvoiceIdent = "ReviewInvoice"
 
         lazy val ReviewInvoice =
           userTask(ReviewInvoiceIdent)
+            .assignee("${reviewer}")
             .staticForm("forms/review-invoice.html")
       end userTasks
+
     end processes
   end reviewInvoice
 

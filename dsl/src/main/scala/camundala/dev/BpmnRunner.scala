@@ -13,10 +13,10 @@ case class BpmnRunner(runnerConfig: RunnerConfig)
   def run() =
     for {
       _ <- putStrLn("Start Bpmn Runner")
-      _ <- DslPrinterRunner(
+      newBpmns <- DslPrinterRunner(
         runnerConfig
       ).run()
-      audit <- UIO(runnerConfig.bpmnsConfig.compareWith(bpmnsConfig))
+      audit <- UIO(runnerConfig.bpmnsConfig.compareWith(newBpmns))
       _ <- putStrLn(audit.log(AuditLevel.WARN))
       _ <- runnerConfig.toCamunda()
       _ <- putStrLn(s"Generated BPMN to ${runnerConfig.generatedFolder}")

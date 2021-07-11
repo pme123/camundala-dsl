@@ -157,33 +157,17 @@
         
     <sequenceFlow id="sequenceFlow_178__AssignApproverGroup__ApproveInvoice" isImmediate="true" sourceRef="AssignApproverGroup" targetRef="ApproveInvoice"/>
         
-    <sequenceFlow id="Yes__Reviewsuccessful__ApproveInvoice" isImmediate="true" name="yes" sourceRef="Reviewsuccessful" targetRef="ApproveInvoice">
-            
-      <conditionExpression xsi:type="tFormalExpression">${clarified}</conditionExpression>
-          
-    </sequenceFlow>
+    <sequenceFlow id="Yes__Reviewsuccessful__ApproveInvoice" isImmediate="true" name="yes" sourceRef="Reviewsuccessful" targetRef="ApproveInvoice"/>
         
-    <sequenceFlow id="No__Reviewsuccessful__InvoiceNotprocessed" isImmediate="true" name="no" sourceRef="Reviewsuccessful" targetRef="InvoiceNotprocessed">
-            
-      <conditionExpression xsi:type="tFormalExpression">${!clarified}</conditionExpression>
-          
-    </sequenceFlow>
+    <sequenceFlow id="No__Reviewsuccessful__InvoiceNotprocessed" isImmediate="true" name="no" sourceRef="Reviewsuccessful" targetRef="InvoiceNotprocessed"/>
         
-    <sequenceFlow id="Yes__Invoiceapproved__PrepareBankTransfer" isImmediate="true" name="yes" sourceRef="Invoiceapproved" targetRef="PrepareBankTransfer">
-            
-      <conditionExpression id="conditionExpression_63" xsi:type="tFormalExpression">${approved}</conditionExpression>
-          
-    </sequenceFlow>
+    <sequenceFlow id="Yes__Invoiceapproved__PrepareBankTransfer" isImmediate="true" name="yes" sourceRef="Invoiceapproved" targetRef="PrepareBankTransfer"/>
         
     <sequenceFlow id="sequenceFlow_183__ReviewInvoice__Reviewsuccessful" isImmediate="true" sourceRef="ReviewInvoice" targetRef="Reviewsuccessful"/>
         
     <sequenceFlow id="sequenceFlow_180__ApproveInvoice__Invoiceapproved" isImmediate="true" sourceRef="ApproveInvoice" targetRef="Invoiceapproved"/>
         
-    <sequenceFlow id="No__Invoiceapproved__ReviewInvoice" isImmediate="true" name="no" sourceRef="Invoiceapproved" targetRef="ReviewInvoice">
-            
-      <conditionExpression id="conditionExpression_56" xsi:type="tFormalExpression">${!approved}</conditionExpression>
-          
-    </sequenceFlow>
+    <sequenceFlow id="No__Invoiceapproved__ReviewInvoice" isImmediate="true" name="no" sourceRef="Invoiceapproved" targetRef="ReviewInvoice"/>
       
   </process>
     

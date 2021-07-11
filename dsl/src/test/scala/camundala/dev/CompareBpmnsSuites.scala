@@ -48,7 +48,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
 
   def spec = suite("CompareBpmnsSuites")(
     test("compare the same BPMNs") {
-      val audit = bpmn1.compareWith(bpmn1)
+      val audit = bpmn1.compareWith(bpmn1.bpmns.bpmns)
       audit.print()
       assert(audit.entries.head.msg)(
         equalTo("BPMN ident match (myBpmn.bpmn).")
@@ -64,7 +64,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       assert(audit.maxLevel())(equalTo(AuditLevel.INFO))
     },
     test("compare different BPMNs") {
-      val audit = bpmn1.compareWith(bpmn2)
+      val audit = bpmn1.compareWith(bpmn2.bpmns.bpmns)
       audit.print()
       assert(audit.entries.head.msg)(
         equalTo("BPMN ident has changed: myBpmn.bpmn -> new Bpmns: myBpmn2.bpmn.")
@@ -73,7 +73,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       assert(audit.maxLevel())(equalTo(AuditLevel.WARN))
     },
     test("compare different BPMN elements") {
-      val audit = bpmn1.compareWith(bpmn3)
+      val audit = bpmn1.compareWith(bpmn3.bpmns.bpmns)
       audit.print()
       assert(audit.entries.head.msg)(
         equalTo("BPMN ident match (myBpmn.bpmn).")

@@ -3,37 +3,37 @@
     
   <bpmn:process camunda:isStartableInTasklist="false" id="ReviewInvoiceProcess" isClosed="false" isExecutable="true" name="Review Invoice Process" processType="None">
         
-    <bpmn:startEvent id="StartEvent_1" isInterrupting="true" parallelMultiple="false">
+    <bpmn:startEvent id="StartInvoiceReview" isInterrupting="true" name="Start Invoice Review" parallelMultiple="false">
             
-      <bpmn:outgoing>SequenceFlow_1ggutts__StartEvent_1__AssignReviewer</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1ggutts__StartInvoiceReview__AssignReviewer</bpmn:outgoing>
           
     </bpmn:startEvent>
         
-    <bpmn:sequenceFlow id="SequenceFlow_1ggutts__StartEvent_1__AssignReviewer" sourceRef="StartEvent_1" targetRef="AssignReviewer"/>
+    <bpmn:sequenceFlow id="SequenceFlow_1ggutts__StartInvoiceReview__AssignReviewer" sourceRef="StartInvoiceReview" targetRef="AssignReviewer"/>
         
     <bpmn:sequenceFlow id="SequenceFlow_144f11w__AssignReviewer__ReviewInvoice" sourceRef="AssignReviewer" targetRef="ReviewInvoice"/>
         
-    <bpmn:endEvent id="EndEvent_1og1zom">
+    <bpmn:endEvent id="EndReviewProcess" name="End Review Process">
             
-      <bpmn:incoming>SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0vvoxt0__ReviewInvoice__EndReviewProcess</bpmn:incoming>
           
     </bpmn:endEvent>
         
-    <bpmn:sequenceFlow id="SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom" sourceRef="ReviewInvoice" targetRef="EndEvent_1og1zom"/>
+    <bpmn:sequenceFlow id="SequenceFlow_0vvoxt0__ReviewInvoice__EndReviewProcess" sourceRef="ReviewInvoice" targetRef="EndReviewProcess"/>
         
-    <bpmn:userTask camunda:assignee="demo" completionQuantity="1" id="AssignReviewer" implementation="##unspecified" isForCompensation="false" name="Assign Reviewer" startQuantity="1">
+    <bpmn:userTask completionQuantity="1" id="AssignReviewer" implementation="##unspecified" isForCompensation="false" name="Assign Reviewer" startQuantity="1">
             
-      <bpmn:incoming>SequenceFlow_1ggutts__StartEvent_1__AssignReviewer</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1ggutts__StartInvoiceReview__AssignReviewer</bpmn:incoming>
             
       <bpmn:outgoing>SequenceFlow_144f11w__AssignReviewer__ReviewInvoice</bpmn:outgoing>
           
     </bpmn:userTask>
         
-    <bpmn:userTask camunda:assignee="${reviewer}" camunda:dueDate="${dateTime().plusDays(2).toDate()}" completionQuantity="1" id="ReviewInvoice" implementation="##unspecified" isForCompensation="false" name="Review Invoice" startQuantity="1">
+    <bpmn:userTask camunda:dueDate="${dateTime().plusDays(2).toDate()}" completionQuantity="1" id="ReviewInvoice" implementation="##unspecified" isForCompensation="false" name="Review Invoice" startQuantity="1">
             
       <bpmn:incoming>SequenceFlow_144f11w__AssignReviewer__ReviewInvoice</bpmn:incoming>
             
-      <bpmn:outgoing>SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0vvoxt0__ReviewInvoice__EndReviewProcess</bpmn:outgoing>
           
     </bpmn:userTask>
       
@@ -43,7 +43,7 @@
         
     <bpmndi:BPMNPlane bpmnElement="ReviewInvoiceProcess" id="BPMNPlane_1">
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_0vvoxt0__ReviewInvoice__EndEvent_1og1zom" id="SequenceFlow_0vvoxt0_di">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_0vvoxt0__ReviewInvoice__EndReviewProcess" id="SequenceFlow_0vvoxt0_di">
                 
         <di:waypoint x="530" y="97"/>
                 
@@ -59,7 +59,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1ggutts__StartEvent_1__AssignReviewer" id="SequenceFlow_1ggutts_di">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1ggutts__StartInvoiceReview__AssignReviewer" id="SequenceFlow_1ggutts_di">
                 
         <di:waypoint x="215" y="97"/>
                 
@@ -67,15 +67,27 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="_BPMNShape_StartEvent_2">
+      <bpmndi:BPMNShape bpmnElement="StartInvoiceReview" id="_BPMNShape_StartEvent_2">
                 
         <dc:Bounds height="36" width="36" x="179" y="79"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="27" width="62" x="166" y="122"/>
+                  
+        </bpmndi:BPMNLabel>
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="EndEvent_1og1zom" id="EndEvent_1og1zom_di">
+      <bpmndi:BPMNShape bpmnElement="EndReviewProcess" id="EndEvent_1og1zom_di">
                 
         <dc:Bounds height="36" width="36" x="592" y="79"/>
+                
+        <bpmndi:BPMNLabel>
+                    
+          <dc:Bounds height="27" width="59" x="581" y="122"/>
+                  
+        </bpmndi:BPMNLabel>
               
       </bpmndi:BPMNShape>
             
