@@ -103,7 +103,9 @@ object ExampleInvoice2 extends DSL:
         val ReviewInvoiceIdent = "ReviewInvoice"
 
         lazy val ReviewInvoice =
-          callActivity(ReviewInvoiceIdent).processBusinessKey
+          callActivity(ReviewInvoiceIdent)
+            .calledElement(reviewInvoice.processes.ReviewInvoiceProcessIdent)
+            .processBusinessKey
             .inSource("invoiceDocument")
             .inSource("creditor")
             .inSource("amount")
@@ -247,8 +249,8 @@ object ExampleInvoice2 extends DSL:
       )
 
     object processes:
-
-      val ReviewInvoiceProcess = process("ReviewInvoiceProcess")
+      val ReviewInvoiceProcessIdent = "ReviewInvoiceProcess"
+      val ReviewInvoiceProcess = process(ReviewInvoiceProcessIdent)
         .nodes(
           userTasks.AssignReviewer,
           userTasks.ReviewInvoice

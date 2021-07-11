@@ -166,7 +166,8 @@ trait DslPrinter:
     def printObjects(): Print =
       pa2(
         po(
-          pl(s"""val ${process.ident} = process("${process.ident}")"""),
+          pl(s"""val ${process.ident}Ident = "${process.ident}""""),
+          pl(s"""val ${process.ident} = process(${process.ident}Ident)"""),
           process.starterGroups.print(),
           process.starterUsers.print(),
           process.nodes.print(),

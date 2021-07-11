@@ -80,7 +80,7 @@
       <incoming>SequenceFlow_2</incoming>
       <outgoing>SequenceFlow_3</outgoing>
     </serviceTask>
-    <callActivity id="reviewInvoice" name="Review Invoice" calledElement="ReviewInvoice">
+    <callActivity id="reviewInvoice" name="Review Invoice" calledElement="ReviewInvoiceProcess">
       <extensionElements>
         <camunda:in source="invoiceDocument" target="invoiceDocument" />
         <camunda:out source="clarified" target="clarified" />

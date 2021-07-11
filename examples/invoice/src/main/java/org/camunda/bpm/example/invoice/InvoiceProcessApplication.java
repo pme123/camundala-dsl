@@ -59,8 +59,8 @@ public class InvoiceProcessApplication extends ServletProcessApplication {
     processEngineConfiguration.setDbMetricsReporterActivate(true);
     processEngineConfiguration.getDbMetricsReporter().setReporterId("REPORTER");
 
-    startProcessInstances(processEngine, "invoice", 1);
-    startProcessInstances(processEngine, "invoice", null);
+    startProcessInstances(processEngine, "InvoiceReceipt", 1);
+    startProcessInstances(processEngine, "InvoiceReceipt", null);
 
     //disable reporting
     processEngineConfiguration.setDbMetricsReporterActivate(false);
@@ -76,7 +76,7 @@ public class InvoiceProcessApplication extends ServletProcessApplication {
 
       RepositoryService repositoryService = processEngine.getRepositoryService();
 
-      if (!isProcessDeployed(repositoryService, "invoice")) {
+      if (!isProcessDeployed(repositoryService, "InvoiceReceipt")) {
         ClassLoader classLoader = getProcessApplicationClassloader();
 
         repositoryService.createDeployment(this.getReference())
@@ -89,7 +89,7 @@ public class InvoiceProcessApplication extends ServletProcessApplication {
   }
 
   protected boolean isProcessDeployed(RepositoryService repositoryService, String key) {
-    return repositoryService.createProcessDefinitionQuery().processDefinitionKey("invoice").count() > 0;
+    return repositoryService.createProcessDefinitionQuery().processDefinitionKey("InvoiceReceipt").count() > 0;
   }
 
   private void startProcessInstances(ProcessEngine processEngine, String processDefinitionKey, Integer version) {
@@ -110,6 +110,9 @@ public class InvoiceProcessApplication extends ServletProcessApplication {
     ProcessDefinition processDefinition = processDefinitionQuery.singleResult();
 
     InputStream invoiceInputStream = InvoiceProcessApplication.class.getClassLoader().getResourceAsStream("invoice.pdf");
+
+System.out.println(" processDefinition.getId() " +  processDefinition);
+System.out.println(" processEngine.getRuntimeService().createProcessInstanceQuery().processDefinitionId(processDefinition.getId()): " +  processEngine.getRuntimeService().createProcessInstanceQuery().processDefinitionId(processDefinition.getId()));
 
     long numberOfRunningProcessInstances = processEngine.getRuntimeService().createProcessInstanceQuery().processDefinitionId(processDefinition.getId()).count();
 

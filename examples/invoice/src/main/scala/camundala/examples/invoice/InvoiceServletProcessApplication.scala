@@ -23,23 +23,7 @@ object InvoiceServletProcessApplication:
     SpringApplication.run(classOf[InvoiceServletProcessApplication], args: _*)
 
   val invoicePa = new InvoiceProcessApplication()
-  /*
-  @PostConstruct def deployInvoice(): Unit = {
-    println(s"processEngine $processEngine")
-    val classLoader = this.getClass.getClassLoader
-    if (processEngine.getIdentityService.createUserQuery.list.isEmpty)
-      processEngine.getRepositoryService.createDeployment
-        .addInputStream(
-          "invoice.v1.bpmn",
-          classLoader.getResourceAsStream("invoice.v1.bpmn")
-        )
-        .addInputStream(
-          "reviewInvoice.bpmn",
-          classLoader.getResourceAsStream("reviewInvoice.bpmn")
-        )
-        .deploy
-  }
-   */
+   
   @EventListener
   def onPostDeploy(event: PostDeployEvent): Unit = {
     invoicePa.startFirstProcess(event.getProcessEngine)

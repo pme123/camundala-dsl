@@ -39,9 +39,9 @@ public class InvoiceApplication {
   @Autowired
   protected ProcessEngine processEngine;
 
- // protected InvoiceProcessApplication invoicePa = new InvoiceProcessApplication();
+  protected InvoiceProcessApplication invoicePa = new InvoiceProcessApplication();
 
-  @PostConstruct
+/*  @PostConstruct
   public void deployInvoice() {
     ClassLoader classLoader = this.getClass().getClassLoader();
 
@@ -53,11 +53,11 @@ public class InvoiceApplication {
             //  .addInputStream("invoiceBusinessDecisions.dmn", classLoader.getResourceAsStream("invoiceBusinessDecisions.dmn"))
           .deploy();
     }
-  }
+  }*/
 
- // @EventListener
- // public void onPostDeploy(PostDeployEvent event) {
-  //  invoicePa.startFirstProcess(event.getProcessEngine());
- // }
+  @EventListener
+  public void onPostDeploy(PostDeployEvent event) {
+     invoicePa.startFirstProcess(event.getProcessEngine());
+  }
 
 }
