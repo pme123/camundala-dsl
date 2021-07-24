@@ -1,6 +1,10 @@
 package camundala
 package test
 
+import org.camunda.bpm.engine.repository.DeploymentBuilder
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests._
+import org.junit.Before
+
 trait TestHelper:
 
   extension(bpmnsConfig: BpmnsConfig)
@@ -45,5 +49,14 @@ trait TestHelper:
         s"static/${form.formPathStr.replace("embedded:app:", "")}"
       }
   end extension
+
+  def bpmnsConfigToTest: BpmnsConfig
+  @Before
+  def deployment(): Unit =
+    val deployment = repositoryService().createDeployment()
+    val resources = bpmnsConfigToTest.deploymentResources
+    println(s"Resources: $resources")
+    resources.foreach(r => deployment.addInputStream(r, getClass().getClassLoader().getResourceAsStream(r)))
+    deployment.deploy()
 
 end TestHelper

@@ -22,6 +22,8 @@ import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns
 
 class ExampleTwitterAutoTest extends TestHelper:
 
+  val bpmnsConfigToTest = ExampleTwitter.config
+
   @Rule
   def processEngineRule = new ProcessEngineRule
 
@@ -35,12 +37,6 @@ class ExampleTwitterAutoTest extends TestHelper:
     Mocks.register("tweetAdapter", tweetContentDelegate)
     Mocks.register("emailAdapter", rejectionNotificationDelegate)
   }
-  @Before
-  def deployment(): Unit = 
-    val deployment = repositoryService().createDeployment()
-    val resources = bpmns.example__twitter.deploymentResources
-    resources.foreach(r => deployment.addInputStream(r, getClass().getClassLoader().getResourceAsStream(r)))  
-    deployment.deploy()
 
   @After def tearDown(): Unit = {
     Mocks.reset()

@@ -24,10 +24,15 @@ lazy val dsl = project
   .settings(
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
-      "org.camunda.bpm.model" % "camunda-bpmn-model" % camundaVersion,
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
-      "com.novocode" % "junit-interface" % "0.11" % Test
+      // provide Camunda interaction
+      "org.camunda.bpm" % "camunda-engine" % camundaVersion % Provided,
+      // provide test helper
+      "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
+      "org.assertj" % "assertj-core" % "3.19.0",
+      "org.mockito" % "mockito-core" % "3.1.0",
+      "com.novocode" % "junit-interface" % "0.11"
     ),
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
     // libraryDependencies += "eu.timepit" %% "refined" % "0.9.20",
@@ -46,11 +51,7 @@ val camundaDependencies = Seq(
   "org.springframework.boot" % "spring-boot-starter-jdbc" % springBootVersion,
   "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-rest" % camundaVersion,
   "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-webapp" % camundaVersion,
-  "com.h2database" % "h2" % h2Version,
-  "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0" % Test,
-  "org.assertj" % "assertj-core" % "3.19.0" % Test,
-  "org.mockito" % "mockito-core" % "3.1.0" % Test,
-  "com.novocode" % "junit-interface" % "0.11" % Test
+  "com.h2database" % "h2" % h2Version
 )
 
 lazy val exampleTwitter = project
@@ -68,8 +69,8 @@ lazy val exampleInvoice = project
   .settings(
     // for invoice-example
     resolvers += "Sonatype OSS Camunda" at "https://app.camunda.com/nexus/content/repositories/camunda-bpm/",
-    libraryDependencies ++= camundaDependencies,
-      // https://mvnrepository.com/artifact/org.camunda.bpm.example/camunda-example-invoice
-     // libraryDependencies += "org.camunda.bpm.example" % "camunda-example-invoice" % camundaVersion % Test
+    libraryDependencies ++= camundaDependencies
+    // https://mvnrepository.com/artifact/org.camunda.bpm.example/camunda-example-invoice
+    // libraryDependencies += "org.camunda.bpm.example" % "camunda-example-invoice" % camundaVersion % Test
   )
   .dependsOn(dsl)

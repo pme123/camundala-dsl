@@ -14,6 +14,8 @@ import camundala.test.TestHelper
 class ExampleInvoiceTest
   extends TestHelper:
 
+  val bpmnsConfigToTest = ExampleInvoice2.config
+
   @Rule
   def processEngineRule = new ProcessEngineRule
 
@@ -21,13 +23,6 @@ class ExampleInvoiceTest
   def setUp(): Unit = {
     MockitoAnnotations.initMocks(this)
   }
-  @Before
-  def deployment(): Unit =
-    val deployment = repositoryService().createDeployment()
-    val resources = ExampleInvoice2.config.deploymentResources
-    println(s"Resources: $resources")
-    resources.foreach(r => deployment.addInputStream(r, getClass().getClassLoader().getResourceAsStream(r)))
-    deployment.deploy()
 
   @After def tearDown(): Unit = {
     Mocks.reset()

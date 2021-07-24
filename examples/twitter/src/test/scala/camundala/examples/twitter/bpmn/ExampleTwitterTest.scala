@@ -17,6 +17,8 @@ import camundala.test.TestHelper
 class ExampleTwitterTest
   extends TestHelper:
 
+  val bpmnsConfigToTest = ExampleTwitter.config
+
   @Rule
   def processEngineRule = new ProcessEngineRule
 
@@ -29,13 +31,6 @@ class ExampleTwitterTest
     Mocks.register("tweetAdapter", tweetContentDelegate)
     Mocks.register("emailAdapter", rejectionNotificationDelegate)
   }
-  @Before
-  def deployment(): Unit =
-    val deployment = repositoryService().createDeployment()
-    val resources = ExampleTwitter.config.deploymentResources
-    println(s"Resources: $resources")
-    resources.foreach(r => deployment.addInputStream(r, getClass().getClassLoader().getResourceAsStream(r)))
-    deployment.deploy()
 
   @After def tearDown(): Unit = {
     Mocks.reset()
@@ -51,13 +46,6 @@ class ExampleTwitterTest
     )
 
   @Test
-  /*@Deployment(
-    resources = Array(
-      "example-twitter.bpmn",
-      "static/" + ExampleTwitter.createTweetFormPath,
-      "static/" + ExampleTwitter.reviewTweetFormPath
-    )
-  )*/
   def testRejectedPath(): Unit =
     runTest(
       StartInputs(),
