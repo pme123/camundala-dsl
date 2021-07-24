@@ -55,7 +55,7 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
               ),
             businessRuleTask("MyBusinessRule")
               .impl(
-                dmn("myDmn")
+                dmnTable("myDmn")
                   .versionTag("v1.0.2")
                   .collectEntries("myResult")
                   .tenantId("myTenant")

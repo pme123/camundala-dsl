@@ -2,7 +2,7 @@ package camundala
 
 export dsl.DSL
 export camundala.model.{Ident, Name, TenantId, BpmnPath}
-export model.{BpmnsConfig, BpmnProcess, Bpmns, Bpmn, BpmnProcesses, ProcessElements,
+export model.{BpmnsConfig, BpmnProcess, Bpmns, Bpmn, Dmns, Dmn, BpmnProcesses, ProcessElements,
   ProcessElementRef, ProcessVarString}
 
 export model.{
@@ -17,7 +17,8 @@ export model.{
 }
 
 // tasks
-export model.{ 
+export model.{
+  Activity,
   Task,
   ServiceTask,
   SendTask,
@@ -29,7 +30,8 @@ export model.{
   ResultVariable,
   CallActivity
 }
-export model.{ProcessNodes,
+export model.{
+  ProcessNodes,
   SequenceFlows,
   SequenceFlow, 
   EndEvent, 
@@ -41,7 +43,8 @@ export model.{ProcessNodes,
 export model.{
   TaskImplementation,
   BusinessRuleTaskImpl,
-  ScriptImplementation
+  ScriptImplementation,
+  InOutObject
 }
 export model.{FormKey, 
   Condition, GeneratedForm, Constraint, Constraints,
@@ -64,6 +67,8 @@ export model.{
     HasMaybeForm, 
     HasInputParameters,
     HasOutputParameters,
+    HasInputObject,
+    HasOutputObject,
     HasInVariables,
     HasOutVariables,
     HasProcessNode,

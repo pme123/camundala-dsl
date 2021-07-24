@@ -12,6 +12,12 @@ trait bpmns:
     def bpmns(bpmns: Seq[Bpmn]) =
       bpmnsConfig.copy(bpmns = Bpmns(bpmns))
 
+    def dmns(dmn: Dmn, dmns: Dmn*) =
+      bpmnsConfig.copy(dmns = Dmns(dmn +: dmns))
+
+    def dmns(dmns: Seq[Dmn]) =
+      bpmnsConfig.copy(dmns = Dmns(dmns))
+
     def groups(groups: BpmnGroup*) =
       bpmnsConfig.copy(groups = BpmnGroups(groups))
 

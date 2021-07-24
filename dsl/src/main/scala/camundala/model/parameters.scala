@@ -4,7 +4,8 @@ package model
 opaque type VariableName = String
 
 object VariableName:
-  def apply(variableName: String): VariableName = variableName.replace("-", "__")
+  def apply(variableName: String): VariableName =
+    variableName.replace("-", "__")
 
 case class InOutParameter(name:Name, value: VariableAssignment | ScriptImplementation)
 

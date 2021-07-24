@@ -1,6 +1,8 @@
-package camundala.model
+package camundala
+package model
 
 case class BpmnsConfig(bpmns: Bpmns,
+                       dmns: Dmns,
                        groups: BpmnGroups,
                        users: BpmnUsers = BpmnUsers.none
                       )
@@ -8,6 +10,7 @@ case class BpmnsConfig(bpmns: Bpmns,
 object BpmnsConfig:
   def none = BpmnsConfig(
     Bpmns.none,
+    Dmns.none,
     BpmnGroups.none,
     BpmnUsers.none
   )

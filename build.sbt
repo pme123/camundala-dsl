@@ -1,6 +1,6 @@
 val projectVersion = "0.1.0-SNAPSHOT"
 val scala2Version = "2.13.4"
-val scala3Version = "3.0.1-RC2"
+val scala3Version = "3.0.1"
 val zioVersion = "1.0.8"
 val org = "io.github.pme123"
 
@@ -44,6 +44,7 @@ val twitter4jVersion = "4.0.7"
 val camundaDependencies = Seq(
   "org.springframework.boot" % "spring-boot-starter-web" % springBootVersion,
   "org.springframework.boot" % "spring-boot-starter-jdbc" % springBootVersion,
+  "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-rest" % camundaVersion,
   "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-webapp" % camundaVersion,
   "com.h2database" % "h2" % h2Version,
   "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0" % Test,

@@ -1,33 +1,27 @@
 package camundala.examples.twitter.bpmn
 
-import org.camunda.bpm.engine.test.Deployment
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests._
 import camundala.dsl.DSL.Givens._
-import org.junit.{Rule, Test}
-import org.junit.After
-import org.junit.Before
-import org.camunda.bpm.engine.runtime.ProcessInstance
-import camundala.examples.twitter.services.{
-  RejectionNotificationDelegate,
-  TweetContentOfflineDelegate
-}
-import camundala.model._
-import org.camunda.bpm.engine.test.mock.Mocks
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.camunda.bpm.engine.test.ProcessEngineRule
-import org.camunda.bpm.engine.test.mock.Mocks
 import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.processes._
-import ExampleTwitter.TweetInputs
+import camundala.examples.twitter.bpmn.ExampleTwitter.{StartInputs, TweetAproveInputs}
+import camundala.examples.twitter.services.{RejectionNotificationDelegate, TweetContentOfflineDelegate}
+import camundala.model._
+import org.camunda.bpm.engine.runtime.ProcessInstance
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests._
+import org.camunda.bpm.engine.test.mock.Mocks
+import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule}
+import org.junit.{After, Before, Rule, Test}
+import org.mockito.{Mock, MockitoAnnotations}
+import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.example__twitter
+import camundala.test.TestHelper
 
-class ExampleTwitterTest:
+class ExampleTwitterTest
+  extends TestHelper:
 
   @Rule
   def processEngineRule = new ProcessEngineRule
 
   @Mock private var tweetContentDelegate: TweetContentOfflineDelegate = _
-  @Mock private var rejectionNotificationDelegate
-      : RejectionNotificationDelegate = _
+  @Mock private var rejectionNotificationDelegate: RejectionNotificationDelegate = _
 
   @Before
   def setUp(): Unit = {
@@ -35,62 +29,68 @@ class ExampleTwitterTest:
     Mocks.register("tweetAdapter", tweetContentDelegate)
     Mocks.register("emailAdapter", rejectionNotificationDelegate)
   }
+  @Before
+  def deployment(): Unit =
+    val deployment = repositoryService().createDeployment()
+    val resources = ExampleTwitter.config.deploymentResources
+    println(s"Resources: $resources")
+    resources.foreach(r => deployment.addInputStream(r, getClass().getClassLoader().getResourceAsStream(r)))
+    deployment.deploy()
 
   @After def tearDown(): Unit = {
     Mocks.reset()
   }
-  
-  @Test
-  @Deployment(
-    resources = Array(
-      "example-twitter.bpmn",
-      "static/" + ExampleTwitter.createTweetFormPath,
-      "static/" + ExampleTwitter.reviewTweetFormPath
-    )
-  )
-  def testApprovedPath(): Unit =
-    val tweet = TweetInputs()
-    runTest(tweet, serviceTasks.PublishOnTwitterIdent, serviceTasks.SendRejectionNotificationIdent)
 
   @Test
-  @Deployment(
+  def testApprovedPath(): Unit =
+    runTest(
+      StartInputs(),
+      TweetAproveInputs(),
+      serviceTasks.PublishOnTwitterIdent,
+      serviceTasks.SendRejectionNotificationIdent
+    )
+
+  @Test
+  /*@Deployment(
     resources = Array(
       "example-twitter.bpmn",
       "static/" + ExampleTwitter.createTweetFormPath,
       "static/" + ExampleTwitter.reviewTweetFormPath
     )
-  )
+  )*/
   def testRejectedPath(): Unit =
-    val tweet = TweetInputs(approved = false)
-    runTest(tweet, serviceTasks.SendRejectionNotificationIdent, serviceTasks.PublishOnTwitterIdent)
+    runTest(
+      StartInputs(),
+      TweetAproveInputs(approved = false),
+      serviceTasks.SendRejectionNotificationIdent,
+      serviceTasks.PublishOnTwitterIdent
+    )
 
   private def runTest(
-      tweet: TweetInputs,
+      startInputs: StartInputs,
+      tweetAproveInputs: TweetAproveInputs,
       serviceHasPassedIdent: String,
       serviceHasNotPassedIdent: String
   ) =
-    val processInstance = startProcess(tweet)
+    val processInstance = startProcess(startInputs)
     assertThat(processInstance)
       .isStarted()
       .task()
       .hasDefinitionKey(userTasks.ReviewTweetIdent)
-      .hasFormKey(EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr)
+      .hasFormKey(
+        EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr
+      )
     val task = getTask(userTasks.ReviewTweetIdent)
-    complete(task, withVariables(tweet.approvedKey, tweet.approved))
+    complete(task, tweetAproveInputs.asVariables)
     assertThat(processInstance)
       .isEnded()
       .hasPassed(serviceHasPassedIdent)
       .hasNotPassed(serviceHasNotPassedIdent)
 
-  private def startProcess(tweet: TweetInputs) =
+  private def startProcess(tweet: StartInputs) =
     runtimeService.startProcessInstanceByKey(
       TwitterDemoProcess.ident.toString,
-      withVariables(
-        tweet.emailKey,
-        tweet.email,
-        tweet.contentKey,
-        tweet.content
-      )
+      tweet.asVariables
     )
 
   private def getTask(id: String | Ident) =

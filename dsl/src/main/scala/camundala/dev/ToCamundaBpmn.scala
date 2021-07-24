@@ -458,7 +458,7 @@ trait ToCamundaBpmn:
   extension (task: BusinessRuleTask)
     def merge(elem: CBusinessRuleTask): Unit =
       task.taskImplementation match
-        case BusinessRuleTaskImpl.Dmn(
+        case BusinessRuleTaskImpl.DmnTable(
               decisionRef,
               binding,
               resultVariable,

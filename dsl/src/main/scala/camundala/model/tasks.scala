@@ -96,7 +96,7 @@ object BusinessRuleTaskImpl:
   object DecisionRef:
     def apply(ref: String): DecisionRef = ref
 
-  case class Dmn(
+  case class DmnTable(
       decisionRef: DecisionRef,
       binding: RefBinding = RefBinding.Latest,
       resultVariable: Option[ResultVariable] = None,
@@ -203,6 +203,7 @@ case class UserTask(
     copy(taskListeners = TaskListeners(listeners))
 
   def withForm(form: BpmnForm): UserTask = copy(maybeForm = Some(form))
+
 
 object UserTask:
 

@@ -64,7 +64,7 @@ trait tasks:
     BusinessRuleTask(Task(ident))
 
   extension (brTask: BusinessRuleTask)
-    def impl(d: Dmn) = brTask.copy(taskImplementation = d)
+    def impl(d: DmnTable) = brTask.copy(taskImplementation = d)
 
   def userTask(ident: String) =
     UserTask(ident)
@@ -109,22 +109,22 @@ trait taskImplementations:
   def externalTask(topic: String) =
     ExternalTask(topic: String)
 
-  def dmn(decisionRef: String) =
-    Dmn(DecisionRef(decisionRef))
+  def dmnTable(decisionRef: String) =
+    DmnTable(DecisionRef(decisionRef))
 
-  extension (dmn: Dmn)
-    def binding(refBinding: RefBinding): Dmn =
+  extension (dmn: DmnTable)
+    def binding(refBinding: RefBinding): DmnTable =
       dmn.copy(binding = refBinding)
 
-    def latest: Dmn =
+    def latest: DmnTable =
       binding(RefBinding.Latest)
 
-    def deployment: Dmn =
+    def deployment: DmnTable =
       binding(RefBinding.Deployment)
 
-    def version(v: String): Dmn = binding(RefBinding.Version(v))
+    def version(v: String): DmnTable = binding(RefBinding.Version(v))
 
-    def versionTag(tag: String): Dmn =
+    def versionTag(tag: String): DmnTable =
       binding(RefBinding.VersionTag(tag))
 
     def resultVariable(name: String, mapDecisionResult: MapDecisionResult) =
@@ -132,17 +132,17 @@ trait taskImplementations:
         Some(ResultVariable(Name(name), mapDecisionResult))
       )
 
-    def tenantId(id: String): Dmn =
+    def tenantId(id: String): DmnTable =
       dmn.copy(tenantId = Some(TenantId(id)))
 
-    def singleEntry(name: String): Dmn =
+    def singleEntry(name: String): DmnTable =
       resultVariable(name, MapDecisionResult.SingleEntry)
 
-    def singleResult(name: String): Dmn =
+    def singleResult(name: String): DmnTable =
       resultVariable(name, MapDecisionResult.SingleResult)
 
-    def collectEntries(name: String): Dmn =
+    def collectEntries(name: String): DmnTable =
       resultVariable(name, MapDecisionResult.CollectEntries)
 
-    def resultList(name: String): Dmn =
+    def resultList(name: String): DmnTable =
       resultVariable(name, MapDecisionResult.ResultList)

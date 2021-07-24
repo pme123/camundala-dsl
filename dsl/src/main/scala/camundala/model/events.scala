@@ -1,4 +1,5 @@
-package camundala.model
+package camundala
+package model
 
 sealed trait HasEvent[T] extends HasProcessNode[T]
 

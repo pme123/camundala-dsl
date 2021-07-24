@@ -15,10 +15,20 @@ case class BpmnProcess(
     starterGroups: CandidateGroups = CandidateGroups.none,
     starterUsers: CandidateUsers = CandidateUsers.none,
     nodes: ProcessNodes = ProcessNodes.none,
-    flows: SequenceFlows = SequenceFlows.none
-) extends HasGroups[BpmnProcess]:
+    flows: SequenceFlows = SequenceFlows.none,
+    inputObject: InOutObject = InOutObject.none,
+    outputObject: InOutObject = InOutObject.none
+) extends HasGroups[BpmnProcess],
+      HasInputObject[BpmnProcess],
+      HasOutputObject[BpmnProcess]:
 
   val elements = nodes.elements ++ flows.elements
+
+  def withInput(input: InOutObject): BpmnProcess =
+    copy(inputObject = input)
+
+  def withOutput(output: InOutObject): BpmnProcess =
+    copy(outputObject = output)
 
 sealed trait ElemKey:
   def name: String
@@ -133,7 +143,7 @@ trait HasProcessElement[T] extends HasProperties[T], HasExecutionListeners[T]:
 
   def withExecutionListener(listener: ExecutionListener): T =
     withProcessElement(processElement.executionListener(listener))
-    
+
   def withExecutionListeners(listeners: Seq[ExecutionListener]): T =
     withProcessElement(processElement.executionListeners(listeners))
 

@@ -4,6 +4,7 @@ import model.*
 
 trait DSL
     extends bpmns,
+      dmns,
       processes,
       groups,
       users,
@@ -18,7 +19,8 @@ trait DSL
       parameters,
       variables,
       listeners,
-      transactions:
+      transactions,
+      inOutObjects:
 
   def ident(id: String): Ident =
     Ident(id)

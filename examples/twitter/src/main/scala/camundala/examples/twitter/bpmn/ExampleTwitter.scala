@@ -2,6 +2,8 @@ package camundala
 package examples.twitter
 package bpmn
 
+import java.util
+import collection.JavaConverters._
 
 object ExampleTwitter extends ProjectDSL:
 
@@ -12,23 +14,9 @@ object ExampleTwitter extends ProjectDSL:
   final val generatedFolder = "./examples/twitter/src/main/resources"
 
   val config = bpmnsConfig
-    .users(
-    )
-    .groups(
-    )
     .bpmns(
       bpmns.example__twitter
     )
-
-  object users:
-
-    println("//TODO Add users here and remove this line")
-  end users
-
-  object groups:
-
-    println("//TODO Add groups here and remove this line")
-  end groups
 
   object bpmns:
 
@@ -104,10 +92,12 @@ object ExampleTwitter extends ProjectDSL:
       object startEvents:
 
         val TweetWrittenIdent = "TweetWritten"
+        case class TweetWrittenOut(content: String = "Hello there") extends InOutObject
 
         lazy val TweetWritten =
           startEvent(TweetWrittenIdent) //
             .createTweetForm
+         //   .outputs(TweetWrittenOut())
             .prop("KPI-Cycle-Start", "Tweet Approval Time")
 
       end startEvents
@@ -181,16 +171,30 @@ object ExampleTwitter extends ProjectDSL:
     end processes
   end bpmns
 
-  case class TweetInputs(
-      email: String = "me@myself.com",
-      content: String = "Test Tweet",
-      approved: Boolean = true
-  ):
-
+  case class StartInputs(
+                          email: String = "me@myself.com",
+                          content: String = "Test Tweet",
+                        ):
     val emailKey = "email"
     val contentKey = "content"
+
+    lazy val asVariables: util.Map[String, Any] = Map(
+      emailKey -> email,
+      contentKey -> content
+    ).asJava
+
+  end StartInputs
+
+  case class TweetAproveInputs(
+                           approved: Boolean = true
+                        ):
+
     val approvedKey = "approved"
 
-  end TweetInputs
+    val asVariables: util.Map[String, Any] = Map(
+      approvedKey -> approved
+    ).asJava
+
+  end TweetAproveInputs
 
 end ExampleTwitter

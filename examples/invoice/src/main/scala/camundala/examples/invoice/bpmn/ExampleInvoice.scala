@@ -14,6 +14,9 @@ object ExampleInvoice2 extends DSL:
   final val generatedFolder = "./examples/invoice/src/main/resources"
 
   val config = bpmnsConfig
+    .dmns(
+      dmn("invoiceBusinessDecisions")
+    )
     .users(
       users.demo
     )
@@ -124,7 +127,7 @@ object ExampleInvoice2 extends DSL:
         lazy val AssignApproverGroup = businessRuleTask(
           AssignApproverGroupIdent
         ).impl(
-          dmn("invoice-assign-approver").latest
+          dmnTable("invoice-assign-approver").latest
             .collectEntries("approverGroups")
         )
       end businessRuleTasks
