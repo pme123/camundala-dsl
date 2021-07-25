@@ -69,7 +69,7 @@ object TaskImplementation:
       resultVariable: Option[String] = None
   ) extends TaskImplementation, BusinessRuleTaskImpl
 
-  case class DelegateExpression(expresssion: String)
+  case class DelegateExpression(expression: String)
       extends TaskImplementation, BusinessRuleTaskImpl
 
   case class JavaClass(className: String)

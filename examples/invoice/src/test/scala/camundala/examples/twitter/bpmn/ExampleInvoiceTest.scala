@@ -9,24 +9,16 @@ import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule}
 import org.junit.{After, Before, Rule, Test}
 import org.mockito.{Mock, MockitoAnnotations}
-import camundala.test.TestHelper
+import camundala.test._
 
 class ExampleInvoiceTest
   extends TestHelper:
+  def tester: BpmnProcessTester = ???
 
   val bpmnsConfigToTest = ExampleInvoice2.config
 
   @Rule
   def processEngineRule = new ProcessEngineRule
-
-  @Before
-  def setUp(): Unit = {
-    MockitoAnnotations.initMocks(this)
-  }
-
-  @After def tearDown(): Unit = {
-    Mocks.reset()
-  }
 
   @Test
   def testTODO(): Unit =

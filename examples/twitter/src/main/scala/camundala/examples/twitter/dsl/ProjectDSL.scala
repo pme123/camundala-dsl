@@ -21,7 +21,7 @@ trait ProjectDSL extends DSL:
             hasProperties.prop(kpiRatioKey, label)
 
     final val createTweetFormPath = "forms/createTweet.html"        
-    final val reviewTweetFormPath = "forms/reviewTweet.html"        
+    final val reviewTweetFormPath = "forms/reviewTweet.html" 
     extension [T](hasForm: HasMaybeForm[T])
 
         def createTweetForm: T =

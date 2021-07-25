@@ -1,40 +1,53 @@
-package camundala.examples.twitter.bpmn
+package camundala
+package examples.twitter
+package bpmn
 
-import camundala.dsl.DSL.Givens._
-import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.processes._
-import camundala.examples.twitter.bpmn.ExampleTwitter.{StartInputs, TweetAproveInputs}
-import camundala.examples.twitter.services.{RejectionNotificationDelegate, TweetContentOfflineDelegate}
-import camundala.model._
+import DSL.Givens._
+import ExampleTwitter.bpmns.processes._
+import ExampleTwitter.{StartInputs, TweetAproveInputs}
+import services.{RejectionNotificationDelegate, TweetContentOfflineDelegate}
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests._
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule}
 import org.junit.{After, Before, Rule, Test}
 import org.mockito.{Mock, MockitoAnnotations}
+import org.mockito.Mockito._
 import camundala.examples.twitter.bpmn.ExampleTwitter.bpmns.example__twitter
-import camundala.test.TestHelper
+import camundala.test.{BpmnProcessTester, TestDSL, TestHelper}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
 
-class ExampleTwitterTest
-  extends TestHelper:
+class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
 
   val bpmnsConfigToTest = ExampleTwitter.config
+  def tester: BpmnProcessTester =
+    tester(TwitterDemoProcess)
+      .config(
+        testConfig
+          .deployments(
+            example__twitter.path,
+            formResource(createTweetFormPath),
+            formResource(reviewTweetFormPath)
+          )
+          .registries(
+            serviceRegistry(
+              dsl.emailAdapter,
+              mock(classOf[RejectionNotificationDelegate])
+            ),
+            serviceRegistry(
+              dsl.tweetAdapter,
+              mock(classOf[TweetContentOfflineDelegate])
+            )
+          )
+      )
+  /*  .cases(
+        testCase("Happy Path")(
+          // testStep("")
+        )
+      )*/
 
   @Rule
   def processEngineRule = new ProcessEngineRule
-
-  @Mock private var tweetContentDelegate: TweetContentOfflineDelegate = _
-  @Mock private var rejectionNotificationDelegate: RejectionNotificationDelegate = _
-
-  @Before
-  def setUp(): Unit = {
-    MockitoAnnotations.initMocks(this)
-    Mocks.register("tweetAdapter", tweetContentDelegate)
-    Mocks.register("emailAdapter", rejectionNotificationDelegate)
-  }
-
-  @After def tearDown(): Unit = {
-    Mocks.reset()
-  }
 
   @Test
   def testApprovedPath(): Unit =
@@ -69,7 +82,7 @@ class ExampleTwitterTest
         EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr
       )
     val task = getTask(userTasks.ReviewTweetIdent)
-    complete(task, tweetAproveInputs.asVariables)
+    BpmnAwareTests.complete(task, tweetAproveInputs.asVariables)
     assertThat(processInstance)
       .isEnded()
       .hasPassed(serviceHasPassedIdent)

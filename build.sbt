@@ -31,13 +31,16 @@ lazy val dsl = project
       // provide test helper
       "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
       "org.assertj" % "assertj-core" % "3.19.0",
+ //     "org.scalactic" %% "scalactic" % "3.2.9",
+ //     "org.scalatest" %% "scalatest" % "3.2.9",
+ //     "org.mockito" % "mockito-scala-scalatest_2.13" % "1.16.37",
       "org.mockito" % "mockito-core" % "3.1.0",
       "com.novocode" % "junit-interface" % "0.11"
     ),
-    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
     // libraryDependencies += "eu.timepit" %% "refined" % "0.9.20",
     // To cross compile with Dotty and Scala 2
-    // crossScalaVersions := Seq(scala3Version, scala2Version)
+    crossScalaVersions := Seq(scala3Version, scala2Version)
   )
 
 // EXAMPLES
