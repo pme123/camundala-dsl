@@ -1,3 +1,10 @@
+```
+     _/_/_/                                                      _/            _/
+  _/          _/_/_/  _/_/_/  _/_/    _/    _/  _/_/_/      _/_/_/    _/_/_/  _/    _/_/_/
+ _/        _/    _/  _/    _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/  _/    _/
+_/        _/    _/  _/    _/    _/  _/    _/  _/    _/  _/    _/  _/    _/  _/  _/    _/
+ _/_/_/    _/_/_/  _/    _/    _/    _/_/_/  _/    _/    _/_/_/    _/_/_/  _/    _/_/_/
+```
 # Camundala — a new Way to develop Camunda BPMNs.
 > Using the BPMN-Power of _**Camunda**_
 and the Type safety of _**Scala**_ to develop BPMN Processes with a nice DSL.
