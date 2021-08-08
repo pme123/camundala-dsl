@@ -32,6 +32,7 @@ export model.{
 }
 export model.{
   ProcessNodes,
+  ProcessNode,
   SequenceFlows,
   SequenceFlow, 
   EndEvent, 
@@ -87,6 +88,10 @@ export model.GeneratedForm.{DefaultValue,
   FormFieldType,
   Label}
 export model.ScriptLanguage
+
+export model.{
+  toCamundaDate
+}
 
 export dev.DslPrinterRunner
 export dev.BpmnRunner

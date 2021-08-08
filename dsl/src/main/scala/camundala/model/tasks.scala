@@ -182,9 +182,11 @@ case class BusinessRuleTask(
 case class UserTask(
     task: Task,
     taskListeners: TaskListeners = TaskListeners.none,
+    //TODO dynamic vs. static values
     maybeAssignee: Option[UserRef] = None,
     candidateUsers: CandidateUsers = CandidateUsers.none,
     candidateGroups: CandidateGroups = CandidateGroups.none,
+    //TODO wrong Expression Type!
     maybeDueDate: Option[Expression] = None,
     maybeFollowUpDate: Option[Expression] = None,
     maybePriority: Option[Expression] = None,

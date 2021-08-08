@@ -43,11 +43,11 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
         testCase("Happy Path")(
           // testStep("")
         )
-      )*/
+      )
 
   @Rule
   def processEngineRule = new ProcessEngineRule
-
+*/
   @Test
   def testApprovedPath(): Unit =
     runTest(
