@@ -97,7 +97,6 @@ trait TestHelper:
       userTask.maybeFollowUpDate.foreach(date =>
         assertThat(t).hasDueDate(toCamundaDate(date.expression))
         )
-
       BpmnAwareTests.complete(t, data.asJavaVars())
 
   end extension

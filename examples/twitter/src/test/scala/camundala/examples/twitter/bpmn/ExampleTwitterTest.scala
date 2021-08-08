@@ -39,17 +39,16 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
           )
         )
     }
-  /*  .cases(
-        testCase("Happy Path")(
-          // testStep("")
-        )
-      )
 
-  @Rule
-  def processEngineRule = new ProcessEngineRule
-*/
   @Test
   def testApprovedPath(): Unit =
+    testCase("Happy Path")(
+      startEvents.TweetWritten.step(StartInputs()),
+      userTasks.ReviewTweet.step(TweetAproveInputs())
+    ).run()
+
+  @Test
+  def testApprovedPath2(): Unit =
     runTest(
       StartInputs(),
       TweetAproveInputs(),
@@ -80,8 +79,8 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
       .hasFormKey(
         EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr
       )
-    val task = getTask(userTasks.ReviewTweetIdent)
-    BpmnAwareTests.complete(task, tweetAproveInputs.asJavaVars())
+   // val task = getTask(userTasks.ReviewTweetIdent)
+    BpmnAwareTests.complete(task(), tweetAproveInputs.asJavaVars())
     assertThat(processInstance)
       .isEnded()
       .hasPassed(serviceHasPassedIdent)

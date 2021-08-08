@@ -72,6 +72,15 @@ object TaskImplementation:
   case class DelegateExpression(expression: String)
       extends TaskImplementation, BusinessRuleTaskImpl
 
+  object DelegateExpression:
+    def apply(expr: String): DelegateExpression =
+      new DelegateExpression(
+        if (expr.startsWith("$"))
+          expr
+        else
+          s"$${$expr}"
+      )
+
   case class JavaClass(className: String)
     extends TaskImplementation, BusinessRuleTaskImpl
 

@@ -17,8 +17,6 @@ class ExampleInvoiceTest
 
   val bpmnsConfigToTest = ExampleInvoice2.config
 
-  @Rule
-  def processEngineRule = new ProcessEngineRule
 
   @Test
   def testTODO(): Unit =
