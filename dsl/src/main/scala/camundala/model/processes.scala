@@ -22,6 +22,7 @@ case class BpmnProcess(
       HasInputObject[BpmnProcess],
       HasOutputObject[BpmnProcess]:
 
+  val identStr = ident.toString
   val elements = nodes.elements ++ flows.elements
 
   def withInput(input: InOutObject): BpmnProcess =
@@ -132,6 +133,7 @@ trait HasProcessElement[T] extends HasProperties[T], HasExecutionListeners[T]:
   def withProcessElement(processElement: ProcessElement): T
 
   def ident: Ident = processElement.ident
+  def identStr: String = ident.toString
   def elemKey: ElemKey
   def ref: ProcessElementRef = ProcessElementRef(ident.toString)
 

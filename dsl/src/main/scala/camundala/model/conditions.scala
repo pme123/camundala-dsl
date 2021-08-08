@@ -1,10 +1,20 @@
-package camundala.model
+package camundala
+package model
 
 sealed trait Condition
 
 object Condition:
 
   case class ExpressionCond(private val expr: String) extends Condition
+
+  object ExpressionCond:
+    def apply(expr: String): ExpressionCond =
+      new ExpressionCond(
+        if (expr.startsWith("$"))
+          expr
+        else
+          s"$${$expr}"
+      )
 
   case class InlineScriptCond(
       script: String,

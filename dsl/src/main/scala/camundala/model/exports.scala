@@ -54,4 +54,3 @@ opaque type ProcessVarString = Ident
 
 object ProcessVarString:
   def apply(variable: String): ProcessVarString = variable
-

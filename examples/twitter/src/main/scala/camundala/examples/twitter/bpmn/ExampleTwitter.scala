@@ -2,8 +2,10 @@ package camundala
 package examples.twitter
 package bpmn
 
+import camundala.test.TestData
+
 import java.util
-import collection.JavaConverters._
+import collection.JavaConverters.*
 
 object ExampleTwitter extends ProjectDSL:
 
@@ -55,8 +57,9 @@ object ExampleTwitter extends ProjectDSL:
 
         val ReviewTweetIdent = "ReviewTweet"
 
-        lazy val ReviewTweet =
+        lazy val ReviewTweet: UserTask =
           userTask(ReviewTweetIdent) //
+            .dueDate("2021-12-31T12:23:00")
             .reviewTweetForm
             .prop("durationMean", "10000")
             .prop("durationSd", "5000")
@@ -174,27 +177,10 @@ object ExampleTwitter extends ProjectDSL:
   case class StartInputs(
                           email: String = "me@myself.com",
                           content: String = "Test Tweet",
-                        ):
-    val emailKey = "email"
-    val contentKey = "content"
-
-    lazy val asVariables: util.Map[String, Any] = Map(
-      emailKey -> email,
-      contentKey -> content
-    ).asJava
-
-  end StartInputs
+                        ) extends TestData
 
   case class TweetAproveInputs(
                            approved: Boolean = true
-                        ):
-
-    val approvedKey = "approved"
-
-    val asVariables: util.Map[String, Any] = Map(
-      approvedKey -> approved
-    ).asJava
-
-  end TweetAproveInputs
+                        ) extends TestData
 
 end ExampleTwitter
