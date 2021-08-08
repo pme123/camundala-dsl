@@ -21,25 +21,24 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
 
   val bpmnsConfigToTest = ExampleTwitter.config
   def tester: BpmnProcessTester =
-    tester(TwitterDemoProcess)
-      .config(
-        testConfig
-          .deployments(
-            example__twitter.path,
-            formResource(createTweetFormPath),
-            formResource(reviewTweetFormPath)
+    tester(TwitterDemoProcess) {
+      testConfig
+        .deployments(
+          example__twitter.path,
+          formResource(createTweetFormPath),
+          formResource(reviewTweetFormPath)
+        )
+        .registries(
+          serviceRegistry(
+            dsl.emailAdapter,
+            mock(classOf[RejectionNotificationDelegate])
+          ),
+          serviceRegistry(
+            dsl.tweetAdapter,
+            mock(classOf[TweetContentOfflineDelegate])
           )
-          .registries(
-            serviceRegistry(
-              dsl.emailAdapter,
-              mock(classOf[RejectionNotificationDelegate])
-            ),
-            serviceRegistry(
-              dsl.tweetAdapter,
-              mock(classOf[TweetContentOfflineDelegate])
-            )
-          )
-      )
+        )
+    }
   /*  .cases(
         testCase("Happy Path")(
           // testStep("")
@@ -82,7 +81,7 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
         EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr
       )
     val task = getTask(userTasks.ReviewTweetIdent)
-    BpmnAwareTests.complete(task, tweetAproveInputs.asVariables)
+    BpmnAwareTests.complete(task, tweetAproveInputs.asJavaVars())
     assertThat(processInstance)
       .isEnded()
       .hasPassed(serviceHasPassedIdent)
@@ -91,7 +90,7 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
   private def startProcess(tweet: StartInputs) =
     runtimeService.startProcessInstanceByKey(
       TwitterDemoProcess.ident.toString,
-      tweet.asVariables
+      tweet.asJavaVars()
     )
 
   private def getTask(id: String | Ident) =
