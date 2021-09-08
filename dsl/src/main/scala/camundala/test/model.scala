@@ -1,7 +1,7 @@
 package camundala
 package test
 
-import camundala.model.BpmnProcess
+import camundala.model.{BpmnProcess, EndEvent, ServiceTask}
 
 import collection.JavaConverters.*
 
@@ -16,19 +16,24 @@ case class BpmnProcessTester(
     testConfig: TestConfig = TestConfig()
 )
 
-case class BpmnTestCase(name: String, steps: Seq[BpmnTestStep] = Nil)
-
 type TestStepObj[T] = HasProcessNode[T] | BpmnProcess
 
 sealed trait BpmnTestStep
 
 case class StartProcessStep(startEvent: StartEvent, data: TestData)
-  extends BpmnTestStep
+    extends BpmnTestStep
 
-case class UserTaskStep(userTask: UserTask, data: TestData)
-  extends BpmnTestStep
+case class UserTaskStep(userTask: UserTask, data: TestData) extends BpmnTestStep
+
+case class ServiceTaskStep(userTask: ServiceTask, data: Option[TestData] = None)
+    extends BpmnTestStep
+
+case class EndStep(endEvent: EndEvent, data: Seq[TestData] = Seq.empty)
+    extends BpmnTestStep
 
 trait TestData extends Product:
+
+  def names(): Seq[String] = productElementNames.toSeq
 
   def asVars(): Map[String, Any] =
     productElementNames
@@ -36,6 +41,4 @@ trait TestData extends Product:
       .toMap
 
   def asJavaVars(): java.util.Map[String, Any] =
-    asVars()
-      .asJava
-
+    asVars().asJava

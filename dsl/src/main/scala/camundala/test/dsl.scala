@@ -1,6 +1,8 @@
 package camundala
 package test
 
+import camundala.model.ServiceTask
+
 trait TestDSL:
 
   def tester(process: BpmnProcess)(testConfig: TestConfig): BpmnProcessTester =
@@ -21,17 +23,24 @@ trait TestDSL:
   def serviceRegistry(key: String, value: Any) = ServiceRegistry(key, value)
   def formResource(path: String) = s"static/$path"
 
-  def testCase(name: String)(steps: BpmnTestStep*) =
-    BpmnTestCase(name, steps)
-
-  extension(userTask: UserTask)
+  extension (userTask: UserTask)
     def step(data: TestData) =
       UserTaskStep(userTask, data)
   end extension
 
-  extension(startEvent: StartEvent)
-    def step(data: TestData) =
+  extension (serviceTask: ServiceTask)
+    def step(data: Option[TestData] = None) =
+      ServiceTaskStep(serviceTask, data)
+  end extension
+
+  extension (startEvent: StartEvent)
+    def start(data: TestData) =
       StartProcessStep(startEvent, data)
+  end extension
+
+  extension (endEvent: EndEvent)
+    def finish(data: TestData*) =
+      EndStep(endEvent, data)
   end extension
 
 end TestDSL

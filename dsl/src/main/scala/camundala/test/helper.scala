@@ -2,6 +2,7 @@ package camundala
 package test
 
 import org.camunda.bpm.engine.repository.DeploymentBuilder
+import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.ProcessEngineRule
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*
@@ -42,22 +43,31 @@ trait TestHelper:
   @After def tearDown(): Unit =
     Mocks.reset()
 
-  extension (testCase: BpmnTestCase)
-    def run(): Unit =
-      testCase.steps.foreach(_.run())
-  end extension
+  def testCase(steps: BpmnTestStep*): Unit =
+    steps.foldLeft(Option.empty[ProcessInstance])((a, b) => b.run(a))
 
   extension (step: BpmnTestStep)
-    def run(): Unit =
-      step match
-        case st: StartProcessStep =>
-          st.run()
-        case st: UserTaskStep =>
-          st.run()
+    def run(processInstance: Option[ProcessInstance]): Option[ProcessInstance] =
+      (step, processInstance) match
+        case (st: StartProcessStep, None) =>
+          Some(st.run())
+        case (st: UserTaskStep, Some(pi)) =>
+          st.run(pi)
+          Some(pi)
+        case (st: ServiceTaskStep, Some(pi)) =>
+          st.run(pi)
+          Some(pi)
+        case (st: EndStep, Some(pi)) =>
+          st.run(pi)
+          None
+        case (st, pi) =>
+          throw IllegalArgumentException(
+            s"This TestStep combination is not supported: $st - $pi"
+          )
   end extension
 
   extension (step: StartProcessStep)
-    def run(): Unit =
+    def run(): ProcessInstance =
       val StartProcessStep(startEvent, in) = step
       val processInstance = runtimeService.startProcessInstanceByKey(
         tester.process.identStr,
@@ -66,10 +76,11 @@ trait TestHelper:
       assertThat(processInstance)
         .isStarted()
         .hasPassed(startEvent.identStr)
+      processInstance
   end extension
 
   extension (step: UserTaskStep)
-    def run(): Unit =
+    def run(processInstance: ProcessInstance): Unit =
       val UserTaskStep(userTask, data) = step
       val t = task()
       assertThat(t)
@@ -89,7 +100,7 @@ trait TestHelper:
         assertThat(t).hasCandidateUser(user.toString)
         )
       userTask.maybePriority.foreach(prio =>
-       assertEquals(prio, t.getPriority()) // no assertThat
+        assertEquals(prio, t.getPriority()) // no assertThat
       )
       userTask.maybeDueDate.foreach(date =>
         assertThat(t).hasDueDate(toCamundaDate(date.expression))
@@ -98,7 +109,32 @@ trait TestHelper:
         assertThat(t).hasDueDate(toCamundaDate(date.expression))
         )
       BpmnAwareTests.complete(t, data.asJavaVars())
-
+      assertThat(processInstance)
+        .hasPassed(userTask.identStr)
   end extension
+
+  extension (step: ServiceTaskStep)
+    def run(processInstance: ProcessInstance): Unit =
+      val ServiceTaskStep(serviceTask, data) = step
+      assertThat(processInstance)
+        .hasPassed(serviceTask.identStr)
+  end extension
+
+  extension (step: EndStep)
+    def run(processInstance: ProcessInstance): Unit =
+      val EndStep(endEvent, datas) = step
+      assertThat(processInstance)
+        .hasPassed(endEvent.identStr)
+        .isEnded
+      val variables = assertThat(processInstance).variables()
+      for
+        d <- datas
+        _ = assertThat(processInstance).hasVariables(d.names(): _*)
+        (k, v) <- d.asVars()
+      yield variables.containsEntry(k, v)
+  end extension
+
+  private def processInstance() =
+    runtimeService().createProcessInstanceQuery().active().singleResult()
 
 end TestHelper

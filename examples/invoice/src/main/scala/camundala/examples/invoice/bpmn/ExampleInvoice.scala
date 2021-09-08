@@ -208,21 +208,21 @@ object ExampleInvoice2 extends DSL:
 
         lazy val Yes__Reviewsuccessful__ApproveInvoice = sequenceFlow(
           Yes__Reviewsuccessful__ApproveInvoiceIdent
-        ).expression("${clarified}")
+        ).expression("clarified")
 
         val No__Reviewsuccessful__InvoiceNotprocessedIdent =
           "No__Reviewsuccessful__InvoiceNotprocessed"
 
         lazy val No__Reviewsuccessful__InvoiceNotprocessed = sequenceFlow(
           No__Reviewsuccessful__InvoiceNotprocessedIdent
-        ).expression("${!clarified}")
+        ).expression("!clarified")
 
         val Yes__Invoiceapproved__PrepareBankTransferIdent =
           "Yes__Invoiceapproved__PrepareBankTransfer"
 
         lazy val Yes__Invoiceapproved__PrepareBankTransfer = sequenceFlow(
           Yes__Invoiceapproved__PrepareBankTransferIdent
-        ).expression("${approved}")
+        ).expression("approved")
 
         val sequenceFlow_183__ReviewInvoice__ReviewsuccessfulIdent =
           "sequenceFlow_183__ReviewInvoice__Reviewsuccessful"
@@ -241,7 +241,7 @@ object ExampleInvoice2 extends DSL:
 
         lazy val No__Invoiceapproved__ReviewInvoice = sequenceFlow(
           No__Invoiceapproved__ReviewInvoiceIdent
-        ).expression("${!approved}")
+        ).expression("!approved")
     end processes
   end invoice$$v2
 

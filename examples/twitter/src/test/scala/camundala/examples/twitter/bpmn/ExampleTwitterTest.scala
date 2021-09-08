@@ -42,58 +42,21 @@ class ExampleTwitterTest extends TestHelper, ProjectDSL, TestDSL:
 
   @Test
   def testApprovedPath(): Unit =
-    testCase("Happy Path")(
-      startEvents.TweetWritten.step(StartInputs()),
-      userTasks.ReviewTweet.step(TweetAproveInputs())
-    ).run()
-
-  @Test
-  def testApprovedPath2(): Unit =
-    runTest(
-      StartInputs(),
-      TweetAproveInputs(),
-      serviceTasks.PublishOnTwitterIdent,
-      serviceTasks.SendRejectionNotificationIdent
+    testCase(
+      startEvents.TweetWritten.start(StartInputs()),
+      userTasks.ReviewTweet.step(TweetAproveInputs()),
+      serviceTasks.PublishOnTwitter.step(),
+      endEvents.TweetHandled.finish(StartInputs(), TweetAproveInputs())
     )
 
   @Test
   def testRejectedPath(): Unit =
-    runTest(
-      StartInputs(),
-      TweetAproveInputs(approved = false),
-      serviceTasks.SendRejectionNotificationIdent,
-      serviceTasks.PublishOnTwitterIdent
-    )
-
-  private def runTest(
-      startInputs: StartInputs,
-      tweetAproveInputs: TweetAproveInputs,
-      serviceHasPassedIdent: String,
-      serviceHasNotPassedIdent: String
-  ) =
-    val processInstance = startProcess(startInputs)
-    assertThat(processInstance)
-      .isStarted()
-      .task()
-      .hasDefinitionKey(userTasks.ReviewTweetIdent)
-      .hasFormKey(
-        EmbeddedStaticForm(ExampleTwitter.reviewTweetFormPath).formPathStr
+    testCase(
+      startEvents.TweetWritten.start(StartInputs()),
+      userTasks.ReviewTweet.step(TweetAproveInputs(approved = false)),
+      serviceTasks.SendRejectionNotification.step(),
+      endEvents.TweetHandled.finish(
+        StartInputs(),
+        TweetAproveInputs(approved = false)
       )
-   // val task = getTask(userTasks.ReviewTweetIdent)
-    BpmnAwareTests.complete(task(), tweetAproveInputs.asJavaVars())
-    assertThat(processInstance)
-      .isEnded()
-      .hasPassed(serviceHasPassedIdent)
-      .hasNotPassed(serviceHasNotPassedIdent)
-
-  private def startProcess(tweet: StartInputs) =
-    runtimeService.startProcessInstanceByKey(
-      TwitterDemoProcess.ident.toString,
-      tweet.asJavaVars()
     )
-
-  private def getTask(id: String | Ident) =
-    val taskId = id.toString
-    val task = taskService.createTaskQuery.active().singleResult
-    println(s"TASK: $task")
-    task
