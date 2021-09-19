@@ -255,10 +255,10 @@ object ExampleInvoice2 extends DSL:
     object processes:
       val ReviewInvoiceProcessIdent = "ReviewInvoiceProcess"
       val ReviewInvoiceProcess = process(ReviewInvoiceProcessIdent)
-        .nodes(
+    /*    .tasks(
           userTasks.AssignReviewer,
           userTasks.ReviewInvoice
-        )
+        ) */
       object userTasks:
 
         val AssignReviewerIdent = "AssignReviewer"

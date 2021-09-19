@@ -51,7 +51,7 @@ trait CompareBpmns extends DSL:
     def compareWith(newProcess: BpmnProcess): Seq[AuditEntry] = Seq(
       info(s"Process '${process.ident}' exists.")
     ) ++
-      process.nodes.compareWith(newProcess.nodes) ++
+      process.processNodes.compareWith(newProcess.processNodes) ++
       process.flows.compareWith(newProcess.flows)
 
   extension (elements: ProcessElements)

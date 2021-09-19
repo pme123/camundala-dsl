@@ -62,9 +62,9 @@ lazy val exampleTwitter = project
   .settings(projectSettings("example-twitter"))
   .settings(
     libraryDependencies ++= camundaDependencies :+
-      "org.twitter4j" % "twitter4j-core" % twitter4jVersion
-  )
-  .dependsOn(dsl)
+      "org.twitter4j" % "twitter4j-core" % twitter4jVersion :+
+      "io.github.pme123" %% "camundala-api" % "0.1.0-SNAPSHOT"
+  ).dependsOn(dsl)
 
 lazy val exampleInvoice = project
   .in(file("./examples/invoice"))

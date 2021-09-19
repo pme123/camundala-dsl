@@ -11,19 +11,20 @@ object BpmnProcesses:
   def none = BpmnProcesses(Nil)
 
 case class BpmnProcess(
-    ident: Ident,
-    starterGroups: CandidateGroups = CandidateGroups.none,
-    starterUsers: CandidateUsers = CandidateUsers.none,
-    nodes: ProcessNodes = ProcessNodes.none,
-    flows: SequenceFlows = SequenceFlows.none,
-    inputObject: InOutObject = InOutObject.none,
-    outputObject: InOutObject = InOutObject.none
+                        ident: Ident,
+                        descr: Option[String] = None,
+                        starterGroups: CandidateGroups = CandidateGroups.none,
+                        starterUsers: CandidateUsers = CandidateUsers.none,
+                        processNodes: ProcessNodes = ProcessNodes.none,
+                        flows: SequenceFlows = SequenceFlows.none,
+                        inputObject: InOutObject = InOutObject.none,
+                        outputObject: InOutObject = InOutObject.none
 ) extends HasGroups[BpmnProcess],
       HasInputObject[BpmnProcess],
       HasOutputObject[BpmnProcess]:
 
   val identStr = ident.toString
-  val elements = nodes.elements ++ flows.elements
+  val elements = processNodes.elements ++ flows.elements
 
   def withInput(input: InOutObject): BpmnProcess =
     copy(inputObject = input)
@@ -102,9 +103,16 @@ trait ProcessElements:
 
   def elements: Seq[HasProcessElement[_]]
 
+type ProcessNodeType = StartEvent | UserTask | ServiceTask | ScriptTask |
+  CallActivity | BusinessRuleTask | ParallelGateway | ExclusiveGateway |
+  EndEvent
+
 case class ProcessNodes(nodes: Seq[HasProcessNode[_]]) extends ProcessElements:
 
   val elements: Seq[HasProcessElement[_]] = nodes
+
+  def ++(newNodes: Seq[HasProcessNode[_]]) = ProcessNodes(nodes ++ newNodes)
+  def :+(newNode: HasProcessNode[_]) = ProcessNodes(nodes :+ newNode)
 
 object ProcessNodes:
 

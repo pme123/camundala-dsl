@@ -27,7 +27,7 @@ object FromCamundaBpmnSuites
           ) &&
           hasField(
             "nodes",
-            (bpmns: Seq[Bpmn]) => bpmns.head.processes.processes.head.nodes.elements.size,
+            (bpmns: Seq[Bpmn]) => bpmns.head.processes.processes.head.processNodes.elements.size,
             equalTo(8)
           ) &&
           hasField(

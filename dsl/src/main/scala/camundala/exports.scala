@@ -33,6 +33,7 @@ export model.{
 export model.{
   ProcessNodes,
   ProcessNode,
+  ProcessNodeType,
   SequenceFlows,
   SequenceFlow, 
   EndEvent, 

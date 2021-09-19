@@ -17,7 +17,7 @@ object ToCamundaBpmnSuites
         process("testDslProcess")
           .starterUser("Darth.Vader")
           .starterGroup("admin")
-          .nodes(
+       /*   .nodes(
             startEvent("startEvent")
               .form(
                 textField(fooVar.toString)
@@ -58,7 +58,7 @@ object ToCamundaBpmnSuites
               .resultVariable("scriptResult"),
             exclusiveGateway("gatewayFork")
               .defaultFlow(sequenceFlowIsNotBar.ref)
-          )
+          )*/
           .flows(
             sequenceFlow("flowIsBar")
               .inlineGroovy(

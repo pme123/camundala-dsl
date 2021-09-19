@@ -10,12 +10,12 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
         bpmn("myBpmn.bpmn")
           .processes(
             process("myProcess")
-              .nodes(
+            /*  .nodes(
                 startEvent("LetsStart"),
                 serviceTask("serviceTaskA"),
                 userTask("userTaskA"),
                 businessRuleTask("Rulez")
-              )
+              )*/
               .flows(
                 flow("no_1234_1234")
               )
@@ -34,12 +34,12 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
         bpmn("myBpmn.bpmn")
           .processes(
             process("myProcess")
-              .nodes(
+          /*    .nodes(
                 startEvent("LetsStart"),
                 serviceTask("serviceTaskB"),
                 userTask("userTaskA"),
                 businessRuleTask("Rulez")
-              )
+              )*/
               .flows(
                 flow("no_1234_1234")
               )

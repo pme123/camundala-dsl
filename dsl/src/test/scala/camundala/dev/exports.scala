@@ -2,7 +2,7 @@ package camundala
 package dev
 package test
 
-export demoProcess.bpmnsProjectConfig
+//export demoProcess.bpmnsProjectConfig
 
 export zio.ULayer
 export zio.test.{suite, testM, assert, assertM, DefaultRunnableSpec}

@@ -57,7 +57,7 @@ object demoProcess extends DSL:
             adminUser.ref,
             dev.ref
           )
-          .nodes(
+         /* .nodes(
             startEvent("StartProcess"),
             serviceTask("ServiceTask")
               .expression(s"execution.setVariable('$isBarVar', true)")
@@ -86,7 +86,7 @@ object demoProcess extends DSL:
             exclusiveGateway("gatewayJoin"),
             endEvent("EndProcess")
               .inputString("endFlag", "finished")
-          )
+          )*/
           .flows(
             sequenceFlow("IsNOTBar__Fork__UserTaskA")
               .expression(s"!$isBarVar"),

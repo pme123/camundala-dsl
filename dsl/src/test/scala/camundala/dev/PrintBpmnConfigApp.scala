@@ -26,7 +26,7 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
           .starterGroup(adminGroup.ref)
           .starterUser(testUser.ref)
           .starterUser(testUser2.ref)
-          .nodes(
+        /*  .nodes(
             startEvent("LetsStart")
               .form(formKey("MyForm")),
             serviceTask("ExpressionService")
@@ -60,7 +60,7 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
                   .collectEntries("myResult")
                   .tenantId("myTenant")
               )
-          ),
+          )*/,
         process("process2")
       )
 
@@ -92,7 +92,7 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
             .starterGroup("admin")
             .starterUser("pme123")
             .starterUser("admin")
-            .nodes(
+           /* .nodes(
               startEvent("LetsStart"),
               serviceTask("ExpressionService"),
               serviceTask("ExternalTask"),
@@ -100,10 +100,10 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
               sendTask("DelegateSendTask"),
               userTask("MyUserTask"),
               businessRuleTask("MyBusinessRule")
-            ),
+            )*/,
           process("process2")
-            .nodes(
-            )
+           /* .nodes(
+            )*/
         ),
       bpmn("myPath")
         .processes(
@@ -111,7 +111,7 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
             .starterGroup("admin")
             .starterUser("pme123")
             .starterUser("admin")
-            .nodes(
+           /* .nodes(
               startEvent("LetsStart"),
               serviceTask("ExpressionService"),
               serviceTask("ExternalTask"),
@@ -119,10 +119,10 @@ object PrintBpmnConfigApp extends App with DSL with DslPrinter:
               sendTask("DelegateSendTask"),
               userTask("MyUserTask"),
               businessRuleTask("MyBusinessRule")
-            ),
+            )*/,
           process("process2")
-            .nodes(
-            )
+          /*  .nodes(
+            )*/
         )
     )
 

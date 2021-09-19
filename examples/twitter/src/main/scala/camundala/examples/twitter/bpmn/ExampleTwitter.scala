@@ -2,9 +2,10 @@ package camundala
 package examples.twitter
 package bpmn
 
-import camundala.test.TestData
 import java.util
 import collection.JavaConverters.*
+import camundala.api
+import camundala.model.InOutObject
 
 object ExampleTwitter extends ProjectDSL:
 
@@ -29,17 +30,12 @@ object ExampleTwitter extends ProjectDSL:
     object processes:
 
       val TwitterDemoProcess = process("TwitterDemoProcess")
-        .starterGroups(
-        )
-        .starterUsers(
-        )
         .nodes(
           startEvents.TweetWritten,
           userTasks.ReviewTweet,
+          exclusiveGateways.Approved,
           serviceTasks.SendRejectionNotification,
           serviceTasks.PublishOnTwitter,
-          exclusiveGateways.Approved,
-          exclusiveGateways.Join,
           endEvents.TweetHandled
         )
         .flows(
@@ -51,6 +47,8 @@ object ExampleTwitter extends ProjectDSL:
           flows.SequenceFlow_9__TweetWritten__ReviewTweet,
           flows.SequenceFlow_2__ReviewTweet__Approved
         )
+        .input(TwitterIn())
+        .output(TwitterOut())
 
       object userTasks:
 
@@ -94,12 +92,13 @@ object ExampleTwitter extends ProjectDSL:
       object startEvents:
 
         val TweetWrittenIdent = "TweetWritten"
-        case class TweetWrittenOut(content: String = "Hello there") extends InOutObject
+        case class TweetWrittenOut(content: String = "Hello there")
+            extends InOutObject
 
         lazy val TweetWritten =
           startEvent(TweetWrittenIdent) //
             .createTweetForm
-         //   .outputs(TweetWrittenOut())
+            //   .outputs(TweetWrittenOut())
             .prop("KPI-Cycle-Start", "Tweet Approval Time")
 
       end startEvents
@@ -112,9 +111,6 @@ object ExampleTwitter extends ProjectDSL:
           exclusiveGateway(ApprovedIdent)
             .prop("KPI-Cycle-End", "Tweet Approval Time")
 
-        val JoinIdent = "Join"
-
-        lazy val Join = exclusiveGateway(JoinIdent)
       end exclusiveGateways
 
       object flows:
@@ -172,14 +168,5 @@ object ExampleTwitter extends ProjectDSL:
       end flows
     end processes
   end bpmns
-
-  case class StartInputs(
-                          email: String = "me@myself.com",
-                          content: String = "Test Tweet",
-                        ) extends TestData
-
-  case class TweetAproveInputs(
-                           approved: Boolean = true
-                        ) extends TestData
 
 end ExampleTwitter

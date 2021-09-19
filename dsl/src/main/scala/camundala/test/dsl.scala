@@ -1,7 +1,7 @@
 package camundala
 package test
 
-import camundala.model.ServiceTask
+import camundala.model.{InOutObject, ServiceTask}
 
 trait TestDSL:
 
@@ -24,22 +24,22 @@ trait TestDSL:
   def formResource(path: String) = s"static/$path"
 
   extension (userTask: UserTask)
-    def step(data: TestData) =
+    def step(data: InOutObject) =
       UserTaskStep(userTask, data)
   end extension
 
   extension (serviceTask: ServiceTask)
-    def step(data: Option[TestData] = None) =
+    def step(data: Option[InOutObject] = None) =
       ServiceTaskStep(serviceTask, data)
   end extension
 
   extension (startEvent: StartEvent)
-    def start(data: TestData) =
+    def start(data: InOutObject) =
       StartProcessStep(startEvent, data)
   end extension
 
   extension (endEvent: EndEvent)
-    def finish(data: TestData*) =
+    def finish(data: InOutObject*) =
       EndStep(endEvent, data)
   end extension
 

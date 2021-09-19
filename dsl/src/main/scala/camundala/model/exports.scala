@@ -16,6 +16,7 @@ extension (ident: Ident)
   def toOriginal(): String =
     ident
       .toString
+      .replace("##", " ")
       .replace("__", "-")
       .replace("$$", ".")
 
@@ -23,6 +24,7 @@ object Ident:
 
   def apply(ident: String): Ident =
     ident
+      .replace(" ", "##")
       .replace("-", "__")
       .replace(".", "$$")
 

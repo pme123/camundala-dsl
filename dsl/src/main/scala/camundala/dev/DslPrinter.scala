@@ -170,10 +170,10 @@ trait DslPrinter:
           pl(s"""val ${process.ident} = process(${process.ident}Ident)"""),
           process.starterGroups.print(),
           process.starterUsers.print(),
-          process.nodes.print(),
+          process.processNodes.print(),
           process.flows.print(),
           pa2(
-            process.nodes.printObjects() :+
+            process.processNodes.printObjects() :+
               process.flows.printObjects()
           )
         )

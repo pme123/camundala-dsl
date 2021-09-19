@@ -58,7 +58,7 @@ trait ToCamundaBpmn:
   extension (process: BpmnProcess)
     def toCamunda(): ToCamundable[IO[ToCamundaException, Unit]] =
       for {
-        _ <- ZIO.collect(process.nodes.nodes ++ process.flows.flows) { n =>
+        _ <- ZIO.collect(process.processNodes.nodes ++ process.flows.flows) { n =>
           n.toCamunda().mapError(Some(_))
         }
         cProcess <- ZIO(
