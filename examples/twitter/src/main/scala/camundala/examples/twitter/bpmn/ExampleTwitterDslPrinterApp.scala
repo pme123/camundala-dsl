@@ -9,7 +9,7 @@ object ExampleTwitterDslPrinterApp extends zio.App, DSL:
   def run(args: List[String]) =
     runnerLogic.exitCode
 
-  import ExampleTwitter._ 
+  import TwitterProcesses._ 
 
   private lazy val runnerLogic =
     DslPrinterRunner(

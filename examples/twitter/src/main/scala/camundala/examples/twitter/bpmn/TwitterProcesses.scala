@@ -4,10 +4,10 @@ package bpmn
 
 import java.util
 import collection.JavaConverters.*
-import camundala.api
-import camundala.model.InOutObject
+import camundala.examples.twitter.bpmn.TwitterApi.{CreateTweet, ReviewTweet}
+import camundala.model.{BpmnsConfig, InOutObject}
 
-object ExampleTwitter extends ProjectDSL:
+object TwitterProcesses extends ProjectDSL:
 
   final val cawemoFolder = "./examples/twitter/cawemo"
 
@@ -15,7 +15,7 @@ object ExampleTwitter extends ProjectDSL:
 
   final val generatedFolder = "./examples/twitter/src/main/resources"
 
-  val config = bpmnsConfig
+  val config: BpmnsConfig = bpmnsConfig
     .bpmns(
       bpmns.example__twitter
     )
@@ -47,8 +47,8 @@ object ExampleTwitter extends ProjectDSL:
           flows.SequenceFlow_9__TweetWritten__ReviewTweet,
           flows.SequenceFlow_2__ReviewTweet__Approved
         )
-        .input(TwitterIn())
-        .output(TwitterOut())
+        .input(CreateTweet())
+        .output(ReviewTweet())
 
       object userTasks:
 
@@ -169,4 +169,4 @@ object ExampleTwitter extends ProjectDSL:
     end processes
   end bpmns
 
-end ExampleTwitter
+end TwitterProcesses

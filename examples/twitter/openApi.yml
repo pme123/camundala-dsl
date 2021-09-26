@@ -1,0 +1,217 @@
+openapi: 3.0.3
+info:
+  title: Twitter Process API
+  version: '1.0'
+  description: 'Generated Open API:
+
+    * openApi.yml: Documentation of the Processes.
+
+    WARNING: This is an experimental way and not approved.
+
+
+    This example demonstrates how you can use a BPMN process and the Tweeter API to
+    build a simple Twitter client.
+
+
+    >This is the [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter)
+
+    '
+servers:
+- url: http://localhost:8080/engine-rest
+paths:
+  /process-definition/key/{key}/tenant-id/{tenant-id}/start:
+    post:
+      tags:
+      - TwitterDemoProcess
+      summary: 'Camunda: TwitterDemoProcess'
+      description: 'This runs the Twitter Approvement Process.
+
+        '
+      operationId: 'Camunda: TwitterDemoProcess'
+      parameters:
+      - name: key
+        in: path
+        description: The processDefinitionKey of the Process
+        required: true
+        schema:
+          type: string
+        example: TwitterDemoProcess
+      - name: tenant-id
+        in: path
+        description: The tenant, the process is deployed for.
+        required: true
+        schema:
+          type: string
+        example: MyTENANT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartProcessIn_In'
+            examples:
+              standard:
+                value:
+                  variables:
+                    inputJson:
+                      value:
+                        email: me@myself.com
+                        content: Test Tweet
+                      type: Json
+                  withVariablesInReturn: true
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartProcessOut_Out'
+              examples:
+                standard:
+                  value:
+                    variables:
+                      outputJson:
+                        value: {}
+                        type: Json
+                    id: f150c3f1-13f5-11ec-936e-0242ac1d0007
+                    definitionId: processDefinitionKey:1:6fe66514-12ea-11ec-936e-0242ac1d0007
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadStuffHappened
+                    message: There is a real Problem.
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                defaultError:
+                  value:
+                    type: SomeExceptionClass
+                    message: a detailed message
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                InternalServerError:
+                  value:
+                    type: InternalServerError
+                    message: Check the Server Logs!
+components:
+  schemas:
+    CamundaError:
+      required:
+      - type
+      - message
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+    CreateTweet:
+      required:
+      - email
+      - content
+      type: object
+      properties:
+        email:
+          type: string
+          description: The email address of the creator
+        content:
+          type: string
+          description: The conten of the Tweet.
+      description: Every employee may create a Tweet.
+    InOutJson_In:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          $ref: '#/components/schemas/CreateTweet'
+        type:
+          type: string
+          description: This is always Json
+      description: The Input as a Domain Object.
+    InOutJson_Out:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          $ref: '#/components/schemas/NoInputsOutputs'
+        type:
+          type: string
+          description: This is always Json
+      description: The Output as a Domain Object.
+    InVariables_In:
+      required:
+      - inputJson
+      type: object
+      properties:
+        inputJson:
+          $ref: '#/components/schemas/InOutJson_In'
+      description: 'The input is one object, as Camunda has a complex value definition.
+
+        Otherwise you would need to wrap each input attribute.
+
+        '
+    NoInputsOutputs:
+      type: object
+    OutVariables_Out:
+      required:
+      - outputJson
+      type: object
+      properties:
+        outputJson:
+          $ref: '#/components/schemas/InOutJson_Out'
+      description: The Process Variables - Be aware that returns everything stored
+        in the Process - even Passwords
+    StartProcessIn_In:
+      required:
+      - variables
+      - withVariablesInReturn
+      type: object
+      properties:
+        variables:
+          $ref: '#/components/schemas/InVariables_In'
+        businessKey:
+          type: string
+          description: The business key of the process instance.
+        withVariablesInReturn:
+          type: boolean
+          description: Set to false will not return the Process Variables.
+      description: 'A JSON object with the following properties: (at least an empty
+        JSON object {} or an empty request body)'
+    StartProcessOut_Out:
+      required:
+      - variables
+      - id
+      - definitionId
+      type: object
+      properties:
+        variables:
+          $ref: '#/components/schemas/OutVariables_Out'
+        id:
+          type: string
+          description: The id of the process instance.
+        definitionId:
+          type: string
+          description: The id of the process definition.
+        businessKey:
+          type: string
+          description: The business key of the process instance.
+      description: A JSON object representing the newly created process instance.

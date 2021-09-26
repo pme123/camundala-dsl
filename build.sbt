@@ -9,7 +9,7 @@ lazy val root = project
   .settings(
     name := "camundala"
   )
-  .aggregate(dsl, exampleTwitter, exampleInvoice)
+  .aggregate(dsl, api, exampleTwitter, exampleInvoice)
 
 def projectSettings(projName: String): Seq[Def.Setting[_]] = Seq(
   name := s"camundala-$projName",
@@ -43,6 +43,21 @@ lazy val dsl = project
     crossScalaVersions := Seq(scala3Version, scala2Version)
   )
 
+val tapirVersion = "0.18.3"
+lazy val api = project
+  .in(file("./api"))
+  .settings(projectSettings("api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
+      "com.lihaoyi" %% "os-lib" % "0.7.8",
+    ),
+    // To cross compile with Dotty and Scala 2
+    crossScalaVersions := Seq(scala3Version, scala2Version)
+  )
+
 // EXAMPLES
 val springBootVersion = "2.4.4"
 val camundaVersion = "7.15.0"
@@ -62,9 +77,8 @@ lazy val exampleTwitter = project
   .settings(projectSettings("example-twitter"))
   .settings(
     libraryDependencies ++= camundaDependencies :+
-      "org.twitter4j" % "twitter4j-core" % twitter4jVersion :+
-      "io.github.pme123" %% "camundala-api" % "0.1.0-SNAPSHOT"
-  ).dependsOn(dsl)
+      "org.twitter4j" % "twitter4j-core" % twitter4jVersion
+  ).dependsOn(dsl, api)
 
 lazy val exampleInvoice = project
   .in(file("./examples/invoice"))

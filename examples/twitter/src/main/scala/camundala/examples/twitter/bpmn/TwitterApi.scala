@@ -8,19 +8,9 @@ import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 import sttp.tapir.{Endpoint, Schema, SchemaType}
 import api.*
-import model.InOutObject
+import model.{InOutObject, NoInputsOutputs}
 
-object TwitterApi extends APICreator {
-
-  def title = "Twitter Process API"
-
-  def version = "1.0"
-
-  def apiEndpoints = Seq(Twitter)
-
-}
-
-object Twitter extends ApiEndpoints, ApiDSL:
+object TwitterApi extends ApiDSL:
   val name = "TwitterDemoProcess"
   override def tenantId: Option[String] = Some("MyTENANT")
 
@@ -45,18 +35,15 @@ object Twitter extends ApiEndpoints, ApiDSL:
 
   lazy val apiEndpoints =
     Seq(
-      api(name)
-        .descr(descr)
-      /*   createPostmanEndpoint(
-        name,
-        descr,
-        RequestInput(Map("standard" -> standardSample, "other input" -> SampleIn(firstName = "Heidi"))),
-        RequestOutput.ok(Map("standard" -> SampleOut(), "other outpt" -> SampleOut(success = -1))),
-        List(
-          badRequest.example(CamundaError("BadStuffHappened", "There is a real Problem.")),
-          notFound.defaultExample,
-          serverError.example("InternalServerError", "Check the Server Logs!")
-        ),
-        Some("sample-example")
-      )*/
+          createPostmanEndpoint(
+         name,
+         descr,
+         RequestInput(CreateTweet()),
+         RequestOutput.ok(NoInputsOutputs),
+         List(
+           badRequest.example(CamundaError("BadStuffHappened", "There is a real Problem.")),
+           notFound.defaultExample,
+           serverError.example("InternalServerError", "Check the Server Logs!")
+         )
+       )
     )
