@@ -17,17 +17,17 @@ info:
 
     '
 servers:
-- url: http://localhost:8080/engine-rest
+- url: http://localhost:8887/engine-rest
 paths:
-  /process-definition/key/{key}/tenant-id/{tenant-id}/start:
+  /process-definition/key/{key}/start:
     post:
       tags:
       - TwitterDemoProcess
-      summary: 'Camunda: TwitterDemoProcess'
+      summary: 'StartProcess: TwitterDemoProcess'
       description: 'This runs the Twitter Approvement Process.
 
         '
-      operationId: 'Camunda: TwitterDemoProcess'
+      operationId: 'StartProcess: TwitterDemoProcess'
       parameters:
       - name: key
         in: path
@@ -36,27 +36,21 @@ paths:
         schema:
           type: string
         example: TwitterDemoProcess
-      - name: tenant-id
-        in: path
-        description: The tenant, the process is deployed for.
-        required: true
-        schema:
-          type: string
-        example: MyTENANT
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StartProcessIn_In'
+              $ref: '#/components/schemas/StartProcessIn'
             examples:
               standard:
                 value:
                   variables:
-                    inputJson:
-                      value:
-                        email: me@myself.com
-                        content: Test Tweet
-                      type: Json
+                    email:
+                      value: me@myself.com
+                      type: String
+                    content:
+                      value: Test Tweet
+                      type: String
                   withVariablesInReturn: true
         required: true
       responses:
@@ -110,6 +104,69 @@ paths:
                     message: Check the Server Logs!
 components:
   schemas:
+    CBoolean:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: boolean
+        type:
+          type: string
+    CDouble:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+        type:
+          type: string
+    CFloat:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: number
+          format: float
+        type:
+          type: string
+    CInteger:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: integer
+        type:
+          type: string
+    CLong:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+        type:
+          type: string
+    CString:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: string
+        type:
+          type: string
     CamundaError:
       required:
       - type
@@ -120,31 +177,14 @@ components:
           type: string
         message:
           type: string
-    CreateTweet:
-      required:
-      - email
-      - content
-      type: object
-      properties:
-        email:
-          type: string
-          description: The email address of the creator
-        content:
-          type: string
-          description: The conten of the Tweet.
-      description: Every employee may create a Tweet.
-    InOutJson_In:
-      required:
-      - value
-      - type
-      type: object
-      properties:
-        value:
-          $ref: '#/components/schemas/CreateTweet'
-        type:
-          type: string
-          description: This is always Json
-      description: The Input as a Domain Object.
+    CamundaVariable:
+      oneOf:
+      - $ref: '#/components/schemas/CBoolean'
+      - $ref: '#/components/schemas/CDouble'
+      - $ref: '#/components/schemas/CFloat'
+      - $ref: '#/components/schemas/CInteger'
+      - $ref: '#/components/schemas/CLong'
+      - $ref: '#/components/schemas/CString'
     InOutJson_Out:
       required:
       - value
@@ -157,18 +197,10 @@ components:
           type: string
           description: This is always Json
       description: The Output as a Domain Object.
-    InVariables_In:
-      required:
-      - inputJson
+    Map_CamundaVariable:
       type: object
-      properties:
-        inputJson:
-          $ref: '#/components/schemas/InOutJson_In'
-      description: 'The input is one object, as Camunda has a complex value definition.
-
-        Otherwise you would need to wrap each input attribute.
-
-        '
+      additionalProperties:
+        $ref: '#/components/schemas/CamundaVariable'
     NoInputsOutputs:
       type: object
     OutVariables_Out:
@@ -180,14 +212,14 @@ components:
           $ref: '#/components/schemas/InOutJson_Out'
       description: The Process Variables - Be aware that returns everything stored
         in the Process - even Passwords
-    StartProcessIn_In:
+    StartProcessIn:
       required:
       - variables
       - withVariablesInReturn
       type: object
       properties:
         variables:
-          $ref: '#/components/schemas/InVariables_In'
+          $ref: '#/components/schemas/Map_CamundaVariable'
         businessKey:
           type: string
           description: The business key of the process instance.

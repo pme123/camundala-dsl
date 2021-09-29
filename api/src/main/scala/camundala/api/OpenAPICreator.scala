@@ -12,7 +12,7 @@ trait APICreator extends App, ApiDSL :
   def docOpenApi: Path = pwd / "openApi.yml"
 
   def title: String
-
+  def serverPort = 8080
   def contact: Option[Contact] = None
 
   def description: Option[String] = Some(
@@ -23,15 +23,15 @@ trait APICreator extends App, ApiDSL :
 
   def version: String
 
-  def servers = List(Server("http://localhost:8080/engine-rest"))
+  def servers = List(Server(s"http://localhost:$serverPort/engine-rest"))
 
   def info = Info(title, version, description, contact = contact)
 
-  def apiEndpoints: Seq[Endpoint[_, _, _, _]]
+  def apiEndpoints: Seq[ApiEndpoint]
 
   def openApi: OpenAPI =
     openAPIDocsInterpreter
-      .toOpenAPI(apiEndpoints, info)
+      .toOpenAPI(apiEndpoints.map(_.create()), info)
       .servers(servers)
 
   lazy val openAPIDocsInterpreter = OpenAPIDocsInterpreter(docsOptions = OpenAPIDocsOptions.default.copy(defaultDecodeFailureOutput = _ => None))

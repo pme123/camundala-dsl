@@ -1,11 +1,13 @@
 package camundala
 package api
 
+import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto.*
 import sttp.model.StatusCode
 import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 import sttp.tapir.{Endpoint, Schema, SchemaType}
+import ApiEndpoint.*
 
 object TestApi extends APICreator {
 
@@ -13,14 +15,14 @@ object TestApi extends APICreator {
 
   def version = "1.0"
 
-  def apiEndpoints: Seq[Endpoint[_, _, _, _]] = Sample.apiEndpoints
+  def apiEndpoints: Seq[ApiEndpoint] = Sample.apiEndpoints
 
 }
 
 
 object Sample extends ApiDSL :
   val name = "sample-process"
-  override def tenantId: Option[String] = Some("MyTENANT")
+  implicit override def tenantId: Option[String] = Some("MyTENANT")
 
   @description("My Sample input object to make the point.")
   case class SampleIn(
@@ -55,9 +57,9 @@ object Sample extends ApiDSL :
        |""".stripMargin
 
 
-  lazy val apiEndpoints =
+  lazy val apiEndpoints: Seq[ApiEndpoint] =
     Seq(
-      createPostmanEndpoint(
+      StartProcess(
         name,
         descr,
         RequestInput(Map("standard" -> standardSample, "other input" -> SampleIn(firstName = "Heidi"))),

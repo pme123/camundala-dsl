@@ -8,6 +8,8 @@ import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 import sttp.tapir.{Endpoint, Schema, SchemaType}
 import api.*
+import ApiEndpoint.*
+import io.circe.{Decoder, Encoder}
 import model.{InOutObject, NoInputsOutputs}
 
 object TwitterApi extends ApiDSL:
@@ -33,17 +35,19 @@ object TwitterApi extends ApiDSL:
     s"""This runs the Twitter Approvement Process.
        |""".stripMargin
 
-  lazy val apiEndpoints =
+  lazy val apiEndpoints: Seq[ApiEndpoint] =
     Seq(
-          createPostmanEndpoint(
-         name,
-         descr,
-         RequestInput(CreateTweet()),
-         RequestOutput.ok(NoInputsOutputs),
-         List(
-           badRequest.example(CamundaError("BadStuffHappened", "There is a real Problem.")),
-           notFound.defaultExample,
-           serverError.example("InternalServerError", "Check the Server Logs!")
-         )
-       )
+      StartProcess(
+        name,
+        descr,
+        RequestInput(CreateTweet()),
+        RequestOutput.ok(NoInputsOutputs),
+        List(
+          badRequest.example(
+            CamundaError("BadStuffHappened", "There is a real Problem.")
+          ),
+          notFound.defaultExample,
+          serverError.example("InternalServerError", "Check the Server Logs!")
+        )
+      )
     )
