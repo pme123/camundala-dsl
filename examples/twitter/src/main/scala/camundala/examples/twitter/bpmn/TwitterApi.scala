@@ -8,26 +8,28 @@ import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 import sttp.tapir.{Endpoint, Schema, SchemaType}
 import api.*
-import ApiEndpoint.*
+import api.CamundaVariable.*
 import io.circe.{Decoder, Encoder}
-import model.{InOutObject, NoInputsOutputs}
 
-object TwitterApi extends ApiDSL:
+object TwitterApi extends EndpointDSL:
   val name = "TwitterDemoProcess"
-  override def tenantId: Option[String] = Some("MyTENANT")
+  override implicit def tenantId: Option[String] = Some("MyTENANT")
 
-  @description("Every employee may create a Tweet.")
+  @description("""Every employee may create a Tweet.
+                 |
+                 |- email:   The email address of the creator.
+                 |- content: The content of the Tweet.
+                 |""".stripMargin)
   case class CreateTweet(
-      @description("The email address of the creator")
-      email: String = "me@myself.com",
-      @description("The conten of the Tweet.")
-      content: String = "Test Tweet"
+      // @description("Variables cannot be described as it is only possible to have one description per type!")
+      email: CString = "me@myself.com",
+      content: CString = "Test Tweet"
   ) extends InOutObject
 
-  @description("Every Tweet has to be accepted by the Boss")
+  @description("""Every Tweet has to be accepted by the Boss.""")
   case class ReviewTweet(
       @description("If true, the Boss accepted the Tweet")
-      approved: Boolean = true
+      approved: CBoolean = true
   ) extends InOutObject
 
   lazy val standardSample: CreateTweet = CreateTweet()
@@ -37,17 +39,9 @@ object TwitterApi extends ApiDSL:
 
   lazy val apiEndpoints: Seq[ApiEndpoint] =
     Seq(
-      StartProcess(
+      StartProcessInstance(
         name,
         descr,
-        RequestInput(CreateTweet()),
-        RequestOutput.ok(NoInputsOutputs),
-        List(
-          badRequest.example(
-            CamundaError("BadStuffHappened", "There is a real Problem.")
-          ),
-          notFound.defaultExample,
-          serverError.example("InternalServerError", "Check the Server Logs!")
-        )
+        inExample(CreateTweet()),
       )
     )

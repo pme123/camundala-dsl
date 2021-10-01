@@ -7,7 +7,7 @@ import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.openapi.circe.yaml.*
 import sttp.tapir.openapi.{Contact, Info, OpenAPI, Server}
 
-trait APICreator extends App, ApiDSL :
+trait APICreator extends App, EndpointDSL :
 
   def docOpenApi: Path = pwd / "openApi.yml"
 

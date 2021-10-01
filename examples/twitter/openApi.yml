@@ -23,11 +23,11 @@ paths:
     post:
       tags:
       - TwitterDemoProcess
-      summary: 'StartProcess: TwitterDemoProcess'
+      summary: 'StartProcessInstance: TwitterDemoProcess'
       description: 'This runs the Twitter Approvement Process.
 
         '
-      operationId: 'StartProcess: TwitterDemoProcess'
+      operationId: 'StartProcessInstance: TwitterDemoProcess'
       parameters:
       - name: key
         in: path
@@ -40,7 +40,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StartProcessIn'
+              $ref: '#/components/schemas/StartProcessIn_In'
             examples:
               standard:
                 value:
@@ -63,10 +63,7 @@ paths:
               examples:
                 standard:
                   value:
-                    variables:
-                      outputJson:
-                        value: {}
-                        type: Json
+                    variables: {}
                     id: f150c3f1-13f5-11ec-936e-0242ac1d0007
                     definitionId: processDefinitionKey:1:6fe66514-12ea-11ec-936e-0242ac1d0007
         '400':
@@ -78,8 +75,12 @@ paths:
               examples:
                 standardExample:
                   value:
-                    type: BadStuffHappened
-                    message: There is a real Problem.
+                    type: BadRequest
+                    message: The instance could not be created due to an invalid variable
+                      value, for example if the value could not be parsed to an Integer
+                      value or the passed variable type is not supported. See the
+                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
         '404':
           description: ''
           content:
@@ -87,10 +88,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/CamundaError'
               examples:
-                defaultError:
+                standardExample:
                   value:
-                    type: SomeExceptionClass
-                    message: a detailed message
+                    type: BadRequest
+                    message: The instance could not be created due to a non existing
+                      process definition key. See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
         '500':
           description: ''
           content:
@@ -98,65 +101,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/CamundaError'
               examples:
-                InternalServerError:
+                standardExample:
                   value:
                     type: InternalServerError
-                    message: Check the Server Logs!
+                    message: The instance could not be created successfully. See the
+                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
 components:
   schemas:
-    CBoolean:
-      required:
-      - value
-      - type
-      type: object
-      properties:
-        value:
-          type: boolean
-        type:
-          type: string
-    CDouble:
-      required:
-      - value
-      - type
-      type: object
-      properties:
-        value:
-          type: number
-          format: double
-        type:
-          type: string
-    CFloat:
-      required:
-      - value
-      - type
-      type: object
-      properties:
-        value:
-          type: number
-          format: float
-        type:
-          type: string
-    CInteger:
-      required:
-      - value
-      - type
-      type: object
-      properties:
-        value:
-          type: integer
-        type:
-          type: string
-    CLong:
-      required:
-      - value
-      - type
-      type: object
-      properties:
-        value:
-          type: integer
-          format: int64
-        type:
-          type: string
     CString:
       required:
       - value
@@ -177,49 +129,36 @@ components:
           type: string
         message:
           type: string
-    CamundaVariable:
-      oneOf:
-      - $ref: '#/components/schemas/CBoolean'
-      - $ref: '#/components/schemas/CDouble'
-      - $ref: '#/components/schemas/CFloat'
-      - $ref: '#/components/schemas/CInteger'
-      - $ref: '#/components/schemas/CLong'
-      - $ref: '#/components/schemas/CString'
-    InOutJson_Out:
+    CreateTweet:
       required:
-      - value
-      - type
+      - email
+      - content
       type: object
       properties:
-        value:
-          $ref: '#/components/schemas/NoInputsOutputs'
-        type:
-          type: string
-          description: This is always Json
-      description: The Output as a Domain Object.
-    Map_CamundaVariable:
+        email:
+          $ref: '#/components/schemas/CString'
+        content:
+          $ref: '#/components/schemas/CString'
+      description: 'Every employee may create a Tweet.
+
+
+        - email:   The email address of the creator.
+
+        - content: The content of the Tweet.
+
+        '
+    NoOutput:
       type: object
-      additionalProperties:
-        $ref: '#/components/schemas/CamundaVariable'
-    NoInputsOutputs:
-      type: object
-    OutVariables_Out:
-      required:
-      - outputJson
-      type: object
-      properties:
-        outputJson:
-          $ref: '#/components/schemas/InOutJson_Out'
       description: The Process Variables - Be aware that returns everything stored
-        in the Process - even Passwords
-    StartProcessIn:
+        in the Process.
+    StartProcessIn_In:
       required:
       - variables
       - withVariablesInReturn
       type: object
       properties:
         variables:
-          $ref: '#/components/schemas/Map_CamundaVariable'
+          $ref: '#/components/schemas/CreateTweet'
         businessKey:
           type: string
           description: The business key of the process instance.
@@ -236,7 +175,7 @@ components:
       type: object
       properties:
         variables:
-          $ref: '#/components/schemas/OutVariables_Out'
+          $ref: '#/components/schemas/NoOutput'
         id:
           type: string
           description: The id of the process instance.

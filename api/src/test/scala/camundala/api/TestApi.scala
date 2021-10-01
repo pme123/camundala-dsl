@@ -7,7 +7,6 @@ import sttp.model.StatusCode
 import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 import sttp.tapir.{Endpoint, Schema, SchemaType}
-import ApiEndpoint.*
 
 object TestApi extends APICreator {
 
@@ -20,7 +19,7 @@ object TestApi extends APICreator {
 }
 
 
-object Sample extends ApiDSL :
+object Sample extends EndpointDSL :
   val name = "sample-process"
   implicit override def tenantId: Option[String] = Some("MyTENANT")
 
@@ -59,7 +58,7 @@ object Sample extends ApiDSL :
 
   lazy val apiEndpoints: Seq[ApiEndpoint] =
     Seq(
-      StartProcess(
+      StartProcessInstance(
         name,
         descr,
         RequestInput(Map("standard" -> standardSample, "other input" -> SampleIn(firstName = "Heidi"))),
