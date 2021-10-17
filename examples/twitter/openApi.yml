@@ -101,8 +101,90 @@ paths:
                     message: The instance could not be created successfully. See the
                       [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
+  /task/key/{taskId}/complete:
+    post:
+      tags:
+      - Review Task Complete
+      summary: 'CompleteTask: Review Task Complete'
+      description: ''
+      operationId: 'CompleteTask: Review Task Complete'
+      parameters:
+      - name: taskId
+        in: path
+        description: The taskId of the Form to complete.
+        required: true
+        schema:
+          type: string
+        example: '{{taskId}}'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteTaskIn_In'
+            examples:
+              Tweet accepted:
+                value:
+                  variables:
+                    approved:
+                      value: true
+                      type: Boolean
+                  withVariablesInReturn: true
+              Tweet rejected:
+                value:
+                  variables:
+                    approved:
+                      value: false
+                      type: Boolean
+                  withVariablesInReturn: true
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteTaskOut_Out'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadRequest
+                    message: The instance could not be created due to an invalid variable
+                      value, for example if the value could not be parsed to an Integer
+                      value or the passed variable type is not supported. See the
+                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: InternalServerError
+                    message: The instance could not be created successfully. See the
+                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
 components:
   schemas:
+    CBoolean:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: boolean
+        type:
+          type: string
+      description: If true, the Boss accepted the Tweet
     CString:
       required:
       - value
@@ -123,6 +205,28 @@ components:
           type: string
         message:
           type: string
+    CompleteTaskIn_In:
+      required:
+      - variables
+      - withVariablesInReturn
+      type: object
+      properties:
+        variables:
+          $ref: '#/components/schemas/ReviewTweet'
+        withVariablesInReturn:
+          type: boolean
+          description: Set to false will not return the Process Variables and the
+            Result Status is 204.
+      description: 'A JSON object with the following properties: (at least an empty
+        JSON object {} or an empty request body)'
+    CompleteTaskOut_Out:
+      required:
+      - variables
+      type: object
+      properties:
+        variables:
+          $ref: '#/components/schemas/NoOutput'
+      description: A JSON object representing the newly created process instance.
     CreateTweet:
       required:
       - email
@@ -145,6 +249,14 @@ components:
       type: object
       description: The Process Variables - Be aware that returns everything stored
         in the Process.
+    ReviewTweet:
+      required:
+      - approved
+      type: object
+      properties:
+        approved:
+          $ref: '#/components/schemas/CBoolean'
+      description: Every Tweet has to be accepted by the Boss.
     StartProcessIn_In:
       required:
       - variables

@@ -10,11 +10,19 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
   implicit def tenantId: Option[String] = None
 
   def startProcessInstance[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
   ](name: String) =
     StartProcessInstance[In, Out](
       CamundaRestApi(name, requestErrorOutputs = standardErrors)
+    )
+
+  def completeTask[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+  ](name: String) =
+    CompleteTask[In, Out](
+      CamundaRestApi(name, requestErrorOutputs = List(badRequest, serverError))
     )
 
   extension [

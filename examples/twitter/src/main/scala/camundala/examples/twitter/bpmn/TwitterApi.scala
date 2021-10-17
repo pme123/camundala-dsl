@@ -41,5 +41,8 @@ object TwitterApi extends EndpointDSL:
     Seq(
       startProcessInstance[CreateTweet, NoOutput](name)
         .descr(descr)
-        .inExample(CreateTweet())
+        .inExample(CreateTweet()),
+      completeTask[ReviewTweet, NoOutput]("Review Task Complete")
+        .inExample("Tweet accepted", ReviewTweet())
+        .inExample("Tweet rejected", ReviewTweet(false))
     )

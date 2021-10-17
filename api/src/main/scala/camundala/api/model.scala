@@ -5,7 +5,7 @@ import io.circe.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import io.circe.syntax.*
-import sttp.tapir.{Endpoint, EndpointOutput}
+import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput}
 
 type ExampleName = String
 
@@ -99,6 +99,18 @@ case class StartProcessIn[T <: Product](
     withVariablesInReturn: Boolean = true
 )
 
+@description(
+  "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
+)
+case class CompleteTaskIn[T <: Product](
+    // use the description of the object
+    variables: T,
+    @description(
+      "Set to false will not return the Process Variables and the Result Status is 204."
+    )
+    withVariablesInReturn: Boolean = true
+)
+
 case class RequestInput[T <: Product](examples: Map[String, T]):
   def :+(label: String, example: T) =
     copy(examples = examples + (label -> example))
@@ -160,6 +172,14 @@ case class StartProcessOut[T <: Product](
     businessKey: Option[String] = None
 )
 
+@description("A JSON object representing the newly created process instance.")
+case class CompleteTaskOut[T <: Product](
+    @description(
+      "The Process Variables - Be aware that returns everything stored in the Process."
+    )
+    variables: T
+)
+
 case class CamundaRestApi[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
@@ -171,43 +191,7 @@ case class CamundaRestApi[
     requestErrorOutputs: List[RequestErrorOutput] = Nil,
     businessKey: Option[String] = None
 ):
-  def inMapper()(implicit
-      encoder: Encoder[In],
-      decoder: Decoder[In],
-      schema: Schema[In]
-  ) =
-    jsonBody[StartProcessIn[In]]
-      .examples(requestInput.examples.map { case (name, ex) =>
-        Example(
-          StartProcessIn(ex, businessKey),
-          Some(name),
-          None
-        )
-      }.toList)
 
-  def outMapper()(implicit
-      encoder: Encoder[Out],
-      decoder: Decoder[Out],
-      schema: Schema[Out]
-  ) =
-    oneOf[StartProcessOut[Out]](
-      oneOfMappingValueMatcher(
-        requestOutput.statusCode,
-        jsonBody[StartProcessOut[Out]]
-          .examples(requestOutput.examples.map { case (name, ex: Out) =>
-            Example(
-              StartProcessOut(
-                businessKey = businessKey,
-                variables = ex
-              ),
-              Some(name),
-              None
-            )
-          }.toList)
-      ) { case _ =>
-        true
-      }
-    )
   def outputErrors(): EndpointOutput[CamundaError] =
     requestErrorOutputs match
       case Nil =>
@@ -229,6 +213,38 @@ case class CamundaRestApi[
     ) { case _ =>
       true
     }
+
+  def inMapper[T <: Product: Encoder: Decoder: Schema](
+      createInput: (example: In, businessKey: Option[String]) => T
+  ): EndpointInput[_] =
+    jsonBody[T]
+      .examples(requestInput.examples.map { case (label, ex) =>
+        Example(
+          createInput(ex, businessKey),
+          Some(label),
+          None
+        )
+      }.toList)
+
+  def outMapper[T <: Product: Encoder: Decoder: Schema](
+      createOutput: (example: Out, businessKey: Option[String]) => T
+  ) =
+    oneOf[T](
+      oneOfMappingValueMatcher(
+        requestOutput.statusCode,
+        jsonBody[T]
+          .examples(requestOutput.examples.map { case (name, ex: Out) =>
+            Example(
+              createOutput(ex, businessKey),
+              Some(name),
+              None
+            )
+          }.toList)
+      ) { case _ =>
+        true
+      }
+    )
+
 end CamundaRestApi
 
 sealed trait ApiEndpoint[
@@ -241,6 +257,8 @@ sealed trait ApiEndpoint[
   def name: String = restApi.name
   def descr: Option[String] = restApi.descr
   def outStatusCode: StatusCode
+  protected def inMapper(): EndpointInput[_]
+  protected def outMapper(): EndpointOutput[_]
 
   def withRestApi(restApi: CamundaRestApi[In, Out]): T
   def withDescr(description: String): T =
@@ -255,7 +273,9 @@ sealed trait ApiEndpoint[
     )
 
   def withOutExample(example: Out): T =
-    withRestApi(restApi.copy(requestOutput = RequestOutput(outStatusCode, example)))
+    withRestApi(
+      restApi.copy(requestOutput = RequestOutput(outStatusCode, example))
+    )
 
   def withOutExample(label: String, example: Out): T =
     withRestApi(
@@ -268,6 +288,9 @@ sealed trait ApiEndpoint[
       .tag(name)
       .summary(s"${getClass.getSimpleName}: $name")
       .description(descr.getOrElse(""))
+      .in(inMapper())
+      .out(outMapper())
+      .errorOut(restApi.outputErrors())
 
 end ApiEndpoint
 
@@ -289,9 +312,6 @@ case class StartProcessInstance[
     baseEndpoint
       .in(postPath(name))
       .post
-      .in(restApi.inMapper())
-      .out(restApi.outMapper())
-      .errorOut(restApi.outputErrors())
 
   private def postPath(name: String)(implicit tenantId: Option[String]) =
     val basePath =
@@ -300,12 +320,60 @@ case class StartProcessInstance[
       .map(id => basePath / "tenant-id" / tenantIdPath(id) / "start")
       .getOrElse(basePath / "start")
 
+  protected def inMapper(): EndpointInput[_] =
+    restApi.inMapper[StartProcessIn[In]] {
+      (example: In, businessKey: Option[String]) =>
+        StartProcessIn(example, businessKey)
+    }
+
+  protected def outMapper() = restApi.outMapper[StartProcessOut[Out]] {
+    (example: Out, businessKey: Option[String]) =>
+      StartProcessOut(example, businessKey = businessKey)
+  }
+
 end StartProcessInstance
+
+case class CompleteTask[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+](
+    restApi: CamundaRestApi[In, Out]
+) extends ApiEndpoint[In, Out, CompleteTask[In, Out]]:
+
+  val outStatusCode = StatusCode.Ok
+
+  def withRestApi(
+      restApi: CamundaRestApi[In, Out]
+  ): CompleteTask[In, Out] =
+    copy(restApi = restApi)
+
+  def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _] =
+    baseEndpoint
+      .in(postPath)
+      .post
+
+  private lazy val postPath =
+    "task" / "key" / taskIdPath() / "complete"
+
+  protected def inMapper(): EndpointInput[_] =
+    restApi.inMapper[CompleteTaskIn[In]] { (example: In, _) =>
+      CompleteTaskIn(example)
+    }
+  protected def outMapper() = restApi.outMapper[CompleteTaskOut[Out]] {
+    (example: Out, _) =>
+      CompleteTaskOut(example)
+  }
+end CompleteTask
 
 private def processDefinitionKeyPath(name: String) =
   path[String]("key")
     .description("The processDefinitionKey of the Process")
     .example(name)
+
+private def taskIdPath() =
+  path[String]("taskId")
+    .description("The taskId of the Form to complete.")
+    .example("{{taskId}}")
 
 private def tenantIdPath(id: String) =
   path[String]("tenant-id")
