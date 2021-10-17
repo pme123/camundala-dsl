@@ -3,22 +3,15 @@ package api
 
 import io.circe.*
 import io.circe.generic.auto.*
-import sttp.model.StatusCode
-import sttp.tapir.EndpointIO.Example
-import sttp.tapir.EndpointOutput.Void
-import sttp.tapir.Schema.annotations.description
-import sttp.tapir.*
 import sttp.tapir.generic.auto.*
-import sttp.tapir.json.circe.jsonBody
-import cats.syntax.functor.*
-import io.circe.{Decoder, Encoder}
 import io.circe.syntax.*
+import sttp.tapir.{Endpoint, EndpointOutput}
 
 type ExampleName = String
 
-case class RequestErrorOutput[Err](
+case class RequestErrorOutput(
     statusCode: StatusCode,
-    examples: Map[ExampleName, Err] = Map.empty
+    examples: Map[ExampleName, CamundaError] = Map.empty
 )
 
 case class CamundaError(
@@ -106,12 +99,16 @@ case class StartProcessIn[T <: Product](
     withVariablesInReturn: Boolean = true
 )
 
-case class RequestInput[T](examples: Map[String, T])
+case class RequestInput[T <: Product](examples: Map[String, T]):
+  def :+(label: String, example: T) =
+    copy(examples = examples + (label -> example))
 
-object RequestInput {
+object RequestInput:
   def apply[T <: Product](example: T) =
     new RequestInput[T](Map("standard" -> example))
-}
+
+  def apply[T <: Product]() =
+    new RequestInput[T](Map.empty)
 
 case class RequestOutput[T <: Product](
     statusCode: StatusCode,
@@ -119,6 +116,9 @@ case class RequestOutput[T <: Product](
 )
 
 object RequestOutput {
+
+  def apply[Out <: Product](): RequestOutput[Out] =
+    RequestOutput(StatusCode.Ok, Map.empty)
 
   def apply[Out <: Product](
       statusCode: StatusCode,
@@ -157,3 +157,144 @@ case class StartProcessOut[T <: Product](
     @description("The business key of the process instance.")
     businessKey: Option[String] = None
 )
+
+case class CamundaRestApi[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+](
+    name: String,
+    descr: Option[String] = None,
+    requestInput: RequestInput[In] = RequestInput[In](),
+    requestOutput: RequestOutput[Out] = RequestOutput[Out](),
+    requestErrorOutputs: List[RequestErrorOutput] = Nil,
+    businessKey: Option[String] = None
+):
+  def inMapper()(implicit
+      encoder: Encoder[In],
+      decoder: Decoder[In],
+      schema: Schema[In]
+  ) =
+    jsonBody[StartProcessIn[In]]
+      .examples(requestInput.examples.map { case (name, ex) =>
+        Example(
+          StartProcessIn(ex, businessKey),
+          Some(name),
+          None
+        )
+      }.toList)
+
+  def outMapper()(implicit
+      encoder: Encoder[Out],
+      decoder: Decoder[Out],
+      schema: Schema[Out]
+  ) =
+    oneOf[StartProcessOut[Out]](
+      oneOfMappingValueMatcher(
+        requestOutput.statusCode,
+        jsonBody[StartProcessOut[Out]]
+          .examples(requestOutput.examples.map { case (name, ex: Out) =>
+            Example(
+              StartProcessOut(
+                businessKey = businessKey,
+                variables = ex
+              ),
+              Some(name),
+              None
+            )
+          }.toList)
+      ) { case _ =>
+        true
+      }
+    )
+  def outputErrors(): EndpointOutput[CamundaError] =
+    requestErrorOutputs match
+      case Nil =>
+        Void()
+      case x :: xs =>
+        oneOf[CamundaError](
+          errMapper(x),
+          xs.map(output => errMapper(output)): _*
+        )
+
+  private def errMapper(
+      output: RequestErrorOutput
+  ): EndpointOutput.OneOfMapping[CamundaError] =
+    oneOfMappingValueMatcher(
+      output.statusCode,
+      jsonBody[CamundaError].examples(output.examples.map { case (name, ex) =>
+        Example(ex, Some(name), None)
+      }.toList)
+    ) { case _ =>
+      true
+    }
+end CamundaRestApi
+
+sealed trait ApiEndpoint[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema,
+    T <: ApiEndpoint[In, Out, T]
+] extends Product:
+  def restApi: CamundaRestApi[In, Out]
+  def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _]
+  def name: String = restApi.name
+  def descr: Option[String] = restApi.descr
+
+  def withRestApi(restApi: CamundaRestApi[In, Out]): T
+  def withDescr(description: String): T =
+    withRestApi(restApi.copy(descr = Some(description)))
+
+  def withInExample(example: In): T =
+    withRestApi(restApi.copy(requestInput = RequestInput(example)))
+
+  def withInExample(label: String, example: In): T =
+    withRestApi(
+      restApi.copy(requestInput = restApi.requestInput :+ (label, example))
+    )
+
+  def baseEndpoint: Endpoint[_, _, _, _] =
+    endpoint
+      .name(s"${getClass.getSimpleName}: $name")
+      .tag(name)
+      .summary(s"${getClass.getSimpleName}: $name")
+      .description(descr.getOrElse(""))
+
+end ApiEndpoint
+
+case class StartProcessInstance[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+](
+    restApi: CamundaRestApi[In, Out]
+) extends ApiEndpoint[In, Out, StartProcessInstance[In, Out]]:
+
+  def withRestApi(
+      restApi: CamundaRestApi[In, Out]
+  ): StartProcessInstance[In, Out] =
+    copy(restApi = restApi)
+
+  def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _] =
+    baseEndpoint
+      .in(postPath(name))
+      .post
+      .in(restApi.inMapper())
+      .out(restApi.outMapper())
+      .errorOut(restApi.outputErrors())
+
+  private def postPath(name: String)(implicit tenantId: Option[String]) =
+    val basePath =
+      "process-definition" / "key" / processDefinitionKeyPath(name)
+    tenantId
+      .map(id => basePath / "tenant-id" / tenantIdPath(id) / "start")
+      .getOrElse(basePath / "start")
+
+end StartProcessInstance
+
+private def processDefinitionKeyPath(name: String) =
+  path[String]("key")
+    .description("The processDefinitionKey of the Process")
+    .example(name)
+
+private def tenantIdPath(id: String) =
+  path[String]("tenant-id")
+    .description("The tenant, the process is deployed for.")
+    .example(id)

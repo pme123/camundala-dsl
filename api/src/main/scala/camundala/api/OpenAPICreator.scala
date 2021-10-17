@@ -27,7 +27,7 @@ trait APICreator extends App, EndpointDSL :
 
   def info = Info(title, version, description, contact = contact)
 
-  def apiEndpoints: Seq[ApiEndpoint]
+  def apiEndpoints: Seq[ApiEndpoint[_,_,_]]
 
   def openApi: OpenAPI =
     openAPIDocsInterpreter

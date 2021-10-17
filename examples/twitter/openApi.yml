@@ -60,12 +60,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StartProcessOut_Out'
-              examples:
-                standard:
-                  value:
-                    variables: {}
-                    id: f150c3f1-13f5-11ec-936e-0242ac1d0007
-                    definitionId: processDefinitionKey:1:6fe66514-12ea-11ec-936e-0242ac1d0007
         '400':
           description: ''
           content:

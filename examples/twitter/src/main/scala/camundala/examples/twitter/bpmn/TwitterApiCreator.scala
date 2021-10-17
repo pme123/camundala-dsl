@@ -25,7 +25,7 @@ object TwitterApiCreator extends APICreator {
 
   override def docOpenApi: Path = pwd / "examples" / "twitter" / "openApi.yml"
 
-  def apiEndpoints: Seq[ApiEndpoint] = TwitterApi.apiEndpoints
+  def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = TwitterApi.apiEndpoints
 
 
 }

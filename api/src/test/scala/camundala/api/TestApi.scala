@@ -14,7 +14,7 @@ object TestApi extends APICreator {
 
   def version = "1.0"
 
-  def apiEndpoints: Seq[ApiEndpoint] = Sample.apiEndpoints
+  def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = Sample.apiEndpoints
 
 }
 
@@ -56,11 +56,12 @@ object Sample extends EndpointDSL :
        |""".stripMargin
 
 
-  lazy val apiEndpoints: Seq[ApiEndpoint] =
+  lazy val apiEndpoints: Seq[ApiEndpoint[_,_,_]] =
     Seq(
-      StartProcessInstance(
+      StartProcessInstance[SampleIn, SampleOut](
+        CamundaRestApi(
         name,
-        descr,
+        Some(descr),
         RequestInput(Map("standard" -> standardSample, "other input" -> SampleIn(firstName = "Heidi"))),
         RequestOutput.ok(Map("standard" -> SampleOut(), "other outpt" -> SampleOut(success = -1))),
         List(
@@ -68,6 +69,7 @@ object Sample extends EndpointDSL :
           notFound.defaultExample,
           serverError.example("InternalServerError", "Check the Server Logs!")
         ),
-        Some("sample-example")
+        Some("sample-businessKey")
+        )
       )
     )

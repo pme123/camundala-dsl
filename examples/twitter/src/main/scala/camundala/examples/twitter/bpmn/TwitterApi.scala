@@ -21,7 +21,7 @@ object TwitterApi extends EndpointDSL:
                  |- content: The content of the Tweet.
                  |""".stripMargin)
   case class CreateTweet(
-      // @description("Variables cannot be described as it is only possible to have one description per type!")
+      //@description("Variables cannot be described as it is only possible to have one description per type!")
       email: CString = "me@myself.com",
       content: CString = "Test Tweet"
   ) extends InOutObject
@@ -37,11 +37,9 @@ object TwitterApi extends EndpointDSL:
     s"""This runs the Twitter Approvement Process.
        |""".stripMargin
 
-  lazy val apiEndpoints: Seq[ApiEndpoint] =
+  lazy val apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
     Seq(
-      StartProcessInstance(
-        name,
-        descr,
-        inExample(CreateTweet()),
-      )
+      startProcessInstance[CreateTweet, NoOutput](name)
+        .descr(descr)
+        .inExample(CreateTweet())
     )
