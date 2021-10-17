@@ -113,7 +113,9 @@ object RequestInput:
 case class RequestOutput[T <: Product](
     statusCode: StatusCode,
     examples: Map[String, T]
-)
+):
+  def :+(label: String, example: T) =
+    copy(examples = examples + (label -> example))
 
 object RequestOutput {
 
@@ -238,6 +240,7 @@ sealed trait ApiEndpoint[
   def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _]
   def name: String = restApi.name
   def descr: Option[String] = restApi.descr
+  def outStatusCode: StatusCode
 
   def withRestApi(restApi: CamundaRestApi[In, Out]): T
   def withDescr(description: String): T =
@@ -249,6 +252,14 @@ sealed trait ApiEndpoint[
   def withInExample(label: String, example: In): T =
     withRestApi(
       restApi.copy(requestInput = restApi.requestInput :+ (label, example))
+    )
+
+  def withOutExample(example: Out): T =
+    withRestApi(restApi.copy(requestOutput = RequestOutput(outStatusCode, example)))
+
+  def withOutExample(label: String, example: Out): T =
+    withRestApi(
+      restApi.copy(requestOutput = restApi.requestOutput :+ (label, example))
     )
 
   def baseEndpoint: Endpoint[_, _, _, _] =
@@ -266,6 +277,8 @@ case class StartProcessInstance[
 ](
     restApi: CamundaRestApi[In, Out]
 ) extends ApiEndpoint[In, Out, StartProcessInstance[In, Out]]:
+
+  val outStatusCode = StatusCode.Ok
 
   def withRestApi(
       restApi: CamundaRestApi[In, Out]

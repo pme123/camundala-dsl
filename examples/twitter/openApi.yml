@@ -84,7 +84,7 @@ paths:
               examples:
                 standardExample:
                   value:
-                    type: BadRequest
+                    type: NotFound
                     message: The instance could not be created due to a non existing
                       process definition key. See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.

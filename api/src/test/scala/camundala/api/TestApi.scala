@@ -58,18 +58,10 @@ object Sample extends EndpointDSL :
 
   lazy val apiEndpoints: Seq[ApiEndpoint[_,_,_]] =
     Seq(
-      StartProcessInstance[SampleIn, SampleOut](
-        CamundaRestApi(
-        name,
-        Some(descr),
-        RequestInput(Map("standard" -> standardSample, "other input" -> SampleIn(firstName = "Heidi"))),
-        RequestOutput.ok(Map("standard" -> SampleOut(), "other outpt" -> SampleOut(success = -1))),
-        List(
-          badRequest.example(CamundaError("BadStuffHappened", "There is a real Problem.")),
-          notFound.defaultExample,
-          serverError.example("InternalServerError", "Check the Server Logs!")
-        ),
-        Some("sample-businessKey")
-        )
-      )
+      startProcessInstance[SampleIn, SampleOut](name)
+        .descr(descr)
+        .inExample(standardSample)
+        .inExample("other input", SampleIn(firstName = "Heidi"))
+        .outExample(SampleOut())
+        .outExample( "other output", SampleOut(success = -1))
     )

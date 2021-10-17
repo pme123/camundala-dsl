@@ -14,9 +14,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
       Out <: Product: Encoder: Decoder: Schema
   ](name: String) =
     StartProcessInstance[In, Out](
-      CamundaRestApi(name,
-        requestErrorOutputs = standardErrors
-      )
+      CamundaRestApi(name, requestErrorOutputs = standardErrors)
     )
 
   extension [
@@ -32,6 +30,11 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
 
     def inExample(label: String, example: In): T =
       endpoint.withInExample(label, example)
+
+    def outExample(example: Out): T =
+      endpoint.withOutExample(example)
+    def outExample(label: String, example: Out): T =
+      endpoint.withOutExample(label, example)
 
   end extension
 
