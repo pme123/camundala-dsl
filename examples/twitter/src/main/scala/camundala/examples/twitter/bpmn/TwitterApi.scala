@@ -12,7 +12,7 @@ import api.CamundaVariable.*
 import io.circe.{Decoder, Encoder}
 
 object TwitterApi extends EndpointDSL:
-  val name = "TwitterDemoProcess"
+  val processId = "TwitterDemoProcess"
   override implicit def tenantId: Option[String] = Some("MyTENANT")
 
   @description("""Every employee may create a Tweet.
@@ -39,10 +39,11 @@ object TwitterApi extends EndpointDSL:
 
   lazy val apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
     Seq(
-      startProcessInstance[CreateTweet, NoOutput](name)
+      startProcessInstance[CreateTweet, NoOutput](processId, processId)
         .descr(descr)
         .inExample(CreateTweet()),
-      completeTask[ReviewTweet, NoOutput]("Review Task Complete")
+      getActiveTask("Review Tweet", processId),
+      completeTask[ReviewTweet]("Review Tweet", processId)
         .inExample("Tweet accepted", ReviewTweet())
         .inExample("Tweet rejected", ReviewTweet(false))
     )

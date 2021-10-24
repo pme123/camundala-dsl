@@ -58,7 +58,7 @@ object Sample extends EndpointDSL :
 
   lazy val apiEndpoints: Seq[ApiEndpoint[_,_,_]] =
     Seq(
-      startProcessInstance[SampleIn, SampleOut](name)
+      startProcessInstance[SampleIn, SampleOut](name, name)
         .descr(descr)
         .inExample(standardSample)
         .inExample("other input", SampleIn(firstName = "Heidi"))

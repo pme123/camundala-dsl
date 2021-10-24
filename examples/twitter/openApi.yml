@@ -101,17 +101,65 @@ paths:
                     message: The instance could not be created successfully. See the
                       [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
+  /task:
+    post:
+      tags:
+      - TwitterDemoProcess
+      summary: 'GetActiveTask: Review Tweet'
+      description: ''
+      operationId: 'GetActiveTask: Review Tweet'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetActiveTaskIn'
+            examples:
+              standard:
+                value:
+                  processInstanceId: '{{processInstannceId}}'
+                  active: true
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetActiveTaskOut_Out'
+              examples:
+                standard:
+                  value:
+                    id: f150c3f1-13f5-11ec-936e-0242ac1d0007
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadRequest
+                    message: The instance could not be created due to an invalid variable
+                      value, for example if the value could not be parsed to an Integer
+                      value or the passed variable type is not supported. See the
+                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
   /task/key/{taskId}/complete:
     post:
       tags:
-      - Review Task Complete
-      summary: 'CompleteTask: Review Task Complete'
+      - TwitterDemoProcess
+      summary: 'CompleteTask: Review Tweet'
       description: ''
-      operationId: 'CompleteTask: Review Task Complete'
+      operationId: 'CompleteTask: Review Tweet'
       parameters:
       - name: taskId
         in: path
-        description: The taskId of the Form to complete.
+        description: 'The taskId of the Form to complete.
+
+          > This is the result id of the `GetActiveTask`
+
+          '
         required: true
         schema:
           type: string
@@ -144,6 +192,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CompleteTaskOut_Out'
+              examples:
+                standard:
+                  value:
+                    variables: {}
         '400':
           description: ''
           content:
@@ -245,6 +297,55 @@ components:
         - content: The content of the Tweet.
 
         '
+    GetActiveTaskIn:
+      required:
+      - processInstanceId
+      - active
+      type: object
+      properties:
+        processInstanceId:
+          type: string
+          description: The id of the process - you want to get the active tasks.
+
+            > This is the result id of the `StartProcessOut`
+        active:
+          type: boolean
+          description: We are only interested in the active Task(s)
+      description: A JSON object with the following properties
+    GetActiveTaskOut_Out:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'The Task Id you need to complete Task
+
+
+            > **Postman**:
+
+            >
+
+            > Add the following to the tests to set the `taskId`:
+
+            >
+
+            >```
+
+            let taskId = pm.response.json()[0].id
+
+            console.log("taskId: " + taskId)
+
+            pm.collectionVariables.set("taskId", taskId)
+
+            >```
+
+            >
+
+            > This returns an Array!
+
+            '
+      description: A JSON object representing the newly created process instance.
     NoOutput:
       type: object
       description: The Process Variables - Be aware that returns everything stored
@@ -284,11 +385,53 @@ components:
           $ref: '#/components/schemas/NoOutput'
         id:
           type: string
-          description: The id of the process instance.
+          description: 'The id of the process instance.
+
+
+            > **Postman**:
+
+            >
+
+            > Add the following to the tests to set the `processInstanceId`:
+
+            >
+
+            >```
+
+            let processInstanceId = pm.response.json().id
+
+            console.log("processInstanceId: " + processInstanceId)
+
+            pm.collectionVariables.set("processInstanceId", processInstanceId)
+
+            >```
+
+            '
         definitionId:
           type: string
           description: The id of the process definition.
         businessKey:
           type: string
           description: The business key of the process instance.
-      description: A JSON object representing the newly created process instance.
+      description: 'A JSON object representing the newly created process instance.
+
+
+        > **Postman**:
+
+        >
+
+        > Add the following to the tests to set the `processInstanceId`:
+
+        >
+
+        >```
+
+        let processInstanceId = pm.response.json().id
+
+        console.log("processInstanceId: " + processInstanceId)
+
+        pm.collectionVariables.set("processInstanceId", processInstanceId)
+
+        ```
+
+        '

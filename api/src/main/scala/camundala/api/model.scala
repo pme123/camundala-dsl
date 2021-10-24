@@ -35,7 +35,6 @@ object CamundaVariable:
   implicit def toCString(v: String): CString = CString(v)
   implicit def toCInteger(v: Int): CInteger = CInteger(v)
   implicit def toCLong(v: Long): CLong = CLong(v)
-  implicit def toCFloat(v: Float): CFloat = CFloat(v)
   implicit def toCDouble(v: Double): CDouble = CDouble(v)
   implicit def toCBoolean(v: Boolean): CBoolean = CBoolean(v)
 
@@ -44,7 +43,6 @@ object CamundaVariable:
       case v: CString => v.asJson
       case v: CInteger => v.asJson
       case v: CLong => v.asJson
-      case v: CFloat => v.asJson
       case v: CDouble => v.asJson
       case v: CBoolean => v.asJson
     }
@@ -63,7 +61,7 @@ object CamundaVariable:
         case (k, v: Boolean) =>
           Some(k -> CBoolean(v))
         case (k, v: Float) =>
-          Some(k -> CFloat(v))
+          Some(k -> CDouble(v.toDouble))
         case (k, v: Double) =>
           Some(k -> CDouble(v))
         case other =>
@@ -80,8 +78,7 @@ object CamundaVariable:
       extends CamundaVariable
   case class CBoolean(value: Boolean, private val `type`: String = "Boolean")
       extends CamundaVariable
-  case class CFloat(value: Float, private val `type`: String = "Float")
-      extends CamundaVariable
+
   case class CDouble(value: Double, private val `type`: String = "Double")
       extends CamundaVariable
 
@@ -109,6 +106,19 @@ case class CompleteTaskIn[T <: Product](
       "Set to false will not return the Process Variables and the Result Status is 204."
     )
     withVariablesInReturn: Boolean = true
+)
+
+@description(
+  "A JSON object with the following properties"
+)
+case class GetActiveTaskIn(
+    @description(
+      """The id of the process - you want to get the active tasks.
+        |> This is the result id of the `StartProcessOut`""".stripMargin
+    )
+    processInstanceId: String = "{{processInstanceId}}",
+    @description("We are only interested in the active Task(s)")
+    active: Boolean = true
 )
 
 case class RequestInput[T <: Product](examples: Map[String, T]):
@@ -157,13 +167,40 @@ object RequestOutput {
 }
 
 case class NoOutput()
-@description("A JSON object representing the newly created process instance.")
+
+@description(
+  """A JSON object representing the newly created process instance.
+    |
+    |> **Postman**:
+    |>
+    |> Add the following to the tests to set the `processInstanceId`:
+    |>
+    |>```
+    |let processInstanceId = pm.response.json().id
+    |console.log("processInstanceId: " + processInstanceId)
+    |pm.collectionVariables.set("processInstanceId", processInstanceId)
+    |```
+    |""".stripMargin
+)
 case class StartProcessOut[T <: Product](
     @description(
       "The Process Variables - Be aware that returns everything stored in the Process."
     )
     variables: T,
-    @description("The id of the process instance.")
+    @description(
+      """The id of the process instance.
+        |
+        |> **Postman**:
+        |>
+        |> Add the following to the tests to set the `processInstanceId`:
+        |>
+        |>```
+        |let processInstanceId = pm.response.json().id
+        |console.log("processInstanceId: " + processInstanceId)
+        |pm.collectionVariables.set("processInstanceId", processInstanceId)
+        |>```
+        |""".stripMargin
+    )
     id: String = "f150c3f1-13f5-11ec-936e-0242ac1d0007",
     @description("The id of the process definition.")
     definitionId: String =
@@ -180,11 +217,33 @@ case class CompleteTaskOut[T <: Product](
     variables: T
 )
 
+@description("A JSON object representing the newly created process instance.")
+case class GetActiveTaskOut[T <: Product](
+    @description(
+      """The Task Id you need to complete Task
+        |
+        |> **Postman**:
+        |>
+        |> Add the following to the tests to set the `taskId`:
+        |>
+        |>```
+        |let taskId = pm.response.json()[0].id
+        |console.log("taskId: " + taskId)
+        |pm.collectionVariables.set("taskId", taskId)
+        |>```
+        |>
+        |> This returns an Array!
+        |""".stripMargin
+    )
+    id: String = "f150c3f1-13f5-11ec-936e-0242ac1d0007"
+)
+
 case class CamundaRestApi[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
     name: String,
+    tag: String,
     descr: Option[String] = None,
     requestInput: RequestInput[In] = RequestInput[In](),
     requestOutput: RequestOutput[Out] = RequestOutput[Out](),
@@ -254,8 +313,9 @@ sealed trait ApiEndpoint[
 ] extends Product:
   def restApi: CamundaRestApi[In, Out]
   def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _]
-  def name: String = restApi.name
-  def descr: Option[String] = restApi.descr
+  lazy val name: String = restApi.name
+  lazy val tag: String = restApi.tag
+  lazy val descr: Option[String] = restApi.descr
   def outStatusCode: StatusCode
   protected def inMapper(): EndpointInput[_]
   protected def outMapper(): EndpointOutput[_]
@@ -285,7 +345,7 @@ sealed trait ApiEndpoint[
   def baseEndpoint: Endpoint[_, _, _, _] =
     endpoint
       .name(s"${getClass.getSimpleName}: $name")
-      .tag(name)
+      .tag(tag)
       .summary(s"${getClass.getSimpleName}: $name")
       .description(descr.getOrElse(""))
       .in(inMapper())
@@ -353,7 +413,7 @@ case class CompleteTask[
       .post
 
   private lazy val postPath =
-    "task" / "key" / taskIdPath() / "complete"
+    "task" / taskIdPath() / "complete"
 
   protected def inMapper(): EndpointInput[_] =
     restApi.inMapper[CompleteTaskIn[In]] { (example: In, _) =>
@@ -363,7 +423,39 @@ case class CompleteTask[
     (example: Out, _) =>
       CompleteTaskOut(example)
   }
+
 end CompleteTask
+
+case class GetActiveTask[
+    In <: NoInput: Encoder: Decoder: Schema,
+    Out <: NoOutput: Encoder: Decoder: Schema
+](
+    restApi: CamundaRestApi[In, Out]
+) extends ApiEndpoint[In, Out, GetActiveTask[In, Out]]:
+
+  val outStatusCode = StatusCode.Ok
+
+  def withRestApi(
+      restApi: CamundaRestApi[In, Out]
+  ): GetActiveTask[In, Out] = copy(restApi = restApi)
+
+  def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _] =
+    baseEndpoint
+      .in(postPath)
+      .post
+
+  private lazy val postPath =
+    "task"
+
+  protected def inMapper(): EndpointInput[_] =
+    restApi.inMapper[GetActiveTaskIn] { (_, _) =>
+      GetActiveTaskIn()
+    }
+  protected def outMapper() = restApi.outMapper[GetActiveTaskOut[Out]] {
+    (_, _) =>
+      GetActiveTaskOut()
+  }
+end GetActiveTask
 
 private def processDefinitionKeyPath(name: String) =
   path[String]("key")
@@ -372,7 +464,10 @@ private def processDefinitionKeyPath(name: String) =
 
 private def taskIdPath() =
   path[String]("taskId")
-    .description("The taskId of the Form to complete.")
+    .description(
+      """The taskId of the Form to complete.
+        |> This is the result id of the `GetActiveTask`
+        |""".stripMargin)
     .example("{{taskId}}")
 
 private def tenantIdPath(id: String) =
