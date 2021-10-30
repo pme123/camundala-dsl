@@ -22,14 +22,14 @@ object TwitterApi extends EndpointDSL:
                  |""".stripMargin)
   case class CreateTweet(
       //@description("Variables cannot be described as it is only possible to have one description per type!")
-      email: CString = "me@myself.com",
-      content: CString = "Test Tweet"
+      email: String = "me@myself.com",
+      content: String = "Test Tweet"
   ) extends InOutObject
 
   @description("""Every Tweet has to be accepted by the Boss.""")
   case class ReviewTweet(
       @description("If true, the Boss accepted the Tweet")
-      approved: CBoolean = true
+      approved: Boolean = true
   ) extends InOutObject
 
   lazy val standardSample: CreateTweet = CreateTweet()
@@ -41,7 +41,7 @@ object TwitterApi extends EndpointDSL:
     Seq(
       startProcessInstance[CreateTweet, NoOutput](processId, processId)
         .descr(descr)
-        .inExample(CreateTweet()),
+        .inExample(standardSample),
       getActiveTask("Review Tweet", processId),
       completeTask[ReviewTweet]("Review Tweet", processId)
         .inExample("Tweet accepted", ReviewTweet())

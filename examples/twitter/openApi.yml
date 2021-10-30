@@ -22,12 +22,12 @@ paths:
   /process-definition/key/{key}/start:
     post:
       tags:
-      - TwitterDemoProcess
-      summary: 'StartProcessInstance: TwitterDemoProcess'
+      - InvoiceReceipt
+      summary: 'StartProcessInstance: Invoice Process Example'
       description: 'This runs the Twitter Approvement Process.
 
         '
-      operationId: 'StartProcessInstance: TwitterDemoProcess'
+      operationId: 'StartProcessInstance: Invoice Process Example'
       parameters:
       - name: key
         in: path
@@ -35,7 +35,7 @@ paths:
         required: true
         schema:
           type: string
-        example: TwitterDemoProcess
+        example: Invoice Process Example
       requestBody:
         content:
           application/json:
@@ -45,12 +45,15 @@ paths:
               standard:
                 value:
                   variables:
-                    email:
-                      value: me@myself.com
+                    creditor:
+                      value: Great Pizza for Everyone Inc.
                       type: String
-                    content:
-                      value: Test Tweet
-                      type: String
+                    amount:
+                      value: 30.0
+                      type: Double
+                    invoiceCategory:
+                      Software License Costs: {}
+                    invoiceNumber: I-12345
                   withVariablesInReturn: true
         required: true
       responses:
@@ -104,7 +107,7 @@ paths:
   /task:
     post:
       tags:
-      - TwitterDemoProcess
+      - InvoiceReceipt
       summary: 'GetActiveTask: Review Tweet'
       description: ''
       operationId: 'GetActiveTask: Review Tweet'
@@ -116,7 +119,7 @@ paths:
             examples:
               standard:
                 value:
-                  processInstanceId: '{{processInstannceId}}'
+                  processInstanceId: '{{processInstanceId}}'
                   active: true
         required: true
       responses:
@@ -145,10 +148,10 @@ paths:
                       value or the passed variable type is not supported. See the
                       [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
-  /task/key/{taskId}/complete:
+  /task/{taskId}/complete:
     post:
       tags:
-      - TwitterDemoProcess
+      - InvoiceReceipt
       summary: 'CompleteTask: Review Tweet'
       description: ''
       operationId: 'CompleteTask: Review Tweet'
@@ -237,6 +240,17 @@ components:
         type:
           type: string
       description: If true, the Boss accepted the Tweet
+    CDouble:
+      required:
+      - value
+      - type
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+        type:
+          type: string
     CString:
       required:
       - value
@@ -279,24 +293,6 @@ components:
         variables:
           $ref: '#/components/schemas/NoOutput'
       description: A JSON object representing the newly created process instance.
-    CreateTweet:
-      required:
-      - email
-      - content
-      type: object
-      properties:
-        email:
-          $ref: '#/components/schemas/CString'
-        content:
-          $ref: '#/components/schemas/CString'
-      description: 'Every employee may create a Tweet.
-
-
-        - email:   The email address of the creator.
-
-        - content: The content of the Tweet.
-
-        '
     GetActiveTaskIn:
       required:
       - processInstanceId
@@ -346,6 +342,26 @@ components:
 
             '
       description: A JSON object representing the newly created process instance.
+    InvoiceCategory:
+      oneOf:
+      - $ref: '#/components/schemas/InvoiceCategory'
+    InvoiceReceipt:
+      required:
+      - creditor
+      - amount
+      - invoiceCategory
+      - invoiceNumber
+      type: object
+      properties:
+        creditor:
+          $ref: '#/components/schemas/CString'
+        amount:
+          $ref: '#/components/schemas/CDouble'
+        invoiceCategory:
+          $ref: '#/components/schemas/InvoiceCategory'
+        invoiceNumber:
+          type: string
+      description: Received Invoice that need approval.
     NoOutput:
       type: object
       description: The Process Variables - Be aware that returns everything stored
@@ -365,7 +381,7 @@ components:
       type: object
       properties:
         variables:
-          $ref: '#/components/schemas/CreateTweet'
+          $ref: '#/components/schemas/InvoiceReceipt'
         businessKey:
           type: string
           description: The business key of the process instance.

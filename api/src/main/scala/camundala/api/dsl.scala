@@ -3,8 +3,11 @@ package api
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto.*
-import sttp.tapir.{Endpoint, EndpointOutput}
+import sttp.model.*
+import sttp.tapir.{Endpoint, EndpointOutput, Schema}
 import sttp.tapir.generic.auto.*
+
+import java.util.Base64
 
 trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
   implicit def tenantId: Option[String] = None
@@ -33,6 +36,14 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
         requestErrorOutputs = List(badRequest, serverError)
       )
     ).withOutExample(NoOutput())
+
+  import reflect.Selectable.reflectiveSelectable
+  def enumDescr(enumeration: { def values: Array[?] },
+                descr: Option[String] = None) =
+    val enumDescription = s"Enumeration: \n- ${enumeration.values.mkString("\n- ")}"
+    descr
+      .map(_ + s"\n\n$enumDescription")
+      .getOrElse(enumDescription)
 
   extension [
       In <: Product: Encoder: Decoder: Schema,

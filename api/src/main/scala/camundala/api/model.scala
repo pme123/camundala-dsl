@@ -7,6 +7,8 @@ import sttp.tapir.generic.auto.*
 import io.circe.syntax.*
 import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput}
 
+import java.util.Base64
+
 type ExampleName = String
 
 case class RequestErrorOutput(
@@ -31,12 +33,14 @@ case class CamundaAuthError(
 sealed trait CamundaVariable
 
 object CamundaVariable:
-  import scala.language.implicitConversions
+  /* import scala.language.implicitConversions
   implicit def toCString(v: String): CString = CString(v)
   implicit def toCInteger(v: Int): CInteger = CInteger(v)
   implicit def toCLong(v: Long): CLong = CLong(v)
   implicit def toCDouble(v: Double): CDouble = CDouble(v)
   implicit def toCBoolean(v: Boolean): CBoolean = CBoolean(v)
+  implicit def toCEnum(v: String): CEnum = CEnum(v)
+*/
 
   implicit val encodeCamundaVariable: Encoder[CamundaVariable] =
     Encoder.instance {
@@ -45,9 +49,11 @@ object CamundaVariable:
       case v: CLong => v.asJson
       case v: CDouble => v.asJson
       case v: CBoolean => v.asJson
+      case v: CFile => v.asJson
+      case v: CJson => v.asJson
+      case v: CEnum => v.asJson
     }
 
-  // nit in Use
   def toCamunda(product: Product): Map[String, CamundaVariable] =
     product.productElementNames
       .zip(product.productIterator)
@@ -64,9 +70,18 @@ object CamundaVariable:
           Some(k -> CDouble(v.toDouble))
         case (k, v: Double) =>
           Some(k -> CDouble(v))
-        case other =>
-          println(s"Not supported: $other")
-          None
+        case (k, f @ FileInOut(fileName, _, mimeType)) =>
+          Some(
+            k -> CFile(
+              f.contentAsBase64,
+              CFileValueInfo(
+                fileName,
+                mimeType
+              )
+            )
+          )
+        case (k, v) =>
+          Some(k -> CEnum(v.toString))
       }
       .toMap
 
@@ -82,14 +97,41 @@ object CamundaVariable:
   case class CDouble(value: Double, private val `type`: String = "Double")
       extends CamundaVariable
 
+  case class CFile(
+      @description("The File's content as Base64 encoded String.")
+      value: String,
+      valueInfo: CFileValueInfo,
+      private val `type`: String = "File"
+  ) extends CamundaVariable
+
+  case class CFileValueInfo(
+      filename: String,
+      mimetype: Option[String]
+  )
+
+  case class CEnum(value: String, private val `type`: String = "String")
+      extends CamundaVariable
+
+  case class CJson(value: String, private val `type`: String = "Json")
+      extends CamundaVariable
+
 case class NoInput()
+
+case class FileInOut(
+    fileName: String,
+    @description("The content of the File as a Byte Array.")
+    content: Array[Byte],
+    mimeType: Option[String]
+):
+  lazy val contentAsBase64 = Base64.getEncoder.encodeToString(content)
 
 @description(
   "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
 )
 case class StartProcessIn[T <: Product](
+    _api_doc: Option[T],
     // use the description of the object
-    variables: T,
+    variables: Map[String, CamundaVariable],
     @description("The business key of the process instance.")
     businessKey: Option[String] = None,
     @description("Set to false will not return the Process Variables.")
@@ -100,8 +142,9 @@ case class StartProcessIn[T <: Product](
   "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
 )
 case class CompleteTaskIn[T <: Product](
+    _api_doc: Option[T],
     // use the description of the object
-    variables: T,
+    variables: Map[String, CamundaVariable],
     @description(
       "Set to false will not return the Process Variables and the Result Status is 204."
     )
@@ -344,9 +387,9 @@ sealed trait ApiEndpoint[
 
   def baseEndpoint: Endpoint[_, _, _, _] =
     endpoint
-      .name(s"${getClass.getSimpleName}: $name")
+      .name(s"$name: ${getClass.getSimpleName}")
       .tag(tag)
-      .summary(s"${getClass.getSimpleName}: $name")
+      .summary(s"$name: ${getClass.getSimpleName}")
       .description(descr.getOrElse(""))
       .in(inMapper())
       .out(outMapper())
@@ -378,12 +421,16 @@ case class StartProcessInstance[
       "process-definition" / "key" / processDefinitionKeyPath(name)
     tenantId
       .map(id => basePath / "tenant-id" / tenantIdPath(id) / "start")
-      .getOrElse(basePath / "start")
+      .getOrElse(basePath / "start" / s"--REMOVE:${restApi.name}--")
 
   protected def inMapper(): EndpointInput[_] =
     restApi.inMapper[StartProcessIn[In]] {
       (example: In, businessKey: Option[String]) =>
-        StartProcessIn(example, businessKey)
+        StartProcessIn(
+          Some(example),
+          CamundaVariable.toCamunda(example),
+          businessKey
+        )
     }
 
   protected def outMapper() = restApi.outMapper[StartProcessOut[Out]] {
@@ -413,11 +460,11 @@ case class CompleteTask[
       .post
 
   private lazy val postPath =
-    "task" / taskIdPath() / "complete"
+    "task" / taskIdPath() / "complete" / s"--REMOVE:${restApi.name}--"
 
   protected def inMapper(): EndpointInput[_] =
     restApi.inMapper[CompleteTaskIn[In]] { (example: In, _) =>
-      CompleteTaskIn(example)
+      CompleteTaskIn(Some(example), CamundaVariable.toCamunda(example))
     }
   protected def outMapper() = restApi.outMapper[CompleteTaskOut[Out]] {
     (example: Out, _) =>
@@ -445,7 +492,7 @@ case class GetActiveTask[
       .post
 
   private lazy val postPath =
-    "task"
+    "task" / s"--REMOVE:${restApi.name}--"
 
   protected def inMapper(): EndpointInput[_] =
     restApi.inMapper[GetActiveTaskIn] { (_, _) =>
@@ -464,10 +511,9 @@ private def processDefinitionKeyPath(name: String) =
 
 private def taskIdPath() =
   path[String]("taskId")
-    .description(
-      """The taskId of the Form to complete.
-        |> This is the result id of the `GetActiveTask`
-        |""".stripMargin)
+    .description("""The taskId of the Form to complete.
+                   |> This is the result id of the `GetActiveTask`
+                   |""".stripMargin)
     .example("{{taskId}}")
 
 private def tenantIdPath(id: String) =
