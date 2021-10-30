@@ -29,9 +29,6 @@ object InvoiceApi extends EndpointDSL:
       @description(
         enumDescr(InvoiceCategory, Some("There are three possible Categories"))
       )
-      /*   s"TODO ${InvoiceCategory.getClass.getSimpleName
-          .dropRight(1)}: ${InvoiceCategory.values.mkString(", ")}"
-      ) */ //enumDescr(InvoiceCategory))
       invoiceCategory: InvoiceCategory =
         InvoiceCategory.`Software License Costs`,
       invoiceNumber: String = "I-12345",
