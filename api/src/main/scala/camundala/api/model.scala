@@ -54,7 +54,7 @@ object CamundaVariable:
       case v: CEnum => v.asJson
     }
 
-  def toCamunda(product: Product): Map[String, CamundaVariable] =
+  def toCamunda[T <: Product: Encoder:Decoder:Schema](product: T): Map[String, CamundaVariable] =
     product.productElementNames
       .zip(product.productIterator)
       .flatMap {
@@ -80,6 +80,8 @@ object CamundaVariable:
               )
             )
           )
+        case (k, v: Product) =>
+          Some(k -> CJson(product.asJson.hcursor.downField(k).as[Json].toOption.map(_.toString).getOrElse(s"$k -> v could NOT be Parsed to a JSON!")))
         case (k, v) =>
           Some(k -> CEnum(v.toString))
       }
