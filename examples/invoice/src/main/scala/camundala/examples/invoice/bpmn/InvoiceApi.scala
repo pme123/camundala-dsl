@@ -72,6 +72,8 @@ object InvoiceApi extends EndpointDSL:
       ).descr(descr)
         .inExample(InvoiceReceipt()),
       getActiveTask("Approve Invoice", tag),
+      getTaskFormVariables[InvoiceReceipt]("Approve Invoice", tag)
+        .outExample(InvoiceReceipt()),
       completeTask[ApproveInvoice]("Approve Invoice", tag)
         .inExample("Invoice approved", ApproveInvoice())
         .inExample("Invoice rejected", ApproveInvoice(false)),

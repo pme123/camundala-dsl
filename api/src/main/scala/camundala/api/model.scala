@@ -5,9 +5,11 @@ import io.circe.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import io.circe.syntax.*
-import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput}
+import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput, query, path}
+//import sttp.tapir.EndpointIO.annotations.{query, path as pathParam, endpointInput}
 
 import java.util.Base64
+import scala.collection.immutable.HashMap
 
 type ExampleName = String
 
@@ -40,7 +42,7 @@ object CamundaVariable:
   implicit def toCDouble(v: Double): CDouble = CDouble(v)
   implicit def toCBoolean(v: Boolean): CBoolean = CBoolean(v)
   implicit def toCEnum(v: String): CEnum = CEnum(v)
-*/
+   */
 
   implicit val encodeCamundaVariable: Encoder[CamundaVariable] =
     Encoder.instance {
@@ -54,7 +56,11 @@ object CamundaVariable:
       case v: CEnum => v.asJson
     }
 
-  def toCamunda[T <: Product: Encoder:Decoder:Schema](product: T): Map[String, CamundaVariable] =
+  import reflect.Selectable.reflectiveSelectable
+
+  def toCamunda[T <: Product: Encoder: Decoder: Schema](
+      product: T
+  ): Map[String, CamundaVariable] =
     product.productElementNames
       .zip(product.productIterator)
       .flatMap {
@@ -80,10 +86,20 @@ object CamundaVariable:
               )
             )
           )
-        case (k, v: Product) =>
-          Some(k -> CJson(product.asJson.hcursor.downField(k).as[Json].toOption.map(_.toString).getOrElse(s"$k -> v could NOT be Parsed to a JSON!")))
-        case (k, v) =>
+        case (k, v: { def values: Array[?] }) =>
           Some(k -> CEnum(v.toString))
+        case (k, v: Product) =>
+          Some(
+            k -> CJson(
+              product.asJson.hcursor
+                .downField(k)
+                .as[Json]
+                .toOption
+                .map(_.toString)
+                .getOrElse(s"$k -> v could NOT be Parsed to a JSON!")
+            )
+          )
+
       }
       .toMap
 
@@ -140,6 +156,17 @@ case class StartProcessIn[T <: Product](
     withVariablesInReturn: Boolean = true
 )
 
+/*
+@endpointInput("task/{taskId}/form-variables")
+case class GetTaskFormVariablesPath(
+                                    @pathParam
+                                    taskId: String = "{{taskId}}",
+                                    @query
+                                    variableNames: Option[String] = None,
+                                    @query
+                                    deserializeValues: Boolean = true
+                                  )
+ */
 @description(
   "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
 )
@@ -215,16 +242,6 @@ case class NoOutput()
 
 @description(
   """A JSON object representing the newly created process instance.
-    |
-    |> **Postman**:
-    |>
-    |> Add the following to the tests to set the `processInstanceId`:
-    |>
-    |>```
-    |let processInstanceId = pm.response.json().id
-    |console.log("processInstanceId: " + processInstanceId)
-    |pm.collectionVariables.set("processInstanceId", processInstanceId)
-    |```
     |""".stripMargin
 )
 case class StartProcessOut[T <: Product](
@@ -263,7 +280,7 @@ case class CompleteTaskOut[T <: Product](
 )
 
 @description("A JSON object representing the newly created process instance.")
-case class GetActiveTaskOut[T <: Product](
+case class GetActiveTaskOut(
     @description(
       """The Task Id you need to complete Task
         |
@@ -320,34 +337,45 @@ case class CamundaRestApi[
 
   def inMapper[T <: Product: Encoder: Decoder: Schema](
       createInput: (example: In, businessKey: Option[String]) => T
-  ): EndpointInput[_] =
-    jsonBody[T]
-      .examples(requestInput.examples.map { case (label, ex) =>
-        Example(
-          createInput(ex, businessKey),
-          Some(label),
-          None
-        )
-      }.toList)
-
-  def outMapper[T <: Product: Encoder: Decoder: Schema](
-      createOutput: (example: Out, businessKey: Option[String]) => T
-  ) =
-    oneOf[T](
-      oneOfMappingValueMatcher(
-        requestOutput.statusCode,
-        jsonBody[T]
-          .examples(requestOutput.examples.map { case (name, ex: Out) =>
-            Example(
-              createOutput(ex, businessKey),
-              Some(name),
-              None
-            )
-          }.toList)
-      ) { case _ =>
-        true
-      }
+  ): Option[EndpointInput[_]] =
+    Some(
+      jsonBody[T]
+        .examples(requestInput.examples.map { case (label, ex) =>
+          Example(
+            createInput(ex, businessKey),
+            Some(label),
+            None
+          )
+        }.toList)
     )
+
+  lazy val noInputMapper: Option[EndpointInput[_]] =
+    None
+
+  def outMapper[
+      T <: Product | Map[String, CamundaVariable]: Encoder: Decoder: Schema
+  ](
+      createOutput: (example: Out, businessKey: Option[String]) => T
+  ): Option[EndpointOutput[_]] =
+    Some(
+      oneOf[T](
+        oneOfMappingValueMatcher(
+          requestOutput.statusCode,
+          jsonBody[T]
+            .examples(requestOutput.examples.map { case (name, ex: Out) =>
+              Example(
+                createOutput(ex, businessKey),
+                Some(name),
+                None
+              )
+            }.toList)
+        ) { case _ =>
+          true
+        }
+      )
+    )
+  lazy val noOutputMapper: Option[EndpointOutput[_]] =
+    None
 
 end CamundaRestApi
 
@@ -361,9 +389,11 @@ sealed trait ApiEndpoint[
   lazy val name: String = restApi.name
   lazy val tag: String = restApi.tag
   lazy val descr: Option[String] = restApi.descr
+  lazy val inExample: In = restApi.requestInput.examples.values.head
+  lazy val outExample: Out = restApi.requestOutput.examples.values.head
   def outStatusCode: StatusCode
-  protected def inMapper(): EndpointInput[_]
-  protected def outMapper(): EndpointOutput[_]
+  protected def inMapper(): Option[EndpointInput[_]]
+  protected def outMapper(): Option[EndpointOutput[_]]
 
   def withRestApi(restApi: CamundaRestApi[In, Out]): T
   def withDescr(description: String): T =
@@ -388,14 +418,16 @@ sealed trait ApiEndpoint[
     )
 
   def baseEndpoint: Endpoint[_, _, _, _] =
-    endpoint
-      .name(s"$name: ${getClass.getSimpleName}")
-      .tag(tag)
-      .summary(s"$name: ${getClass.getSimpleName}")
-      .description(descr.getOrElse(""))
-      .in(inMapper())
-      .out(outMapper())
-      .errorOut(restApi.outputErrors())
+    Some(
+      endpoint
+        .name(s"$name: ${getClass.getSimpleName}")
+        .tag(tag)
+        .summary(s"$name: ${getClass.getSimpleName}")
+        .description(descr.getOrElse(""))
+        .errorOut(restApi.outputErrors())
+    ).map(ep => inMapper().map(ep.in).getOrElse(ep))
+      .map(ep => outMapper().map(ep.out).getOrElse(ep))
+      .get
 
 end ApiEndpoint
 
@@ -425,7 +457,7 @@ case class StartProcessInstance[
       .map(id => basePath / "tenant-id" / tenantIdPath(id) / "start")
       .getOrElse(basePath / "start" / s"--REMOVE:${restApi.name}--")
 
-  protected def inMapper(): EndpointInput[_] =
+  protected def inMapper() =
     restApi.inMapper[StartProcessIn[In]] {
       (example: In, businessKey: Option[String]) =>
         StartProcessIn(
@@ -435,12 +467,62 @@ case class StartProcessInstance[
         )
     }
 
-  protected def outMapper() = restApi.outMapper[StartProcessOut[Out]] {
-    (example: Out, businessKey: Option[String]) =>
-      StartProcessOut(example, businessKey = businessKey)
-  }
+  protected def outMapper() =
+    restApi.outMapper[StartProcessOut[Out]] {
+      (example: Out, businessKey: Option[String]) =>
+        StartProcessOut(example, businessKey = businessKey)
+    }
 
 end StartProcessInstance
+
+case class GetTaskFormVariables[
+    Out <: Product: Encoder: Decoder: Schema
+](
+    restApi: CamundaRestApi[NoInput, Out]
+) extends ApiEndpoint[NoInput, Out, GetTaskFormVariables[Out]]:
+
+  val outStatusCode = StatusCode.Ok
+
+  def withRestApi(
+      restApi: CamundaRestApi[NoInput, Out]
+  ): GetTaskFormVariables[Out] =
+    copy(restApi = restApi)
+
+  def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _] =
+    baseEndpoint
+      .description(
+        """Retrieves the form variables for a task.
+          |The form variables take form data specified on the task into account.
+          |If form fields are defined, the variable types and default values of the form fields are taken into account.""".stripMargin
+      )
+      .in(getPath)
+      .in(
+        query[String]("variableNames")
+          .description(
+            """A comma-separated list of variable names. Allows restricting the list of requested variables to the variable names in the list.
+              |It is best practice to restrict the list of variables to the variables actually required by the form in order to minimize fetching of data. If the query parameter is ommitted all variables are fetched.
+              |If the query parameter contains non-existent variable names, the variable names are ignored.""".stripMargin
+          )
+          .default(outExample.productElementNames.mkString(","))
+      )
+      .in(
+        query[Boolean]("deserializeValues")
+          .default(false)
+      )
+      .get
+
+  private lazy val getPath =
+    "task" / taskIdPath() / "form-variables" / s"--REMOVE:${restApi.name}--"
+
+  protected def inMapper() =
+    restApi.noInputMapper
+
+  protected def outMapper() = restApi.outMapper[Map[String, CamundaVariable]] {
+    (example: Out, _) =>
+      CamundaVariable.toCamunda(example)
+  }
+
+end GetTaskFormVariables
 
 case class CompleteTask[
     In <: Product: Encoder: Decoder: Schema,
@@ -464,29 +546,25 @@ case class CompleteTask[
   private lazy val postPath =
     "task" / taskIdPath() / "complete" / s"--REMOVE:${restApi.name}--"
 
-  protected def inMapper(): EndpointInput[_] =
+  protected def inMapper() =
     restApi.inMapper[CompleteTaskIn[In]] { (example: In, _) =>
       CompleteTaskIn(Some(example), CamundaVariable.toCamunda(example))
     }
-  protected def outMapper() = restApi.outMapper[CompleteTaskOut[Out]] {
-    (example: Out, _) =>
-      CompleteTaskOut(example)
-  }
+
+  protected def outMapper(): Option[EndpointOutput[_]] =
+    restApi.noOutputMapper
 
 end CompleteTask
 
-case class GetActiveTask[
-    In <: NoInput: Encoder: Decoder: Schema,
-    Out <: NoOutput: Encoder: Decoder: Schema
-](
-    restApi: CamundaRestApi[In, Out]
-) extends ApiEndpoint[In, Out, GetActiveTask[In, Out]]:
+case class GetActiveTask(
+    restApi: CamundaRestApi[NoInput, NoOutput]
+) extends ApiEndpoint[NoInput, NoOutput, GetActiveTask]:
 
   val outStatusCode = StatusCode.Ok
 
   def withRestApi(
-      restApi: CamundaRestApi[In, Out]
-  ): GetActiveTask[In, Out] = copy(restApi = restApi)
+      restApi: CamundaRestApi[NoInput, NoOutput]
+  ): GetActiveTask = copy(restApi = restApi)
 
   def create()(implicit tenantId: Option[String]): Endpoint[_, _, _, _] =
     baseEndpoint
@@ -496,29 +574,29 @@ case class GetActiveTask[
   private lazy val postPath =
     "task" / s"--REMOVE:${restApi.name}--"
 
-  protected def inMapper(): EndpointInput[_] =
+  protected def inMapper() =
     restApi.inMapper[GetActiveTaskIn] { (_, _) =>
       GetActiveTaskIn()
     }
-  protected def outMapper() = restApi.outMapper[GetActiveTaskOut[Out]] {
-    (_, _) =>
+  protected def outMapper() =
+    restApi.outMapper[GetActiveTaskOut] { (_, _) =>
       GetActiveTaskOut()
-  }
+    }
 end GetActiveTask
 
 private def processDefinitionKeyPath(name: String) =
   path[String]("key")
     .description("The processDefinitionKey of the Process")
-    .example(name)
+    .default(name)
 
 private def taskIdPath() =
   path[String]("taskId")
-    .description("""The taskId of the Form to complete.
+    .description("""The taskId of the Form.
                    |> This is the result id of the `GetActiveTask`
                    |""".stripMargin)
-    .example("{{taskId}}")
+    .default("{{taskId}}")
 
 private def tenantIdPath(id: String) =
   path[String]("tenant-id")
     .description("The tenant, the process is deployed for.")
-    .example(id)
+    .default(id)

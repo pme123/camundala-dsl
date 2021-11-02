@@ -21,10 +21,21 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
     )
 
   def getActiveTask(name: String, tag: String) =
-    GetActiveTask[NoInput, NoOutput](
-      CamundaRestApi(name, tag, requestErrorOutputs = List(badRequest))
+    GetActiveTask(
+      CamundaRestApi[NoInput, NoOutput](
+        name,
+        tag,
+        requestErrorOutputs = List(badRequest)
+      )
     ).withInExample(NoInput())
       .withOutExample(NoOutput())
+
+  def getTaskFormVariables[
+      Out <: Product: Encoder: Decoder: Schema
+  ](name: String, tag: String) =
+    GetTaskFormVariables[Out](
+      CamundaRestApi(name, tag, requestErrorOutputs = List(badRequest))
+    ).withInExample(NoInput())
 
   def completeTask[
       In <: Product: Encoder: Decoder: Schema
@@ -38,9 +49,12 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
     ).withOutExample(NoOutput())
 
   import reflect.Selectable.reflectiveSelectable
-  def enumDescr(enumeration: { def values: Array[?] },
-                descr: Option[String] = None) =
-    val enumDescription = s"Enumeration: \n- ${enumeration.values.mkString("\n- ")}"
+  def enumDescr(
+      enumeration: { def values: Array[?] },
+      descr: Option[String] = None
+  ) =
+    val enumDescription =
+      s"Enumeration: \n- ${enumeration.values.mkString("\n- ")}"
     descr
       .map(_ + s"\n\n$enumDescription")
       .getOrElse(enumDescription)
@@ -66,6 +80,19 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
 
   end extension
 
+ /* extension [
+      Out <: Product: Encoder: Decoder: Schema,
+      T <: ApiEndpoint[NoInput, Out, T]
+  ](endpoint: GetTaskFormVariables[Out])
+    def outExample(example: Out): T =
+      endpoint
+        .copy(pathDescr =
+          endpoint
+            .copy(resultVariables = example.productElementNames.mkString(","))
+        )
+        .withOutExample(example)
+  end extension
+*/
 end EndpointDSL
 
 trait ApiInputDSL:
