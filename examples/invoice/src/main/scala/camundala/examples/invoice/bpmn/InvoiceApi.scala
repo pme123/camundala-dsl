@@ -65,19 +65,21 @@ object InvoiceApi extends EndpointDSL:
        |""".stripMargin
 
   lazy val apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
-    Seq(
+    endpoints(
       startProcessInstance[InvoiceReceipt, NoOutput](
         processId,
         tag
       ).descr(descr)
         .inExample(InvoiceReceipt()),
-      getActiveTask("Approve Invoice", tag),
-      getTaskFormVariables[InvoiceReceipt]("Approve Invoice", tag)
-        .outExample(InvoiceReceipt()),
-      completeTask[ApproveInvoice]("Approve Invoice", tag)
-        .inExample("Invoice approved", ApproveInvoice())
-        .inExample("Invoice rejected", ApproveInvoice(false)),
-      getActiveTask("Prepare Bank Transfer", tag),
-      completeTask[PrepareBankTransfer]("Prepare Bank Transfer", tag)
-        .inExample(PrepareBankTransfer())
+      userTask("Approve Invoice", tag)( //
+        "standard" -> InvoiceReceipt()
+      )(
+        "Invoice approved" -> ApproveInvoice(),
+        "Invoice NOT approved" -> ApproveInvoice(false)
+      ),
+      userTask("Prepare Bank Transfer", tag)( //
+        "standard" -> InvoiceReceipt()
+      )(
+        "standard" -> PrepareBankTransfer()
+      )
     )

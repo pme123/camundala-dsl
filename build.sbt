@@ -53,7 +53,8 @@ lazy val api = project
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
       "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
-      "com.lihaoyi" %% "os-lib" % "0.7.8"
+      "com.lihaoyi" %% "os-lib" % "0.7.8",
+      "org.planet42" %% "laika-core" % "0.18.0"
     ),
     // To cross compile with Dotty and Scala 2
     crossScalaVersions := Seq(scala3Version, scala2Version),

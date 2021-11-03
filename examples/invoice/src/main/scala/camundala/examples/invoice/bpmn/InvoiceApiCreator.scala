@@ -24,8 +24,7 @@ object InvoiceApiCreator extends APICreator {
         |* The Camunda Rest API
         |""".stripMargin
   )
-
-  override def docOpenApi: Path = pwd / "examples" / "invoice" / "openApi.yml"
+  override def basePath: Path = pwd / "examples" / "invoice"
 
   def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = InvoiceApi.apiEndpoints
 

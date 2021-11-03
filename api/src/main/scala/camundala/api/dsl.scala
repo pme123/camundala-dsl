@@ -12,6 +12,14 @@ import java.util.Base64
 trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
   implicit def tenantId: Option[String] = None
 
+  def endpoints(
+      ePoints: (ApiEndpoint[_, _, _] | Seq[ApiEndpoint[_, _, _]])*
+  ): Seq[ApiEndpoint[_, _, _]] =
+    ePoints.toSeq.map {
+      case p: ApiEndpoint[_, _, _] => Seq(p)
+      case p: Seq[ApiEndpoint[_, _, _]] => p
+    }.flatten
+
   def startProcessInstance[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
@@ -19,8 +27,32 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
     StartProcessInstance[In, Out](
       CamundaRestApi(name, tag, requestErrorOutputs = standardErrors)
     )
+  def handleUserTask[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](name: String, tag: String) =
+    UserTaskEndpoint[In, Out](
+      CamundaRestApi(name, tag),
+      getActiveTask(s"$name UserTask", tag),
+      getTaskFormVariables[In](s"$name UserTask", tag),
+      completeTask[Out](s"$name UserTask", tag)
+    )
 
-  def getActiveTask(name: String, tag: String) =
+  def userTask[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](name: String, tag: String)(
+      formExamples: (String, In)*
+  )(
+      formCompleteExamples: (String, Out)*
+  ) =
+    UserTaskEndpoint[In, Out](
+      CamundaRestApi(name, tag, requestInput = RequestInput[In](formExamples.toMap), RequestOutput[Out](StatusCode.Ok, formCompleteExamples.toMap)),
+      getActiveTask(s"$name UserTask", tag),
+      getTaskFormVariables[In](s"$name UserTask", tag),
+      completeTask[Out](s"$name UserTask", tag)
+    )
+  private def getActiveTask(name: String, tag: String) =
     GetActiveTask(
       CamundaRestApi[NoInput, NoOutput](
         name,
@@ -30,17 +62,17 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
     ).withInExample(NoInput())
       .withOutExample(NoOutput())
 
-  def getTaskFormVariables[
+  private def getTaskFormVariables[
       Out <: Product: Encoder: Decoder: Schema
   ](name: String, tag: String) =
     GetTaskFormVariables[Out](
       CamundaRestApi(name, tag, requestErrorOutputs = List(badRequest))
     ).withInExample(NoInput())
 
-  def completeTask[
+  private def completeTask[
       In <: Product: Encoder: Decoder: Schema
   ](name: String, tag: String) =
-    CompleteTask[In, NoOutput](
+    CompleteTask[In](
       CamundaRestApi(
         name,
         tag,
@@ -75,12 +107,13 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
 
     def outExample(example: Out): T =
       endpoint.withOutExample(example)
+
     def outExample(label: String, example: Out): T =
       endpoint.withOutExample(label, example)
 
   end extension
 
- /* extension [
+/* extension [
       Out <: Product: Encoder: Decoder: Schema,
       T <: ApiEndpoint[NoInput, Out, T]
   ](endpoint: GetTaskFormVariables[Out])
@@ -92,7 +125,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
         )
         .withOutExample(example)
   end extension
-*/
+ */
 end EndpointDSL
 
 trait ApiInputDSL:
