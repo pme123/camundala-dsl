@@ -60,7 +60,8 @@ case class CamundaRestApi[
     None
 
   def outMapper[
-      T <: Product | Map[String, CamundaVariable]: Encoder: Decoder: Schema
+      T <: Product | Map[String, CamundaVariable] |
+        Seq[Product]: Encoder: Decoder: Schema
   ](
       createOutput: (example: Out, businessKey: Option[String]) => T
   ): Option[EndpointOutput[_]] =
@@ -123,6 +124,7 @@ sealed trait ApiEndpoint[
     withRestApi(
       restApi.copy(requestOutput = restApi.requestOutput :+ (label, example))
     )
+
   def withOutExamples(examples: Map[String, Out]): T =
     withRestApi(
       restApi.copy(requestOutput = RequestOutput[Out](outStatusCode, examples))
@@ -240,7 +242,7 @@ case class GetTaskFormVariables[
 end GetTaskFormVariables
 
 case class CompleteTask[
-    In <: Product: Encoder: Decoder: Schema,
+    In <: Product: Encoder: Decoder: Schema
 ](
     restApi: CamundaRestApi[In, NoOutput]
 ) extends ApiEndpoint[In, NoOutput, CompleteTask[In]]:
@@ -297,8 +299,8 @@ case class GetActiveTask(
       GetActiveTaskIn()
     }
   protected def outMapper() =
-    restApi.outMapper[GetActiveTaskOut] { (_, _) =>
-      GetActiveTaskOut()
+    restApi.outMapper[Seq[GetActiveTaskOut]] { (_, _) =>
+      Seq(GetActiveTaskOut())
     }
 end GetActiveTask
 
@@ -320,16 +322,20 @@ case class UserTaskEndpoint[
     copy(restApi = restApi)
 
   def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
-    val in = completeTask.restApi.copy(requestInput = RequestInput(restApi.requestOutput.examples))
-    val out = getTaskFormVariables.restApi.copy(requestOutput = RequestOutput(outStatusCode, restApi.requestInput.examples))
-        println(s"getTaskFormVariables: ${out}")
-      getActiveTask.create() ++
-        getTaskFormVariables
-          .withRestApi(out)
-          .create() ++
-        completeTask
-          .withRestApi(in)
-          .create()
+    val in = completeTask.restApi.copy(requestInput =
+      RequestInput(restApi.requestOutput.examples)
+    )
+    val out = getTaskFormVariables.restApi.copy(requestOutput =
+      RequestOutput(outStatusCode, restApi.requestInput.examples)
+    )
+    println(s"getTaskFormVariables: ${out}")
+    getActiveTask.create() ++
+      getTaskFormVariables
+        .withRestApi(out)
+        .create() ++
+      completeTask
+        .withRestApi(in)
+        .create()
 
   protected def inMapper() = ???
 
