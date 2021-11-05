@@ -13,7 +13,7 @@ import io.circe.{Decoder, Encoder}
 
 object TwitterApi extends EndpointDSL:
   val processId = "TwitterDemoProcess"
-  override implicit def tenantId: Option[String] = Some("MyTENANT")
+  override implicit def tenantId: Option[String] = Some("{{tenantId}}")
 
   @description("""Every employee may create a Tweet.
                  |
@@ -39,11 +39,21 @@ object TwitterApi extends EndpointDSL:
 
   lazy val apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
     Seq(
-      startProcessInstance[CreateTweet, NoOutput](processId, processId)
-        .descr(descr)
-        .inExample(standardSample),
-      getActiveTask("Review Tweet", processId),
-      completeTask[ReviewTweet]("Review Tweet", processId)
-        .inExample("Tweet accepted", ReviewTweet())
-        .inExample("Tweet rejected", ReviewTweet(false))
+      startProcessInstance(
+        processId,
+        processId,
+        processId,
+        Some(descr),
+        standardSample
+      ),
+      userTask(
+        "Review Tweet",
+        processId,
+        None,
+        NoInput(),
+        Map(
+          "Tweet accepted" -> ReviewTweet(),
+          "Tweet rejected" -> ReviewTweet(false)
+        )
+      )
     )

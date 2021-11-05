@@ -20,7 +20,6 @@ import org.latestbit.circe.adt.codec._
 object InvoiceApi extends EndpointDSL:
   val processId = "InvoiceReceipt"
   private val tag = "Invoice Process Example"
-  override implicit def tenantId: Option[String] = Some("MyTENANT")
 
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
@@ -60,26 +59,34 @@ object InvoiceApi extends EndpointDSL:
   case class PrepareBankTransfer(
   ) extends InOutObject
 
-  private val descr =
-    s"""This runs the Invoice Receipt Process.
-       |""".stripMargin
-
   lazy val apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
     endpoints(
-      startProcessInstance[InvoiceReceipt, NoOutput](
+
+      startProcessInstance(
         processId,
-        tag
-      ).descr(descr)
-        .inExample(InvoiceReceipt()),
-      userTask("Approve Invoice", tag)( //
-        "standard" -> InvoiceReceipt()
-      )(
-        "Invoice approved" -> ApproveInvoice(),
-        "Invoice NOT approved" -> ApproveInvoice(false)
+        processId,
+        tag,
+        "This starts the Invoice Receipt Process.",
+        InvoiceReceipt()
       ),
-      userTask("Prepare Bank Transfer", tag)( //
-        "standard" -> InvoiceReceipt()
-      )(
-        "standard" -> PrepareBankTransfer()
+
+      userTask(
+        "Approve Invoice",
+        tag,
+        "Approve the invoice (or not).",
+        InvoiceReceipt(),
+        Map(
+          "Invoice approved" -> ApproveInvoice(),
+          "Invoice NOT approved" -> ApproveInvoice(false)
+        )
+      ),
+
+      userTask(
+        "Prepare Bank Transfer",
+        tag,
+        "Prepare the bank transfer in the Financial Accounting System.",
+        InvoiceReceipt(),
+        PrepareBankTransfer()
       )
+
     )

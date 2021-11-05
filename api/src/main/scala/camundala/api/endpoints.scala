@@ -11,14 +11,25 @@ case class CamundaRestApi[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
-    name: String,
-    tag: String,
-    descr: Option[String] = None,
+    name: Option[String] | String = None,
+    tag: Option[String] | String = None,
+    descr: Option[String] | String = None,
     requestInput: RequestInput[In] = RequestInput[In](),
     requestOutput: RequestOutput[Out] = RequestOutput[Out](),
     requestErrorOutputs: List[RequestErrorOutput] = Nil,
     businessKey: Option[String] = None
 ):
+  lazy val maybeName = name match
+    case n: Option[String] => n
+    case n: String => Some(n)
+
+  lazy val maybeTag = tag match
+    case t: Option[String] => t
+    case t: String => Some(t)
+
+  lazy val maybeDescr = descr match
+    case d: Option[String] => d
+    case d: String => Some(d)
 
   def outputErrors(): EndpointOutput[CamundaError] =
     requestErrorOutputs match
@@ -94,9 +105,10 @@ sealed trait ApiEndpoint[
 ] extends Product:
   def restApi: CamundaRestApi[In, Out]
   def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]]
-  lazy val name: String = restApi.name
-  lazy val tag: String = restApi.tag
-  lazy val descr: Option[String] = restApi.descr
+  lazy val name: String =
+    s"${restApi.maybeName.getOrElse(inExample.getClass.getSimpleName)}: ${getClass.getSimpleName}"
+  lazy val tag: String = restApi.maybeTag.getOrElse(name)
+  lazy val descr: String = restApi.maybeDescr.getOrElse("")
   lazy val inExample: In = restApi.requestInput.examples.values.head
   lazy val outExample: Out = restApi.requestOutput.examples.values.head
   def outStatusCode: StatusCode
@@ -104,6 +116,13 @@ sealed trait ApiEndpoint[
   protected def outMapper(): Option[EndpointOutput[_]]
 
   def withRestApi(restApi: CamundaRestApi[In, Out]): T
+
+  def withName(n: String): T =
+    withRestApi(restApi.copy(name = Some(n)))
+
+  def withTag(t: String): T =
+    withRestApi(restApi.copy(tag = Some(t)))
+
   def withDescr(description: String): T =
     withRestApi(restApi.copy(descr = Some(description)))
 
@@ -133,10 +152,10 @@ sealed trait ApiEndpoint[
   def baseEndpoint: Endpoint[_, _, _, _] =
     Some(
       endpoint
-        .name(s"$name: ${getClass.getSimpleName}")
+        .name(name)
         .tag(tag)
-        .summary(s"$name: ${getClass.getSimpleName}")
-        .description(descr.getOrElse(""))
+        .summary(name)
+        .description(descr)
         .errorOut(restApi.outputErrors())
     ).map(ep => inMapper().map(ep.in).getOrElse(ep))
       .map(ep => outMapper().map(ep.out).getOrElse(ep))
@@ -148,6 +167,7 @@ case class StartProcessInstance[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
+    processDefinitionKey: String,
     restApi: CamundaRestApi[In, Out]
 ) extends ApiEndpoint[In, Out, StartProcessInstance[In, Out]]:
 
@@ -161,7 +181,7 @@ case class StartProcessInstance[
   def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
     Seq(
       baseEndpoint
-        .in(postPath(name))
+        .in(postPath(processDefinitionKey))
         .post
     )
 
@@ -343,10 +363,10 @@ case class UserTaskEndpoint[
 
 end UserTaskEndpoint
 
-private def processDefinitionKeyPath(name: String) =
+private def processDefinitionKeyPath(key: String) =
   path[String]("key")
     .description("The processDefinitionKey of the Process")
-    .default(name)
+    .default(key)
 
 private def taskIdPath() =
   path[String]("taskId")

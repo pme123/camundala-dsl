@@ -1,11 +1,11 @@
 package camundala
 package api
 
-import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto.*
+import io.circe.{Decoder, Encoder}
 import sttp.model.*
-import sttp.tapir.{Endpoint, EndpointOutput, Schema}
 import sttp.tapir.generic.auto.*
+import sttp.tapir.{Endpoint, EndpointOutput, Schema}
 
 import java.util.Base64
 
@@ -23,62 +23,128 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
   def startProcessInstance[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
-  ](name: String, tag: String) =
+  ](
+      processDefinitionKey: String,
+      name: Option[String] | String = None,
+      tag: Option[String] | String = None,
+      descr: Option[String] | String = None,
+      inExamples: Map[String, In] | In = NoInput(),
+      outExamples: Map[String, Out] | Out = NoOutput()
+  ) =
     StartProcessInstance[In, Out](
-      CamundaRestApi(name, tag, requestErrorOutputs = standardErrors)
-    )
-  def handleUserTask[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](name: String, tag: String) =
-    UserTaskEndpoint[In, Out](
-      CamundaRestApi(name, tag),
-      getActiveTask(s"$name UserTask", tag),
-      getTaskFormVariables[In](s"$name UserTask", tag),
-      completeTask[Out](s"$name UserTask", tag)
+      processDefinitionKey,
+      camundaRestApi(
+        name,
+        tag,
+        descr,
+        examples(inExamples),
+        examples(outExamples),
+        requestErrorOutputs = standardErrors
+      )
     )
 
   def userTask[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
-  ](name: String, tag: String)(
-      formExamples: (String, In)*
-  )(
-      formCompleteExamples: (String, Out)*
+  ](
+      name: Option[String] | String = None,
+      tag: Option[String] | String = None,
+      descr: Option[String] | String = None,
+      formExamples: Map[String, In] | In,
+      completeExamples: Map[String, Out] | Out
   ) =
     UserTaskEndpoint[In, Out](
-      CamundaRestApi(name, tag, requestInput = RequestInput[In](formExamples.toMap), RequestOutput[Out](StatusCode.Ok, formCompleteExamples.toMap)),
-      getActiveTask(s"$name UserTask", tag),
-      getTaskFormVariables[In](s"$name UserTask", tag),
-      completeTask[Out](s"$name UserTask", tag)
-    )
-  private def getActiveTask(name: String, tag: String) =
-    GetActiveTask(
-      CamundaRestApi[NoInput, NoOutput](
+      camundaRestApi(
         name,
         tag,
-        requestErrorOutputs = List(badRequest)
+        descr,
+        formExamples,
+        completeExamples
+      ),
+      getActiveTask(name, tag, descr),
+      getTaskFormVariables[In](name, tag, descr, formExamples),
+      completeTask[Out](name, tag, descr, completeExamples)
+    )
+
+  private def camundaRestApi[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      name: Option[String] | String = None,
+      tag: Option[String] | String = None,
+      descr: Option[String] | String = None,
+      inExamples: Map[String, In] | In = NoInput(),
+      outExamples: Map[String, Out] | Out = NoOutput(),
+      requestErrorOutputs: List[RequestErrorOutput] = Nil,
+      businessKey: Option[String] = None
+  ) =
+    CamundaRestApi(
+      name,
+      tag,
+      descr,
+      RequestInput(examples(inExamples)),
+      RequestOutput(StatusCode.Ok, examples(outExamples)),
+      requestErrorOutputs,
+      businessKey
+    )
+
+  private def examples[T](ex: Map[String, T] | T): Map[String, T] = ex match
+    case eM: Map[String, T] => eM
+    case e: T => Map("standard" -> e)
+
+  private def getActiveTask(
+      name: Option[String] | String = None,
+      tag: Option[String] | String = None,
+      descr: Option[String] | String = None
+  ) =
+    GetActiveTask(
+      camundaRestApi(
+        name,
+        tag,
+        descr,
+        NoInput(),
+        NoOutput(),
+        List(badRequest)
       )
-    ).withInExample(NoInput())
-      .withOutExample(NoOutput())
+    )
 
   private def getTaskFormVariables[
       Out <: Product: Encoder: Decoder: Schema
-  ](name: String, tag: String) =
+  ](
+      name: Option[String] | String = None,
+      tag: Option[String] | String = None,
+      descr: Option[String] | String = None,
+      formExamples: Map[String, Out] | Out
+  ) =
     GetTaskFormVariables[Out](
-      CamundaRestApi(name, tag, requestErrorOutputs = List(badRequest))
-    ).withInExample(NoInput())
+      camundaRestApi(
+        name,
+        tag,
+        descr,
+        NoInput(),
+        formExamples,
+        List(badRequest)
+      )
+    )
 
   private def completeTask[
       In <: Product: Encoder: Decoder: Schema
-  ](name: String, tag: String) =
+  ](
+      name: Option[String] | String = None,
+      tag: Option[String] | String = None,
+      descr: Option[String] | String = None,
+      completeExamples: Map[String, In] | In
+  ) =
     CompleteTask[In](
-      CamundaRestApi(
+      camundaRestApi(
         name,
         tag,
-        requestErrorOutputs = List(badRequest, serverError)
+        descr,
+        completeExamples,
+        NoOutput(),
+        List(badRequest, serverError)
       )
-    ).withOutExample(NoOutput())
+    )
 
   import reflect.Selectable.reflectiveSelectable
   def enumDescr(
@@ -96,36 +162,18 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
       Out <: Product: Encoder: Decoder: Schema,
       T <: ApiEndpoint[In, Out, T]
   ](endpoint: ApiEndpoint[In, Out, T])
-    def descr(description: String): T =
+
+    def withName(n: String): T =
+      endpoint.withName(n)
+
+    def withTag(t: String): T =
+      endpoint.withTag(t)
+
+    def withDescr(description: String): T =
       endpoint.withDescr(description)
 
-    def inExample(example: In): T =
-      endpoint.withInExample(example)
-
-    def inExample(label: String, example: In): T =
-      endpoint.withInExample(label, example)
-
-    def outExample(example: Out): T =
-      endpoint.withOutExample(example)
-
-    def outExample(label: String, example: Out): T =
-      endpoint.withOutExample(label, example)
-
   end extension
 
-/* extension [
-      Out <: Product: Encoder: Decoder: Schema,
-      T <: ApiEndpoint[NoInput, Out, T]
-  ](endpoint: GetTaskFormVariables[Out])
-    def outExample(example: Out): T =
-      endpoint
-        .copy(pathDescr =
-          endpoint
-            .copy(resultVariables = example.productElementNames.mkString(","))
-        )
-        .withOutExample(example)
-  end extension
- */
 end EndpointDSL
 
 trait ApiInputDSL:
