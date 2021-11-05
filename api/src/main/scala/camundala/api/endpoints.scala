@@ -205,7 +205,7 @@ case class StartProcessInstance[
   protected def outMapper() =
     restApi.outMapper[StartProcessOut[Out]] {
       (example: Out, businessKey: Option[String]) =>
-        StartProcessOut(example, businessKey = businessKey)
+        StartProcessOut(Some(example), CamundaVariable.toCamunda(example), businessKey = businessKey)
     }
 
 end StartProcessInstance

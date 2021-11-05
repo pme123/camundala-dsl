@@ -249,7 +249,7 @@ case class StartProcessOut[T <: Product](
     @description(
       "The Process Variables - Be aware that returns everything stored in the Process."
     )
-    variables: T,
+    variables: Map[String, CamundaVariable],
     @description(
       """The id of the process instance.
         |
