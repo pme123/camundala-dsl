@@ -12,59 +12,69 @@ import java.util.Base64
 trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
   implicit def tenantId: Option[String] = None
 
-  def endpoints(
-      ePoints: (ApiEndpoint[_, _, _] | Seq[ApiEndpoint[_, _, _]])*
-  ): Seq[ApiEndpoint[_, _, _]] =
-    ePoints.toSeq.map {
-      case p: ApiEndpoint[_, _, _] => Seq(p)
-      case p: Seq[ApiEndpoint[_, _, _]] => p
-    }.flatten
+  case class ProcessApi(
+      processName: String,
+      private val ePoints: Seq[
+        ApiEndpoint[_, _, _] | Seq[ApiEndpoint[_, _, _]]
+      ] = Seq.empty
+  ):
 
-  def startProcessInstance[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      processDefinitionKey: String,
-      name: Option[String] | String = None,
-      tag: Option[String] | String = None,
-      descr: Option[String] | String = None,
-      inExamples: Map[String, In] | In = NoInput(),
-      outExamples: Map[String, Out] | Out = NoOutput()
-  ) =
-    StartProcessInstance[In, Out](
-      processDefinitionKey,
-      camundaRestApi(
-        name,
-        tag,
-        descr,
-        examples(inExamples),
-        examples(outExamples),
-        requestErrorOutputs = standardErrors
+    lazy val endpoints =
+      ePoints.toSeq.map {
+        case p: ApiEndpoint[_, _, _] => Seq(p)
+        case p: Seq[ApiEndpoint[_, _, _]] => p
+      }.flatten
+
+    def startProcessInstance[
+        In <: Product: Encoder: Decoder: Schema,
+        Out <: Product: Encoder: Decoder: Schema
+    ](
+        processDefinitionKey: String,
+        name: Option[String] | String = None,
+        descr: Option[String] | String = None,
+        inExamples: Map[String, In] | In = NoInput(),
+        outExamples: Map[String, Out] | Out = NoOutput()
+    ) =
+      copy(
+        ePoints = ePoints :+
+          StartProcessInstance[In, Out](
+            processDefinitionKey,
+            camundaRestApi(
+              name,
+              processName,
+              descr,
+              examples(inExamples),
+              examples(outExamples),
+              requestErrorOutputs = standardErrors
+            )
+          )
       )
+
+    def userTask[
+        In <: Product: Encoder: Decoder: Schema,
+        Out <: Product: Encoder: Decoder: Schema
+    ](
+        name: Option[String] | String = None,
+        descr: Option[String] | String = None,
+        formExamples: Map[String, In] | In,
+        completeExamples: Map[String, Out] | Out
+    ) = copy(
+      ePoints = ePoints :+
+        UserTaskEndpoint[In, Out](
+          camundaRestApi(
+            name,
+            processName,
+            descr,
+            formExamples,
+            completeExamples
+          ),
+          getActiveTask(name, processName, descr),
+          getTaskFormVariables[In](name, processName, descr, formExamples),
+          completeTask[Out](name, processName, descr, completeExamples)
+        )
     )
 
-  def userTask[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      name: Option[String] | String = None,
-      tag: Option[String] | String = None,
-      descr: Option[String] | String = None,
-      formExamples: Map[String, In] | In,
-      completeExamples: Map[String, Out] | Out
-  ) =
-    UserTaskEndpoint[In, Out](
-      camundaRestApi(
-        name,
-        tag,
-        descr,
-        formExamples,
-        completeExamples
-      ),
-      getActiveTask(name, tag, descr),
-      getTaskFormVariables[In](name, tag, descr, formExamples),
-      completeTask[Out](name, tag, descr, completeExamples)
-    )
+  end ProcessApi
 
   private def camundaRestApi[
       In <: Product: Encoder: Decoder: Schema,
