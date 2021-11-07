@@ -37,23 +37,19 @@ object TwitterApi extends EndpointDSL:
     s"""This runs the Twitter Approvement Process.
        |""".stripMargin
 
-  lazy val apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
-    Seq(
-      startProcessInstance(
-        processId,
-        processId,
-        processId,
-        Some(descr),
-        standardSample
-      ),
-      userTask(
-        "Review Tweet",
-        processId,
-        None,
-        NoInput(),
-        Map(
+  lazy val processApi =
+    ProcessApi(processId)
+      .startProcessInstance(
+        processDefinitionKey = processId,
+        name = processId,
+        descr = Some(descr),
+        inExamples = standardSample
+      )
+      .userTask(
+        name = "Review Tweet",
+        formExamples = NoInput(),
+        completeExamples = Map(
           "Tweet accepted" -> ReviewTweet(),
           "Tweet rejected" -> ReviewTweet(false)
         )
       )
-    )

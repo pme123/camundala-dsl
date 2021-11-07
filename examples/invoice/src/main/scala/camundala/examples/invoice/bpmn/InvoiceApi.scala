@@ -64,8 +64,8 @@ object InvoiceApi extends EndpointDSL:
       .startProcessInstance(
         processDefinitionKey = processId,
         name = processId,
-        "This starts the Invoice Receipt Process.",
-        InvoiceReceipt()
+        descr ="This starts the Invoice Receipt Process.",
+        inExamples = InvoiceReceipt()
       )
     .userTask(
         name ="Approve Invoice",
@@ -76,8 +76,8 @@ object InvoiceApi extends EndpointDSL:
           "Invoice NOT approved" -> ApproveInvoice(false)
         )
       ).userTask(
-        "Prepare Bank Transfer",
-        "Prepare the bank transfer in the Financial Accounting System.",
-        InvoiceReceipt(),
-        PrepareBankTransfer()
+        name = "Prepare Bank Transfer",
+        descr = "Prepare the bank transfer in the Financial Accounting System.",
+        formExamples = InvoiceReceipt(),
+        completeExamples = PrepareBankTransfer()
       )

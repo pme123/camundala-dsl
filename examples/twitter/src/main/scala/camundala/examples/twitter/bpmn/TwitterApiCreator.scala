@@ -25,7 +25,7 @@ object TwitterApiCreator extends APICreator {
 
   override def basePath: Path = pwd / "examples" / "twitter"
 
-  def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = TwitterApi.apiEndpoints
+  def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = TwitterApi.processApi.endpoints
 
 
 }
