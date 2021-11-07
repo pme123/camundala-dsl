@@ -151,7 +151,7 @@ case class StartProcessIn[T <: Product](
     // use the description of the object
     variables: Map[String, CamundaVariable],
     @description("The business key of the process instance.")
-    businessKey: Option[String] = None,
+    businessKey: Option[String] = Some("example-businesskey"),
     @description("Set to false will not return the Process Variables.")
     withVariablesInReturn: Boolean = true
 )
@@ -269,7 +269,7 @@ case class StartProcessOut[T <: Product](
     definitionId: String =
       "processDefinitionKey:1:6fe66514-12ea-11ec-936e-0242ac1d0007",
     @description("The business key of the process instance.")
-    businessKey: Option[String] = None
+    businessKey: Option[String] = Some("example-businesskey")
 )
 
 @description("A JSON object representing the newly created process instance.")

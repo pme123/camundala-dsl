@@ -85,8 +85,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
       descr: Option[String] | String = None,
       inExamples: Map[String, In] | In = NoInput(),
       outExamples: Map[String, Out] | Out = NoOutput(),
-      requestErrorOutputs: List[RequestErrorOutput] = Nil,
-      businessKey: Option[String] = None
+      requestErrorOutputs: List[RequestErrorOutput] = Nil
   ) =
     CamundaRestApi(
       name,
@@ -94,8 +93,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
       descr,
       RequestInput(examples(inExamples)),
       RequestOutput(StatusCode.Ok, examples(outExamples)),
-      requestErrorOutputs,
-      businessKey
+      requestErrorOutputs
     )
 
   private def examples[T](ex: Map[String, T] | T): Map[String, T] = ex match

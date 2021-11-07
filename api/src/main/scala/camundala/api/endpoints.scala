@@ -16,8 +16,7 @@ case class CamundaRestApi[
     descr: Option[String] | String = None,
     requestInput: RequestInput[In] = RequestInput[In](),
     requestOutput: RequestOutput[Out] = RequestOutput[Out](),
-    requestErrorOutputs: List[RequestErrorOutput] = Nil,
-    businessKey: Option[String] = None
+    requestErrorOutputs: List[RequestErrorOutput] = Nil
 ):
   lazy val maybeName = name match
     case n: Option[String] => n
@@ -54,13 +53,13 @@ case class CamundaRestApi[
     }
 
   def inMapper[T <: Product: Encoder: Decoder: Schema](
-      createInput: (example: In, businessKey: Option[String]) => T
+      createInput: (example: In) => T
   ): Option[EndpointInput[_]] =
     Some(
       jsonBody[T]
         .examples(requestInput.examples.map { case (label, ex) =>
           Example(
-            createInput(ex, businessKey),
+            createInput(ex),
             Some(label),
             None
           )
@@ -74,7 +73,7 @@ case class CamundaRestApi[
       T <: Product | Map[String, CamundaVariable] |
         Seq[Product]: Encoder: Decoder: Schema
   ](
-      createOutput: (example: Out, businessKey: Option[String]) => T
+      createOutput: (example: Out) => T
   ): Option[EndpointOutput[_]] =
     Some(
       oneOf[T](
@@ -83,7 +82,7 @@ case class CamundaRestApi[
           jsonBody[T]
             .examples(requestOutput.examples.map { case (name, ex: Out) =>
               Example(
-                createOutput(ex, businessKey),
+                createOutput(ex),
                 Some(name),
                 None
               )
@@ -193,19 +192,16 @@ case class StartProcessInstance[
       .getOrElse(basePath / "start" / s"--REMOVE:${restApi.name}--")
 
   protected def inMapper() =
-    restApi.inMapper[StartProcessIn[In]] {
-      (example: In, businessKey: Option[String]) =>
-        StartProcessIn(
-          Some(example),
-          CamundaVariable.toCamunda(example),
-          businessKey
-        )
+    restApi.inMapper[StartProcessIn[In]] { (example: In) =>
+      StartProcessIn(
+        Some(example),
+        CamundaVariable.toCamunda(example)
+      )
     }
 
   protected def outMapper() =
-    restApi.outMapper[StartProcessOut[Out]] {
-      (example: Out, businessKey: Option[String]) =>
-        StartProcessOut(Some(example), CamundaVariable.toCamunda(example), businessKey = businessKey)
+    restApi.outMapper[StartProcessOut[Out]] { (example: Out) =>
+      StartProcessOut(Some(example), CamundaVariable.toCamunda(example))
     }
 
 end StartProcessInstance
@@ -255,7 +251,7 @@ case class GetTaskFormVariables[
     restApi.noInputMapper
 
   protected def outMapper() = restApi.outMapper[Map[String, CamundaVariable]] {
-    (example: Out, _) =>
+    (example: Out) =>
       CamundaVariable.toCamunda(example)
   }
 
@@ -285,7 +281,7 @@ case class CompleteTask[
     "task" / taskIdPath() / "complete" / s"--REMOVE:${restApi.name}--"
 
   protected def inMapper() =
-    restApi.inMapper[CompleteTaskIn[In]] { (example: In, _) =>
+    restApi.inMapper[CompleteTaskIn[In]] { (example: In) =>
       CompleteTaskIn(Some(example), CamundaVariable.toCamunda(example))
     }
 
@@ -315,13 +311,11 @@ case class GetActiveTask(
     "task" / s"--REMOVE:${restApi.name}--"
 
   protected def inMapper() =
-    restApi.inMapper[GetActiveTaskIn] { (_, _) =>
-      GetActiveTaskIn()
-    }
+    restApi.noInputMapper
+
   protected def outMapper() =
-    restApi.outMapper[Seq[GetActiveTaskOut]] { (_, _) =>
-      Seq(GetActiveTaskOut())
-    }
+    restApi.noOutputMapper
+
 end GetActiveTask
 
 case class UserTaskEndpoint[
