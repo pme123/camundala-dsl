@@ -1,7 +1,7 @@
 package camundala
 package examples.invoice.bpmn
 
-import camundala.api.*
+import api.*
 import camundala.api.CamundaVariable.*
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
