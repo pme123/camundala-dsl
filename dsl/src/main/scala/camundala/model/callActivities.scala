@@ -27,6 +27,8 @@ case class CallActivity(
   def withOuts(outVariables: Seq[InOutVariable]): CallActivity =
     copy(outVariables = outVariables)
 
+end CallActivity
+
 object CallActivity:
 
   def apply(ident: String): CallActivity =

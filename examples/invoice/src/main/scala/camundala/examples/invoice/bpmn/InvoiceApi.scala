@@ -38,7 +38,7 @@ object InvoiceApi extends EndpointDSL:
         ),
         Some("application/pdf")
       )
-  ) extends InOutObject
+  )
 
   enum InvoiceCategory
       derives JsonTaggedAdt.PureEncoder,
@@ -47,35 +47,62 @@ object InvoiceApi extends EndpointDSL:
     case Misc
     case `Software License Costs`
 
+  case class SelectApproverGroup(
+      amount: Double = 30.0,
+      @description(
+        enumDescr(InvoiceCategory, Some("There are three possible Categories"))
+      )
+      invoiceCategory: InvoiceCategory =
+        InvoiceCategory.`Software License Costs`
+  )
+
+  case class AssignApproverGroup(
+      approverGroups: ApproverGroup = ApproverGroup.sales
+  )
+
+  enum ApproverGroup
+      derives JsonTaggedAdt.PureEncoder,
+        JsonTaggedAdt.PureDecoder:
+    case accounting
+    case sales
+    case management
+
   @description("""Every Invoice has to be accepted by the Boss.""")
   case class ApproveInvoice(
       @description("If true, the Boss accepted the Invoice")
       approved: Boolean = true
-  ) extends InOutObject
+  )
 
   @description(
     """Prepares the bank transfer for the invoice. Only readOnly fields from the Process."""
   )
   case class PrepareBankTransfer(
-  ) extends InOutObject
+  )
 
   lazy val processApi: ProcessApi =
     ProcessApi(processName)
       .startProcessInstance(
         processDefinitionKey = processId,
         name = processId,
-        descr ="This starts the Invoice Receipt Process.",
+        descr = "This starts the Invoice Receipt Process.",
         inExamples = InvoiceReceipt()
       )
-    .userTask(
-        name ="Approve Invoice",
+      .evaluateDecision(
+        decisionDefinitionKey = "invoice-assign-approver",
+        name = "Assign Approver Group",
+        inExamples = SelectApproverGroup(),
+        outExamples = AssignApproverGroup()
+      )
+      .userTask(
+        name = "Approve Invoice",
         descr = "Approve the invoice (or not).",
         formExamples = InvoiceReceipt(),
         completeExamples = Map(
           "Invoice approved" -> ApproveInvoice(),
           "Invoice NOT approved" -> ApproveInvoice(false)
         )
-      ).userTask(
+      )
+      .userTask(
         name = "Prepare Bank Transfer",
         descr = "Prepare the bank transfer in the Financial Accounting System.",
         formExamples = InvoiceReceipt(),

@@ -74,6 +74,35 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
         )
     )
 
+    def evaluateDecision[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+    ](
+       decisionDefinitionKey: String,
+       name: Option[String] | String = None,
+       descr: Option[String] | String = None,
+       inExamples: Map[String, In] | In = NoInput(),
+       outExamples: Map[String, Out] | Out = NoOutput()
+     ) =
+      copy(
+        ePoints = ePoints :+
+          EvaluateDecision[In, Out](
+            decisionDefinitionKey,
+            HitPolicy.COLLECT,
+            camundaRestApi(
+              name,
+              processName,
+              descr,
+              examples(inExamples),
+              examples(outExamples),
+              requestErrorOutputs = List(
+                forbidden,
+                notFound,
+                serverError
+              )
+            )
+          )
+      )
   end ProcessApi
 
   private def camundaRestApi[
@@ -206,6 +235,11 @@ trait ApiErrorDSL:
       CamundaError("NotFound", defaultNotFoundMsg)
     )
 
+  def forbidden: RequestErrorOutput =
+    error(StatusCode.Forbidden).example(
+      CamundaError("Forbidden", decisionForbiddenMsg)
+    )
+
   def serverError: RequestErrorOutput =
     error(StatusCode.InternalServerError).example(
       CamundaError("InternalServerError", defaultServerError)
@@ -235,6 +269,8 @@ trait ApiErrorDSL:
     s"The instance could not be created due to an invalid variable value, for example if the value could not be parsed to an Integer value or the passed variable type is not supported. See the $errorHandlingLink for the error response format."
   private val defaultNotFoundMsg =
     s"The instance could not be created due to a non existing process definition key. See the $errorHandlingLink for the error response format."
+  private val decisionForbiddenMsg =
+    s"The authenticated user is unauthorized to evaluate this decision. See the Introduction for the error response format. See the $errorHandlingLink for the error response format."
   private val defaultServerError =
     s"The instance could not be created successfully. See the $errorHandlingLink for the error response format."
 end ApiErrorDSL

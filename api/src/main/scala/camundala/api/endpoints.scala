@@ -71,7 +71,7 @@ case class CamundaRestApi[
 
   def outMapper[
       T <: Product | Map[String, CamundaVariable] |
-        Seq[Product]: Encoder: Decoder: Schema
+        Seq[Product | Map[String, CamundaVariable]]: Encoder: Decoder: Schema
   ](
       createOutput: (example: Out) => T
   ): Option[EndpointOutput[_]] =
@@ -186,10 +186,10 @@ case class StartProcessInstance[
 
   private def postPath(name: String)(implicit tenantId: Option[String]) =
     val basePath =
-      "process-definition" / "key" / processDefinitionKeyPath(name)
+      "process-definition" / "key" / definitionKeyPath(name)
     tenantId
       .map(id => basePath / "tenant-id" / tenantIdPath(id) / "start")
-      .getOrElse(basePath / "start" / s"--REMOVE:${restApi.name}--")
+      .getOrElse(basePath / "start") / s"--REMOVE:${restApi.name}--"
 
   protected def inMapper() =
     restApi.inMapper[StartProcessIn[In]] { (example: In) =>
@@ -357,9 +357,73 @@ case class UserTaskEndpoint[
 
 end UserTaskEndpoint
 
-private def processDefinitionKeyPath(key: String) =
+enum HitPolicy:
+
+  case UNIQUE
+  case FIRST
+  case ANY
+  case COLLECT
+  case RULE_ORDER
+end HitPolicy
+
+case class EvaluateDecision[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+](
+    decisionDefinitionKey: String,
+    hitPolicy: HitPolicy,
+    restApi: CamundaRestApi[In, Out]
+) extends ApiEndpoint[In, Out, EvaluateDecision[In, Out]]:
+
+  val outStatusCode = StatusCode.Ok
+
+  def withRestApi(
+      restApi: CamundaRestApi[In, Out]
+  ): EvaluateDecision[In, Out] =
+    copy(restApi = restApi)
+
+  def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
+    Seq(
+      baseEndpoint
+        .in(postPath(decisionDefinitionKey))
+        .post
+    )
+
+  private def postPath(name: String)(implicit tenantId: Option[String]) =
+    val basePath =
+      "decision-definition" / "key" / definitionKeyPath(name)
+    tenantId
+      .map(id => basePath / "tenant-id" / tenantIdPath(id) / "evaluate")
+      .getOrElse(basePath / "evaluate") / s"--REMOVE:${restApi.name}--"
+
+  import HitPolicy.*
+
+  protected def inMapper() =
+    restApi.inMapper[EvaluateDecisionIn[In]] { (example: In) =>
+      EvaluateDecisionIn(
+        Some(example),
+        CamundaVariable.toCamunda(example)
+      )
+    }
+
+  protected def outMapper() =
+    hitPolicy match
+      case UNIQUE | FIRST | ANY =>
+        restApi.outMapper[Map[String, CamundaVariable]] { (example: Out) =>
+          CamundaVariable.toCamunda(example)
+        }
+      case _ =>
+        restApi.outMapper[Seq[Map[String, CamundaVariable]]] { (example: Out) =>
+          Seq(CamundaVariable.toCamunda(example))
+        }
+
+end EvaluateDecision
+
+private def definitionKeyPath(key: String) =
   path[String]("key")
-    .description("The processDefinitionKey of the Process")
+    .description(
+      "The Process- or Decision-DefinitionKey of the Process or Decision"
+    )
     .default(key)
 
 private def taskIdPath() =
