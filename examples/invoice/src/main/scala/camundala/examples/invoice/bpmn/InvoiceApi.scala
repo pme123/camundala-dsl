@@ -18,8 +18,6 @@ import java.util.Base64
 import org.latestbit.circe.adt.codec._
 
 object InvoiceApi extends EndpointDSL:
-  val processId = "InvoiceReceipt"
-  private val processName = "Invoice Process Example"
 
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
@@ -79,7 +77,12 @@ object InvoiceApi extends EndpointDSL:
   case class PrepareBankTransfer(
   )
 
-  lazy val processApi: ProcessApi =
+  case class AssignedReviewer(reviewer: String = "John")
+  case class InvoiceReviewed(clarified: Boolean = true)
+
+  lazy val invoiceReceiptApi: ProcessApi =
+    val processId = "InvoiceReceipt"
+    val processName = "Invoice Receipt"
     ProcessApi(processName)
       .startProcessInstance(
         processDefinitionKey = processId,
@@ -107,4 +110,31 @@ object InvoiceApi extends EndpointDSL:
         descr = "Prepare the bank transfer in the Financial Accounting System.",
         formExamples = InvoiceReceipt(),
         completeExamples = PrepareBankTransfer()
+      )
+
+  lazy val reviewInvoiceApi: ProcessApi =
+    val processId = "ReviewInvoice"
+    val processName = "Review Invoice"
+    ProcessApi(processName)
+      .startProcessInstance(
+        processDefinitionKey = processId,
+        name = processId,
+        descr = "This starts the Review Invoice Process.",
+        inExamples = InvoiceReceipt(),
+        outExamples = InvoiceReviewed()
+      )
+      .userTask(
+        name = "Assign Reviewer",
+        descr = "Select the Reviewer.",
+        formExamples = InvoiceReceipt(),
+        completeExamples = AssignedReviewer()
+      )
+      .userTask(
+        name = "Review Invoice",
+        descr = "Review Invoice and approve.",
+        formExamples = InvoiceReceipt(),
+        completeExamples = Map(
+          "Invoice clarified" -> InvoiceReviewed(),
+          "Invoice NOT clarified" -> InvoiceReviewed(false)
+        )
       )

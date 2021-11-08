@@ -79,6 +79,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
       Out <: Product: Encoder: Decoder: Schema
     ](
        decisionDefinitionKey: String,
+       hitPolicy: HitPolicy = HitPolicy.UNIQUE,
        name: Option[String] | String = None,
        descr: Option[String] | String = None,
        inExamples: Map[String, In] | In = NoInput(),
@@ -88,7 +89,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
         ePoints = ePoints :+
           EvaluateDecision[In, Out](
             decisionDefinitionKey,
-            HitPolicy.COLLECT,
+            hitPolicy,
             camundaRestApi(
               name,
               processName,

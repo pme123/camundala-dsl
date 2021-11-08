@@ -26,7 +26,8 @@ object InvoiceApiCreator extends APICreator {
   )
   override def basePath: Path = pwd / "examples" / "invoice"
 
-  def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = InvoiceApi.processApi.endpoints
-
+  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
+    InvoiceApi.invoiceReceiptApi.endpoints ++
+      InvoiceApi.reviewInvoiceApi.endpoints
 
 }
