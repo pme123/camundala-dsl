@@ -38,7 +38,7 @@ object TwitterApi extends EndpointDSL:
        |""".stripMargin
 
   lazy val processApi =
-    ProcessApi(processId)
+    process(processId)
       .startProcessInstance(
         processDefinitionKey = processId,
         name = processId,

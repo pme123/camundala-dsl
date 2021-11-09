@@ -1,6 +1,11 @@
 package camundala
 package api
 
+import laika.api._
+import laika.format._
+import laika.markdown.github.GitHubFlavor
+import laika.ast.MessageFilter
+
 import os.{Path, pwd, read}
 import sttp.tapir.Endpoint
 import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
@@ -72,10 +77,6 @@ trait APICreator extends App, EndpointDSL:
     println(s"Created Open API $path")
 
   private def createChangeLog(changeLog: String): String =
-    import laika.api._
-    import laika.format._
-    import laika.markdown.github.GitHubFlavor
-    import laika.ast.MessageFilter
 
     val transformer = Transformer
       .from(Markdown)

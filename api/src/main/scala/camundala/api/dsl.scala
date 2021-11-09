@@ -12,9 +12,9 @@ import java.util.Base64
 trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
   implicit def tenantId: Option[String] = None
 
-  case class ProcessApi(
+  case class process(
       processName: String,
-      private val ePoints: Seq[
+      ePoints: Seq[
         ApiEndpoint[_, _, _] | Seq[ApiEndpoint[_, _, _]]
       ] = Seq.empty
   ):
@@ -75,16 +75,16 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
     )
 
     def evaluateDecision[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+        In <: Product: Encoder: Decoder: Schema,
+        Out <: Product: Encoder: Decoder: Schema
     ](
-       decisionDefinitionKey: String,
-       hitPolicy: HitPolicy = HitPolicy.UNIQUE,
-       name: Option[String] | String = None,
-       descr: Option[String] | String = None,
-       inExamples: Map[String, In] | In = NoInput(),
-       outExamples: Map[String, Out] | Out = NoOutput()
-     ) =
+        decisionDefinitionKey: String,
+        hitPolicy: HitPolicy = HitPolicy.UNIQUE,
+        name: Option[String] | String = None,
+        descr: Option[String] | String = None,
+        inExamples: Map[String, In] | In = NoInput(),
+        outExamples: Map[String, Out] | Out = NoOutput()
+    ) =
       copy(
         ePoints = ePoints :+
           EvaluateDecision[In, Out](
@@ -104,7 +104,7 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
             )
           )
       )
-  end ProcessApi
+  end process
 
   private def camundaRestApi[
       In <: Product: Encoder: Decoder: Schema,

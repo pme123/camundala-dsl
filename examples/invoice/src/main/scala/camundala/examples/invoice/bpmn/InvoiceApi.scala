@@ -80,10 +80,10 @@ object InvoiceApi extends EndpointDSL:
   case class AssignedReviewer(reviewer: String = "John")
   case class InvoiceReviewed(clarified: Boolean = true)
 
-  lazy val invoiceReceiptApi: ProcessApi =
+  lazy val invoiceReceiptApi: process =
     val processId = "InvoiceReceipt"
     val processName = "Invoice Receipt"
-    ProcessApi(processName)
+    process(processName)
       .startProcessInstance(
         processDefinitionKey = processId,
         name = processId,
@@ -112,10 +112,10 @@ object InvoiceApi extends EndpointDSL:
         completeExamples = PrepareBankTransfer()
       )
 
-  lazy val reviewInvoiceApi: ProcessApi =
+  lazy val reviewInvoiceApi: process =
     val processId = "ReviewInvoice"
     val processName = "Review Invoice"
-    ProcessApi(processName)
+    process(processName)
       .startProcessInstance(
         processDefinitionKey = processId,
         name = processId,

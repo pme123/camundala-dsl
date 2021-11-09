@@ -342,7 +342,6 @@ case class UserTaskEndpoint[
     val out = getTaskFormVariables.restApi.copy(requestOutput =
       RequestOutput(outStatusCode, restApi.requestInput.examples)
     )
-    println(s"getTaskFormVariables: ${out}")
     getActiveTask.create() ++
       getTaskFormVariables
         .withRestApi(out)

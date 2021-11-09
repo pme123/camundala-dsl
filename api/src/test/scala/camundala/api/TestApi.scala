@@ -14,7 +14,7 @@ object TestApi extends APICreator {
 
   def version = "1.0"
 
-  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] = Sample.process.endpoints
+  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] = Sample.testProcess.endpoints
 
 }
 
@@ -52,8 +52,8 @@ object Sample extends EndpointDSL:
     s"""This runs the Sample Process.
        |""".stripMargin
 
-  lazy val process =
-    ProcessApi(name)
+  lazy val testProcess =
+    process(name)
       .startProcessInstance(
         name,
         name,
