@@ -107,7 +107,7 @@ sealed trait ApiEndpoint[
   lazy val name: String =
     s"${restApi.maybeName.getOrElse(inExample.getClass.getSimpleName)}: ${getClass.getSimpleName}"
   lazy val tag: String = restApi.maybeTag.getOrElse(name)
-  lazy val descr: String = restApi.maybeDescr.getOrElse("")
+  def descr: String = restApi.maybeDescr.getOrElse("")
   lazy val inExample: In = restApi.requestInput.examples.values.head
   lazy val outExample: Out = restApi.requestOutput.examples.values.head
   def outStatusCode: StatusCode
@@ -203,6 +203,35 @@ case class StartProcessInstance[
     restApi.outMapper[StartProcessOut[Out]] { (example: Out) =>
       StartProcessOut(Some(example), CamundaVariable.toCamunda(example))
     }
+
+  override lazy val descr: String = restApi.maybeDescr.getOrElse("") +
+    s"""
+      |
+      |Usage as _CallActivity_:
+      |```
+      |lazy val $name =
+      |          callActivity("$processDefinitionKey") //TODO adjust to your CallActivity id!
+      |            .calledElement("$processDefinitionKey")
+      |            ${inSources}
+      |            ${outSources}
+      |```
+      |""".stripMargin
+
+  private lazy val inSources =
+    inExample match
+      case NoInput() => ""
+      case _ =>
+        inExample.productElementNames.mkString(""".inSource("""",
+          """"
+            |            .inSource("""".stripMargin, """")""")
+
+  private lazy val outSources =
+    outExample match
+      case NoOutput() => ""
+      case _ =>
+        outExample.productElementNames.mkString(""".outSource("""",
+          """"
+            |            .outSource("""".stripMargin, """")""")
 
 end StartProcessInstance
 

@@ -253,7 +253,7 @@ object ExampleInvoice2 extends DSL:
       )
 
     object processes:
-      val ReviewInvoiceProcessIdent = "ReviewInvoiceProcess"
+      val ReviewInvoiceProcessIdent = "ReviewInvoice"
       val ReviewInvoiceProcess = process(ReviewInvoiceProcessIdent)
     /*    .tasks(
           userTasks.AssignReviewer,

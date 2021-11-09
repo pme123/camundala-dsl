@@ -78,13 +78,13 @@ paths:
       tags:
       - Invoice Receipt
       summary: 'InvoiceReceipt: StartProcessInstance'
-      description: "This starts the Invoice Receipt Process.\n\nUsage as _CallActivity:\n\
-        ```\nlazy val InvoiceReceipt: StartProcessInstance =\n          callActivity(ReviewInvoiceIdent)\n\
-        \            .calledElement(reviewInvoice.processes.ReviewInvoiceProcessIdent)\n\
-        \            .processBusinessKey\n            .inSource(\"invoiceDocument\"\
-        )\n            .inSource(\"creditor\")\n            .inSource(\"amount\")\n\
-        \            .inSource(\"invoiceCategory\")\n            .inSource(\"invoiceNumber\"\
-        )\n            .outSource(\"clarified\")\n```\n"
+      description: "This starts the Invoice Receipt Process.\n\nUsage as _CallActivity_:\n\
+        ```\nlazy val InvoiceReceipt: StartProcessInstance =\n          callActivity(\"\
+        InvoiceReceipt\") //TODO adjust to your CallActivity id!\n            .calledElement(\"\
+        InvoiceReceipt\")\n            .inSource(\"creditor\"\n            .inSource(\"\
+        amount\"\n            .inSource(\"invoiceCategory\"\n            .inSource(\"\
+        invoiceNumber\"\n            .inSource(\"invoiceDocument\")\n            \n\
+        ```\n"
       operationId: 'InvoiceReceipt: StartProcessInstance'
       parameters:
       - name: key
@@ -6749,13 +6749,13 @@ paths:
       tags:
       - Review Invoice
       summary: 'ReviewInvoice: StartProcessInstance'
-      description: "This starts the Review Invoice Process.\n\nUsage as _CallActivity:\n\
-        ```\nlazy val ReviewInvoice: StartProcessInstance =\n          callActivity(ReviewInvoiceIdent)\n\
-        \            .calledElement(reviewInvoice.processes.ReviewInvoiceProcessIdent)\n\
-        \            .processBusinessKey\n            .inSource(\"invoiceDocument\"\
-        )\n            .inSource(\"creditor\")\n            .inSource(\"amount\")\n\
-        \            .inSource(\"invoiceCategory\")\n            .inSource(\"invoiceNumber\"\
-        )\n            .outSource(\"clarified\")\n```\n"
+      description: "This starts the Review Invoice Process.\n\nUsage as _CallActivity_:\n\
+        ```\nlazy val ReviewInvoice: StartProcessInstance =\n          callActivity(\"\
+        ReviewInvoice\") //TODO adjust to your CallActivity id!\n            .calledElement(\"\
+        ReviewInvoice\")\n            .inSource(\"creditor\"\n            .inSource(\"\
+        amount\"\n            .inSource(\"invoiceCategory\"\n            .inSource(\"\
+        invoiceNumber\"\n            .inSource(\"invoiceDocument\")\n            .outSource(\"\
+        clarified\")\n```\n"
       operationId: 'ReviewInvoice: StartProcessInstance'
       parameters:
       - name: key
