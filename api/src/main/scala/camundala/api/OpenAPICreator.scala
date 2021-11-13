@@ -131,31 +131,34 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: pure.InOut[In, Out, T]
     ](process: pure.Process[In, Out])
-    def endpoints =
-      Seq(
+    def endpoint =
         StartProcessInstance(
           process.id,
           CamundaRestApi(
             process.inOutDescr,
             process.id,
-            requestErrorOutputs = standardErrors
+            requestErrorOutputs = startProcessInstanceErrors
           )
         )
-      )
   end extension
 
   extension [
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema,
-    T <: pure.InOut[In, Out, T]
   ](userTask: pure.UserTask[In, Out])
-    def endpoints: Seq[ApiEndpoint[_, _, _]] =
-      Seq(
+    def endpoint: ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]] =
+      UserTaskEndpoint(
+        CamundaRestApi(
+          userTask.inOutDescr,
+          userTask.id,
+          Nil
+        ),
         GetActiveTask(
           CamundaRestApi(
             userTask.id,
             userTask.id,
-            userTask.descr
+            userTask.descr,
+            requestErrorOutputs = getActiveTaskErrors
           )
         ),
         GetTaskFormVariables[In](
@@ -163,6 +166,7 @@ trait APICreator extends App:
             userTask.id,
             userTask.id,
             userTask.descr,
+            requestErrorOutputs = getTaskFormVariablesErrors
          /*   requestOutput = RequestOutput(
               StatusCode.Ok,
               formExamples + ("standard" -> userTask.in)
@@ -175,6 +179,7 @@ trait APICreator extends App:
             userTask.id,
             userTask.id,
             userTask.descr,
+            requestErrorOutputs = completeTaskErrors
         /*    requestInput =
               RequestInput(completeExamples + ("standard" -> userTask.out))
          */   // List.empty //List(badRequest, serverError)

@@ -69,6 +69,11 @@ object endpoints:
           }.toList)
       )
 
+    def inMapper[T <: Product: Encoder: Decoder: Schema](
+        body: T
+    ): Option[EndpointInput[_]] =
+      inMapper(_ => body)
+
     lazy val noInputMapper: Option[EndpointInput[_]] =
       None
 
@@ -95,6 +100,14 @@ object endpoints:
           }
         )
       )
+    def outMapper[
+        T <: Product | Map[String, CamundaVariable] |
+          Seq[Product | Map[String, CamundaVariable]]: Encoder: Decoder: Schema
+    ](
+        body: T
+    ): Option[EndpointOutput[_]] =
+      outMapper(_ => body)
+
     lazy val noOutputMapper: Option[EndpointOutput[_]] =
       None
 
@@ -168,7 +181,9 @@ object endpoints:
 
     def withOutExamples(examples: Map[String, Out]): T =
       withRestApi(
-        restApi.copy(requestOutput = RequestOutput[Out](outStatusCode, examples))
+        restApi.copy(requestOutput =
+          RequestOutput[Out](outStatusCode, examples)
+        )
       )
 
     def baseEndpoint: Endpoint[_, _, _, _] =
@@ -275,7 +290,7 @@ object endpoints:
         CamundaRestApi(
           e,
           e.id,
-          List.empty //standardErrors
+          startProcessInstanceErrors
         )
       )
 
@@ -325,10 +340,10 @@ object endpoints:
     protected def inMapper() =
       restApi.noInputMapper
 
-    protected def outMapper() = restApi.outMapper[Map[String, CamundaVariable]] {
-      (example: Out) =>
+    protected def outMapper() =
+      restApi.outMapper[Map[String, CamundaVariable]] { (example: Out) =>
         CamundaVariable.toCamunda(example)
-    }
+      }
 
   end GetTaskFormVariables
 
@@ -386,10 +401,10 @@ object endpoints:
       "task" / s"--REMOVE:${restApi.name}--"
 
     protected def inMapper() =
-      restApi.noInputMapper
+      restApi.inMapper(GetActiveTaskIn())
 
     protected def outMapper() =
-      restApi.noOutputMapper
+      restApi.outMapper(Seq(GetActiveTaskOut()))
 
   end GetActiveTask
 
@@ -397,18 +412,16 @@ object endpoints:
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
+      restApi: CamundaRestApi[In, Out],
       getActiveTask: GetActiveTask,
       getTaskFormVariables: GetTaskFormVariables[In],
       completeTask: CompleteTask[Out]
   ) extends ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]]:
-    // not used
-    val restApi: CamundaRestApi[In, Out] = CamundaRestApi[In, Out]()
-
     val outStatusCode = StatusCode.Ok //not used
 
     def withRestApi(
         restApi: CamundaRestApi[In, Out]
-    ): UserTaskEndpoint[In, Out] = ???
+    ): UserTaskEndpoint[In, Out] = copy(restApi = restApi)
 
     def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
       val in = completeTask.restApi.copy(requestInput =
@@ -466,7 +479,7 @@ object endpoints:
         )
       )
   end UserTaskEndpoint
-    */
+   */
 
   enum HitPolicy:
 
@@ -524,8 +537,9 @@ object endpoints:
             CamundaVariable.toCamunda(example)
           }
         case _ =>
-          restApi.outMapper[Seq[Map[String, CamundaVariable]]] { (example: Out) =>
-            Seq(CamundaVariable.toCamunda(example))
+          restApi.outMapper[Seq[Map[String, CamundaVariable]]] {
+            (example: Out) =>
+              Seq(CamundaVariable.toCamunda(example))
           }
 
   end EvaluateDecision
@@ -549,31 +563,62 @@ object endpoints:
       .description("The tenant, the process is deployed for.")
       .default(id)
 
-
-  lazy val standardErrors = List(
-    badRequest,
-    notFound,
-    serverError
+  lazy val startProcessInstanceErrors = List(
+    badRequest(
+      s"""The instance could not be created due to an invalid variable value,
+         |for example if the value could not be parsed to an Integer value or the passed variable type is not supported.
+         |$errorHandlingLink""".stripMargin
+    ),
+    notFound(
+      s"""The instance could not be created due to a non existing process definition key.
+         |$errorHandlingLink""".stripMargin
+    ),
+    serverError(s"""The instance could not be created successfully.
+                   |$errorHandlingLink""".stripMargin)
   )
 
-  def badRequest: RequestErrorOutput =
+  lazy val getActiveTaskErrors = List(
+    badRequest(
+      s"""Returned if some of the query parameters are invalid, for example if a sortOrder parameter is supplied, but no sortBy,
+         | or if an invalid operator for variable comparison is used.
+         |$errorHandlingLink""".stripMargin
+    )
+  )
+
+  lazy val getTaskFormVariablesErrors = List(
+    notFound(s"""Task id is null or does not exist.
+                |$errorHandlingLink""".stripMargin)
+  )
+
+  lazy val completeTaskErrors = List(
+    badRequest(
+      s"""The variable value or type is invalid, for example if the value could not be parsed to an Integer value or the passed variable type is not supported.
+         |$errorHandlingLink""".stripMargin
+    ),
+    serverError(
+      s"""If the task does not exist or the corresponding process instance could not be resumed successfully.
+         |$errorHandlingLink""".stripMargin
+    )
+  )
+
+  def badRequest(msg: String = "Bad Request"): RequestErrorOutput =
     error(StatusCode.BadRequest).example(
-      CamundaError("BadRequest", defaultBadRequestMsg)
+      CamundaError("BadRequest", msg)
     )
 
-  def notFound: RequestErrorOutput =
+  def notFound(msg: String = "Not Found"): RequestErrorOutput =
     error(StatusCode.NotFound).example(
-      CamundaError("NotFound", defaultNotFoundMsg)
+      CamundaError("NotFound", msg)
     )
 
-  def forbidden: RequestErrorOutput =
+  def forbidden(msg: String = "Forbidden"): RequestErrorOutput =
     error(StatusCode.Forbidden).example(
-      CamundaError("Forbidden", decisionForbiddenMsg)
+      CamundaError("Forbidden", msg)
     )
 
-  def serverError: RequestErrorOutput =
+  def serverError(msg: String = "Internal Server Error"): RequestErrorOutput =
     error(StatusCode.InternalServerError).example(
-      CamundaError("InternalServerError", defaultServerError)
+      CamundaError("InternalServerError", msg)
     )
 
   def error(statusCode: StatusCode): RequestErrorOutput =
@@ -587,23 +632,15 @@ object endpoints:
       request.copy(examples = request.examples + ("standardExample" -> ex))
 
     def example(
-                 `type`: String = "SomeExceptionClass",
-                 message: String = "a detailed message"
-               ): RequestErrorOutput =
+        `type`: String = "SomeExceptionClass",
+        message: String = "a detailed message"
+    ): RequestErrorOutput =
       request.copy(examples =
         request.examples + (`type` -> CamundaError(`type`, message))
       )
   end extension
 
   private val errorHandlingLink =
-    s"[Introduction](https://docs.camunda.org/manual/$camundaVersion/reference/rest/overview/#error-handling)"
-  private val defaultBadRequestMsg =
-    s"The instance could not be created due to an invalid variable value, for example if the value could not be parsed to an Integer value or the passed variable type is not supported. See the $errorHandlingLink for the error response format."
-  private val defaultNotFoundMsg =
-    s"The instance could not be created due to a non existing process definition key. See the $errorHandlingLink for the error response format."
-  private val decisionForbiddenMsg =
-    s"The authenticated user is unauthorized to evaluate this decision. See the Introduction for the error response format. See the $errorHandlingLink for the error response format."
-  private val defaultServerError =
-    s"The instance could not be created successfully. See the $errorHandlingLink for the error response format."
+    s"See the [Introduction](https://docs.camunda.org/manual/$camundaVersion/reference/rest/overview/#error-handling) for the error response format."
 
 end endpoints

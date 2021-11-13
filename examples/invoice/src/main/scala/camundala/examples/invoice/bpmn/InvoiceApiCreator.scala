@@ -33,11 +33,21 @@ object InvoiceApiCreator extends APICreator {
   import InvoiceApi.*
 
   def apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
-      invoiceReceiptProcess.endpoints ++
-        approveInvoiceUT.endpoints/*(invoiceReceiptProcess, completeExamples = Map(
+      Seq(
+        invoiceReceiptProcess
+          .endpoint,
+        approveInvoiceUT
+          .endpoint
+          .withOutExample("Invoice approved", ApproveInvoice())
+          .withOutExample("Invoice NOT approved", ApproveInvoice(false)),
+        prepareBankTransferUT
+          .endpoint
+      )
+
+    /*(invoiceReceiptProcess, completeExamples = Map(
           "Invoice approved" -> ApproveInvoice(),
           "Invoice NOT approved" -> ApproveInvoice(false)
-        ))*/ ++
-        prepareBankTransferUT.endpoints//(invoiceReceiptProcess)
+        ))*/
+       // prepareBankTransferUT.endpoints//(invoiceReceiptProcess)
 
 }

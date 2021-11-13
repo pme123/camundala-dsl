@@ -6264,9 +6264,12 @@ paths:
                   value:
                     type: BadRequest
                     message: The instance could not be created due to an invalid variable
-                      value, for example if the value could not be parsed to an Integer
-                      value or the passed variable type is not supported. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      value,
+
+                      for example if the value could not be parsed to an Integer value
+                      or the passed variable type is not supported.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
         '404':
           description: ''
@@ -6279,7 +6282,9 @@ paths:
                   value:
                     type: NotFound
                     message: The instance could not be created due to a non existing
-                      process definition key. See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      process definition key.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
         '500':
           description: ''
@@ -6291,23 +6296,51 @@ paths:
                 standardExample:
                   value:
                     type: InternalServerError
-                    message: The instance could not be created successfully. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                    message: The instance could not be created successfully.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
   /task/--REMOVE%3AApproveInvoice--:
     post:
       tags:
-      - InvoiceReceipt
+      - ApproveInvoice
       summary: 'ApproveInvoice: GetActiveTask'
       description: Approve the invoice (or not).
       operationId: 'ApproveInvoice: GetActiveTask'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetActiveTaskIn'
+        required: true
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetActiveTaskOut'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadRequest
+                    message: "Returned if some of the query parameters are invalid,\
+                      \ for example if a sortOrder parameter is supplied, but no sortBy,\n\
+                      \ or if an invalid operator for variable comparison is used.\n\
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)\
+                      \ for the error response format."
   /task/{taskId}/form-variables/--REMOVE%3AApproveInvoice--:
     get:
       tags:
-      - InvoiceReceipt
+      - ApproveInvoice
       summary: 'ApproveInvoice: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
@@ -6377,10 +6410,24 @@ paths:
                     invoiceCategory:
                       value: Software License Costs
                       type: String
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: NotFound
+                    message: Task id is null or does not exist.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
   /task/{taskId}/complete/--REMOVE%3AApproveInvoice--:
     post:
       tags:
-      - InvoiceReceipt
+      - ApproveInvoice
       summary: 'ApproveInvoice: CompleteTask'
       description: Approve the invoice (or not).
       operationId: 'ApproveInvoice: CompleteTask'
@@ -6402,6 +6449,15 @@ paths:
             schema:
               $ref: '#/components/schemas/CompleteTaskIn_In'
             examples:
+              standard:
+                value:
+                  _api_doc:
+                    approved: true
+                  variables:
+                    approved:
+                      value: true
+                      type: Boolean
+                  withVariablesInReturn: true
               Invoice approved:
                 value:
                   _api_doc:
@@ -6420,33 +6476,82 @@ paths:
                       value: false
                       type: Boolean
                   withVariablesInReturn: true
-              standard:
-                value:
-                  _api_doc:
-                    approved: true
-                  variables:
-                    approved:
-                      value: true
-                      type: Boolean
-                  withVariablesInReturn: true
         required: true
       responses:
         '200':
           description: ''
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadRequest
+                    message: The variable value or type is invalid, for example if
+                      the value could not be parsed to an Integer value or the passed
+                      variable type is not supported.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: InternalServerError
+                    message: If the task does not exist or the corresponding process
+                      instance could not be resumed successfully.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
   /task/--REMOVE%3APrepareBankTransfer--:
     post:
       tags:
-      - InvoiceReceipt
+      - PrepareBankTransfer
       summary: 'PrepareBankTransfer: GetActiveTask'
       description: Prepare the bank transfer in the Financial Accounting System.
       operationId: 'PrepareBankTransfer: GetActiveTask'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetActiveTaskIn'
+        required: true
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetActiveTaskOut'
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadRequest
+                    message: "Returned if some of the query parameters are invalid,\
+                      \ for example if a sortOrder parameter is supplied, but no sortBy,\n\
+                      \ or if an invalid operator for variable comparison is used.\n\
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)\
+                      \ for the error response format."
   /task/{taskId}/form-variables/--REMOVE%3APrepareBankTransfer--:
     get:
       tags:
-      - InvoiceReceipt
+      - PrepareBankTransfer
       summary: 'PrepareBankTransfer: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
@@ -6516,10 +6621,24 @@ paths:
                     invoiceCategory:
                       value: Software License Costs
                       type: String
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: NotFound
+                    message: Task id is null or does not exist.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
   /task/{taskId}/complete/--REMOVE%3APrepareBankTransfer--:
     post:
       tags:
-      - InvoiceReceipt
+      - PrepareBankTransfer
       summary: 'PrepareBankTransfer: CompleteTask'
       description: Prepare the bank transfer in the Financial Accounting System.
       operationId: 'PrepareBankTransfer: CompleteTask'
@@ -6550,6 +6669,37 @@ paths:
       responses:
         '200':
           description: ''
+        '400':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: BadRequest
+                    message: The variable value or type is invalid, for example if
+                      the value could not be parsed to an Integer value or the passed
+                      variable type is not supported.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: InternalServerError
+                    message: If the task does not exist or the corresponding process
+                      instance could not be resumed successfully.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
 components:
   schemas:
     ApproveInvoice:
@@ -6706,6 +6856,55 @@ components:
           format: binary
         mimeType:
           type: string
+    GetActiveTaskIn:
+      required:
+      - processInstanceId
+      - active
+      type: object
+      properties:
+        processInstanceId:
+          type: string
+          description: The id of the process - you want to get the active tasks.
+
+            > This is the result id of the `StartProcessOut`
+        active:
+          type: boolean
+          description: We are only interested in the active Task(s)
+      description: A JSON object with the following properties
+    GetActiveTaskOut:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'The Task Id you need to complete Task
+
+
+            > **Postman**:
+
+            >
+
+            > Add the following to the tests to set the `taskId`:
+
+            >
+
+            >```
+
+            let taskId = pm.response.json()[0].id
+
+            console.log("taskId: " + taskId)
+
+            pm.collectionVariables.set("taskId", taskId)
+
+            >```
+
+            >
+
+            > This returns an Array!
+
+            '
+      description: A JSON object representing the newly created process instance.
     InvoiceCategory:
       description: "There are three possible Categories\n\nEnumeration: \n- Travel\
         \ Expenses\n- Misc\n- Software License Costs"
