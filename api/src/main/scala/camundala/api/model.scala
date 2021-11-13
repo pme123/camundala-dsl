@@ -202,9 +202,12 @@ case class EvaluateDecisionIn[T <: Product](
                                              variables: Map[String, CamundaVariable],
                                            )
 
-case class RequestInput[T <: Product](examples: Map[String, T]):
+case class
+RequestInput[T <: Product](examples: Map[String, T]):
   def :+(label: String, example: T) =
     copy(examples = examples + (label -> example))
+  lazy val noInput =
+    examples.isEmpty
 
 object RequestInput:
   def apply[T <: Product](example: T) =

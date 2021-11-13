@@ -19,7 +19,8 @@ import sttp.tapir.{Endpoint, Schema}
 trait APICreator extends App:
 
   def basePath: Path = pwd
-  def docOpenApi: Path = basePath / "openApi.yml"
+  def openApiPath: Path = basePath / "openApi.yml"
+  def postmanOpenApiPath: Path = basePath / "postmanOpenApi.yml"
   implicit def tenantId: Option[String] = None
 
   def title: String
@@ -70,11 +71,17 @@ trait APICreator extends App:
       .toOpenAPI(apiEndpoints.flatMap(_.create()), info)
       .servers(servers)
 
+  def postmanOpenApi: OpenAPI =
+    openAPIDocsInterpreter
+      .toOpenAPI(apiEndpoints.flatMap(_.createPostman()), info)
+      .servers(servers)
+
   lazy val openAPIDocsInterpreter = OpenAPIDocsInterpreter(docsOptions =
     OpenAPIDocsOptions.default.copy(defaultDecodeFailureOutput = _ => None)
   )
 
-  writeOpenApi(docOpenApi, openApi)
+  writeOpenApi(openApiPath, openApi)
+  writeOpenApi(postmanOpenApiPath, postmanOpenApi)
 
   def writeOpenApi(path: Path, api: OpenAPI): Unit =
     if (os.exists(path))
@@ -130,9 +137,10 @@ trait APICreator extends App:
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
       T <: pure.InOut[In, Out, T]
-    ](process: pure.Process[In, Out])
-    def endpoints(activities: ApiEndpoint[_,_,_]*) =
-      ApiEndpoints(process.id,
+  ](process: pure.Process[In, Out])
+    def endpoints(activities: ApiEndpoint[_, _, _]*) =
+      ApiEndpoints(
+        process.id,
         StartProcessInstance(
           process.id,
           CamundaRestApi(
@@ -141,12 +149,12 @@ trait APICreator extends App:
             requestErrorOutputs = startProcessInstanceErrors
           )
         ) +: activities
-    )
+      )
   end extension
 
   extension [
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema,
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
   ](userTask: pure.UserTask[In, Out])
     def endpoint: ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]] =
       UserTaskEndpoint(
@@ -183,17 +191,19 @@ trait APICreator extends App:
   end extension
 
   extension [
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema,
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
   ](dmn: pure.DecisionDmn[In, Out])
     def endpoint: ApiEndpoint[In, Out, EvaluateDecision[In, Out]] =
-      EvaluateDecision(dmn.decisionDefinitionKey, dmn.hitPolicy,
+      EvaluateDecision(
+        dmn.decisionDefinitionKey,
+        dmn.hitPolicy,
         CamundaRestApi(
           dmn.inOutDescr,
           dmn.id,
           evaluateDecisionErrors
-        ))
+        )
+      )
   end extension
 
 end APICreator
-
