@@ -36,6 +36,8 @@ object InvoiceApiCreator extends APICreator {
       Seq(
         invoiceReceiptProcess
           .endpoint,
+        invoiceAssignApproverDMN
+          .endpoint,
         approveInvoiceUT
           .endpoint
           .withOutExample("Invoice approved", ApproveInvoice())

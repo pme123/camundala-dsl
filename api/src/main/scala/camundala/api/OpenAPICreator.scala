@@ -167,11 +167,6 @@ trait APICreator extends App:
             userTask.id,
             userTask.descr,
             requestErrorOutputs = getTaskFormVariablesErrors
-         /*   requestOutput = RequestOutput(
-              StatusCode.Ok,
-              formExamples + ("standard" -> userTask.in)
-            )*/
-            // List.empty//standardErrors
           )
         ),
         CompleteTask[Out](
@@ -180,12 +175,23 @@ trait APICreator extends App:
             userTask.id,
             userTask.descr,
             requestErrorOutputs = completeTaskErrors
-        /*    requestInput =
-              RequestInput(completeExamples + ("standard" -> userTask.out))
-         */   // List.empty //List(badRequest, serverError)
           )
         )
       )
   end extension
+
+  extension [
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema,
+  ](dmn: pure.DecisionDmn[In, Out])
+    def endpoint: ApiEndpoint[In, Out, EvaluateDecision[In, Out]] =
+      EvaluateDecision(dmn.decisionDefinitionKey, dmn.hitPolicy,
+        CamundaRestApi(
+          dmn.inOutDescr,
+          dmn.id,
+          evaluateDecisionErrors
+        ))
+  end extension
+
 end APICreator
 

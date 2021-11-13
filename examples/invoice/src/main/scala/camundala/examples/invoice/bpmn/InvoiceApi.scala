@@ -3,6 +3,7 @@ package examples.invoice.bpmn
 
 import api.*
 import camundala.api.CamundaVariable.*
+import camundala.api.endpoints.HitPolicy
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
 import os.*
@@ -80,6 +81,14 @@ object InvoiceApi extends pure.PureDsl:
   case class AssignedReviewer(reviewer: String = "John")
   case class InvoiceReviewed(clarified: Boolean = true)
 
+  lazy val invoiceAssignApproverDMN = dmn(
+    decisionDefinitionKey = "invoice-assign-approver",
+    hitPolicy = HitPolicy.COLLECT,
+    id = "Assign Approver Group",
+    in = SelectApproverGroup(),
+    out = AssignApproverGroup()
+  )
+
   lazy val approveInvoiceUT: pure.UserTask[InvoiceReceipt,ApproveInvoice] = userTask(
     id = "ApproveInvoice",
     descr = "Approve the invoice (or not).",
@@ -101,28 +110,7 @@ object InvoiceApi extends pure.PureDsl:
       descr = "This starts the Invoice Receipt Process.",
       in = InvoiceReceipt(),
     )
-  /*    .dmn(
-        decisionDefinitionKey = "invoice-assign-approver",
-        name = "Assign Approver Group",
-        inExamples = SelectApproverGroup(),
-        outExamples = AssignApproverGroup()
-      )
-      .userTask(
-        name = "Approve Invoice",
-        descr = "Approve the invoice (or not).",
-        formExamples = InvoiceReceipt(),
-        completeExamples = Map(
-          "Invoice approved" -> ApproveInvoice(),
-          "Invoice NOT approved" -> ApproveInvoice(false)
-        )
-      )
-      .userTask(
-        name = "Prepare Bank Transfer",
-        descr = "Prepare the bank transfer in the Financial Accounting System.",
-        formExamples = InvoiceReceipt(),
-        completeExamples = PrepareBankTransfer()
-      )
-*/
+
   lazy val reviewInvoiceApi: pure.Process[InvoiceReceipt,InvoiceReviewed] =
     val processId = "ReviewInvoice"
     process(

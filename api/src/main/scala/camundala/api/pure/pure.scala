@@ -2,9 +2,15 @@ package camundala
 package api
 package pure
 
+import camundala.api.endpoints.{
+  EvaluateDecision,
+  HitPolicy,
+  forbidden,
+  notFound,
+  serverError
+}
 import io.circe.{Decoder, Encoder}
 import sttp.tapir.Schema
-import CamundaError.*
 
 case class InOutDescr[
     In <: Product: Encoder: Decoder: Schema,
@@ -59,9 +65,9 @@ sealed trait Activity[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema,
     T <: InOut[In, Out, T]
-] extends InOut[In, Out, T]//:
+] extends InOut[In, Out, T] //:
 
- // def endpoint: api.ApiEndpoint[In, Out, T]
+// def endpoint: api.ApiEndpoint[In, Out, T]
 
 case class Process[
     In <: Product: Encoder: Decoder: Schema,
@@ -88,6 +94,8 @@ case class DecisionDmn[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
+    decisionDefinitionKey: String,
+    hitPolicy: HitPolicy,
     inOutDescr: InOutDescr[In, Out]
 ) extends Activity[In, Out, DecisionDmn[In, Out]]:
 
@@ -121,33 +129,49 @@ trait PureDsl:
       descr: Option[String] | String = None,
       in: In = NoInput(),
       out: Out = NoOutput(),
-      acts: Activity[_,_,_]*
-                ) =
+      acts: Activity[_, _, _]*
+  ) =
     Process(
       InOutDescr(id, descr, in, out),
       acts
     )
 
-  extension[
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
-  ](p: Process[In,Out])
-
-    def activities(acts: Activity[_, _, _]*): Process[In,Out] =
+  extension [
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](p: Process[In, Out])
+    def activities(acts: Activity[_, _, _]*): Process[In, Out] =
       p.copy(activitySeq = acts)
 
   end extension
 
   def userTask[
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
   ](
-     id: String,
-     descr: Option[String] | String = None,
-     in: In = NoInput(),
-     out: Out = NoOutput(),
-   ): UserTask[In, Out] =
+      id: String,
+      descr: Option[String] | String = None,
+      in: In = NoInput(),
+      out: Out = NoOutput()
+  ): UserTask[In, Out] =
     UserTask(
+      InOutDescr(id, descr, in, out)
+    )
+
+  def dmn[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      decisionDefinitionKey: String,
+      hitPolicy: HitPolicy,
+      id: String,
+      descr: Option[String] | String = None,
+      in: In = NoInput(),
+      out: Out = NoOutput()
+  ) =
+    DecisionDmn[In, Out](
+      decisionDefinitionKey,
+      hitPolicy,
       InOutDescr(id, descr, in, out)
     )
 

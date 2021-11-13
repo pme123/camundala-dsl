@@ -506,6 +506,14 @@ object endpoints:
     ): EvaluateDecision[In, Out] =
       copy(restApi = restApi)
 
+    override lazy val descr: String = restApi.maybeDescr.getOrElse("") +
+      s"""
+         |
+         |Decision DMN:
+         |- _decisionDefinitionKey_: `$decisionDefinitionKey`,
+         |- _hitPolicy_: `$hitPolicy`,
+         |""".stripMargin
+
     def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
       Seq(
         baseEndpoint
@@ -574,6 +582,20 @@ object endpoints:
          |$errorHandlingLink""".stripMargin
     ),
     serverError(s"""The instance could not be created successfully.
+                   |$errorHandlingLink""".stripMargin)
+  )
+
+  lazy val evaluateDecisionErrors = List(
+    forbidden(
+      s"""The authenticated user is unauthorized to evaluate this decision.
+         |$errorHandlingLink""".stripMargin
+    ),
+    notFound(
+      s"""The decision could not be evaluated due to a nonexistent decision definition.
+         |$errorHandlingLink""".stripMargin
+    ),
+    serverError(s"""The decision could not be evaluated successfully,
+                   | e.g. some of the input values are not provided but they are required.
                    |$errorHandlingLink""".stripMargin)
   )
 

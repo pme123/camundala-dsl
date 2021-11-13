@@ -6300,6 +6300,108 @@ paths:
 
                       See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
+  /decision-definition/key/{key}/evaluate/--REMOVE%3AAssign+Approver+Group--:
+    post:
+      tags:
+      - Assign Approver Group
+      summary: 'Assign Approver Group: EvaluateDecision'
+      description: '
+
+
+        Decision DMN:
+
+        - _decisionDefinitionKey_: `invoice-assign-approver`,
+
+        - _hitPolicy_: `COLLECT`,
+
+        '
+      operationId: 'Assign Approver Group: EvaluateDecision'
+      parameters:
+      - name: key
+        in: path
+        description: The Process- or Decision-DefinitionKey of the Process or Decision
+        required: true
+        schema:
+          type: string
+          default: invoice-assign-approver
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateDecisionIn_In'
+            examples:
+              standard:
+                value:
+                  _api_doc:
+                    amount: 30.0
+                    invoiceCategory: Software License Costs
+                  variables:
+                    amount:
+                      value: 30.0
+                      type: Double
+                    invoiceCategory:
+                      value: Software License Costs
+                      type: String
+        required: true
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Map_CamundaVariable'
+              examples:
+                standard:
+                  value:
+                  - approverGroups:
+                      value: sales
+                      type: String
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: Forbidden
+                    message: The authenticated user is unauthorized to evaluate this
+                      decision.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: NotFound
+                    message: The decision could not be evaluated due to a nonexistent
+                      decision definition.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      for the error response format.
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CamundaError'
+              examples:
+                standardExample:
+                  value:
+                    type: InternalServerError
+                    message: "The decision could not be evaluated successfully,\n\
+                      \ e.g. some of the input values are not provided but they are\
+                      \ required.\nSee the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)\
+                      \ for the error response format."
   /task/--REMOVE%3AApproveInvoice--:
     post:
       tags:
@@ -6842,6 +6944,16 @@ components:
             Result Status is 204.
       description: 'A JSON object with the following properties: (at least an empty
         JSON object {} or an empty request body)'
+    EvaluateDecisionIn_In:
+      required:
+      - variables
+      type: object
+      properties:
+        _api_doc:
+          $ref: '#/components/schemas/SelectApproverGroup'
+        variables:
+          $ref: '#/components/schemas/Map_CamundaVariable'
+      description: 'A JSON object with the following properties:'
     FileInOut:
       required:
       - fileName
@@ -6941,6 +7053,17 @@ components:
       type: object
       description: Prepares the bank transfer for the invoice. Only readOnly fields
         from the Process.
+    SelectApproverGroup:
+      required:
+      - amount
+      - invoiceCategory
+      type: object
+      properties:
+        amount:
+          type: number
+          format: double
+        invoiceCategory:
+          $ref: '#/components/schemas/InvoiceCategory'
     StartProcessIn_In:
       required:
       - variables
