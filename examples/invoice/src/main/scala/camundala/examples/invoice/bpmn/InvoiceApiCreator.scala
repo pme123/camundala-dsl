@@ -32,24 +32,22 @@ object InvoiceApiCreator extends APICreator {
 
   import InvoiceApi.*
 
-  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
-      Seq(
-        invoiceReceiptProcess
-          .endpoint,
-        invoiceAssignApproverDMN
-          .endpoint,
-        approveInvoiceUT
-          .endpoint
-          .withOutExample("Invoice approved", ApproveInvoice())
-          .withOutExample("Invoice NOT approved", ApproveInvoice(false)),
-        prepareBankTransferUT
-          .endpoint
+  def apiEndpoints: Seq[ApiEndpoints] =
+    Seq(
+      invoiceReceiptProcess
+        .endpoints(
+          invoiceAssignApproverDMN.endpoint,
+          approveInvoiceUT.endpoint
+            .withOutExample("Invoice approved", ApproveInvoice())
+            .withOutExample("Invoice NOT approved", ApproveInvoice(false)),
+          prepareBankTransferUT.endpoint
+        ),
+      reviewInvoiceProcess.endpoints(
+        assignReviewerUT.endpoint,
+        reviewInvoiceUT.endpoint
+          .withOutExample("Invoice clarified", InvoiceReviewed())
+          .withOutExample("Invoice NOT clarified", InvoiceReviewed(false))
       )
-
-    /*(invoiceReceiptProcess, completeExamples = Map(
-          "Invoice approved" -> ApproveInvoice(),
-          "Invoice NOT approved" -> ApproveInvoice(false)
-        ))*/
-       // prepareBankTransferUT.endpoints//(invoiceReceiptProcess)
+    )
 
 }

@@ -2,13 +2,6 @@ package camundala
 package api
 package pure
 
-import camundala.api.endpoints.{
-  EvaluateDecision,
-  HitPolicy,
-  forbidden,
-  notFound,
-  serverError
-}
 import io.circe.{Decoder, Encoder}
 import sttp.tapir.Schema
 
@@ -90,6 +83,15 @@ case class UserTask[
   def withInOutDescr(descr: InOutDescr[In, Out]): UserTask[In, Out] =
     copy(inOutDescr = descr)
 
+enum HitPolicy:
+
+  case UNIQUE
+  case FIRST
+  case ANY
+  case COLLECT
+  case RULE_ORDER
+end HitPolicy
+  
 case class DecisionDmn[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema

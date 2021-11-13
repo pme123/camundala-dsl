@@ -63,7 +63,7 @@ trait APICreator extends App:
 
   //def processes: Seq[pure.Process[_ <: Product, _]]
 
-  def apiEndpoints: Seq[ApiEndpoint[_, _, _]]
+  def apiEndpoints: Seq[ApiEndpoints]
 
   def openApi: OpenAPI =
     openAPIDocsInterpreter
@@ -131,7 +131,8 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: pure.InOut[In, Out, T]
     ](process: pure.Process[In, Out])
-    def endpoint =
+    def endpoints(activities: ApiEndpoint[_,_,_]*) =
+      ApiEndpoints(process.id,
         StartProcessInstance(
           process.id,
           CamundaRestApi(
@@ -139,7 +140,8 @@ trait APICreator extends App:
             process.id,
             requestErrorOutputs = startProcessInstanceErrors
           )
-        )
+        ) +: activities
+    )
   end extension
 
   extension [

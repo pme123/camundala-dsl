@@ -3,7 +3,7 @@ package examples.invoice.bpmn
 
 import api.*
 import camundala.api.CamundaVariable.*
-import camundala.api.endpoints.HitPolicy
+import camundala.api.pure.HitPolicy
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
 import os.*
@@ -81,56 +81,55 @@ object InvoiceApi extends pure.PureDsl:
   case class AssignedReviewer(reviewer: String = "John")
   case class InvoiceReviewed(clarified: Boolean = true)
 
-  lazy val invoiceAssignApproverDMN = dmn(
+  val invoiceReceiptProcess: pure.Process[InvoiceReceipt, NoOutput] =
+    val processId = "InvoiceReceipt"
+    process(
+      id = processId,
+      descr = "This starts the Invoice Receipt Process.",
+      in = InvoiceReceipt()
+    )
+
+  val invoiceAssignApproverDMN = dmn(
     decisionDefinitionKey = "invoice-assign-approver",
-    hitPolicy = HitPolicy.COLLECT,
+    hitPolicy = pure.HitPolicy.COLLECT,
     id = "Assign Approver Group",
     in = SelectApproverGroup(),
     out = AssignApproverGroup()
   )
 
-  lazy val approveInvoiceUT: pure.UserTask[InvoiceReceipt,ApproveInvoice] = userTask(
-    id = "ApproveInvoice",
-    descr = "Approve the invoice (or not).",
-    in = InvoiceReceipt(),
-    out = ApproveInvoice()
-  )
+  val approveInvoiceUT: pure.UserTask[InvoiceReceipt, ApproveInvoice] =
+    userTask(
+      id = "ApproveInvoice",
+      descr = "Approve the invoice (or not).",
+      in = InvoiceReceipt(),
+      out = ApproveInvoice()
+    )
 
-  lazy val prepareBankTransferUT = userTask(
+  val prepareBankTransferUT = userTask(
     id = "PrepareBankTransfer",
     descr = "Prepare the bank transfer in the Financial Accounting System.",
     in = InvoiceReceipt(),
     out = PrepareBankTransfer()
   )
 
-  lazy val invoiceReceiptProcess: pure.Process[InvoiceReceipt,NoOutput] =
-    val processId = "InvoiceReceipt"
-    process(
-      id = processId,
-      descr = "This starts the Invoice Receipt Process.",
-      in = InvoiceReceipt(),
-    )
-
-  lazy val reviewInvoiceApi: pure.Process[InvoiceReceipt,InvoiceReviewed] =
+  val reviewInvoiceProcess: pure.Process[InvoiceReceipt, InvoiceReviewed] =
     val processId = "ReviewInvoice"
     process(
-        id = processId,
-        descr = "This starts the Review Invoice Process.",
-        in= InvoiceReceipt(),
-        out = InvoiceReviewed()
-      )
-    /*  .userTask(
-        name = "Assign Reviewer",
-        descr = "Select the Reviewer.",
-        formExamples = InvoiceReceipt(),
-        completeExamples = AssignedReviewer()
-      )
-      .userTask(
-        name = "Review Invoice",
-        descr = "Review Invoice and approve.",
-        formExamples = InvoiceReceipt(),
-        completeExamples = Map(
-          "Invoice clarified" -> InvoiceReviewed(),
-          "Invoice NOT clarified" -> InvoiceReviewed(false)
-        )
-      )*/
+      id = processId,
+      descr = "This starts the Review Invoice Process.",
+      in = InvoiceReceipt(),
+      out = InvoiceReviewed()
+    )
+  val assignReviewerUT = userTask(
+    id = "AssignReviewer",
+    descr = "Select the Reviewer.",
+    in = InvoiceReceipt(),
+    out = AssignedReviewer()
+  )
+  val reviewInvoiceUT = userTask(
+    id = "ReviewInvoice",
+    descr = "Review Invoice and approve.",
+    in = InvoiceReceipt(),
+    out = InvoiceReviewed()
+  )
+

@@ -14,20 +14,13 @@ object endpoints:
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
-      name: Option[String] | String = None,
-      tag: Option[String] | String = None,
+      name: String,
+      tag: String,
       descr: Option[String] | String = None,
       requestInput: RequestInput[In] = RequestInput[In](),
       requestOutput: RequestOutput[Out] = RequestOutput[Out](),
       requestErrorOutputs: List[RequestErrorOutput] = Nil
   ):
-    lazy val maybeName = name match
-      case n: Option[String] => n
-      case n: String => Some(n)
-
-    lazy val maybeTag = tag match
-      case t: Option[String] => t
-      case t: String => Some(t)
 
     lazy val maybeDescr = descr match
       case d: Option[String] => d
@@ -133,6 +126,15 @@ object endpoints:
       )
   end CamundaRestApi
 
+  case class ApiEndpoints(
+      tag: String,
+      endpoints: Seq[ApiEndpoint[_, _, _]]
+  ):
+    def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
+      endpoints.flatMap(_.withTag(tag).create())
+
+  end ApiEndpoints
+
   sealed trait ApiEndpoint[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
@@ -141,8 +143,8 @@ object endpoints:
     def restApi: CamundaRestApi[In, Out]
     def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]]
     lazy val name: String =
-      s"${restApi.maybeName.getOrElse(inExample.getClass.getSimpleName)}: ${getClass.getSimpleName}"
-    lazy val tag: String = restApi.maybeTag.getOrElse(name)
+      s"${restApi.name}: ${getClass.getSimpleName}"
+    lazy val tag: String = restApi.tag
     def descr: String = restApi.maybeDescr.getOrElse("")
     lazy val inExample: In = restApi.requestInput.examples.values.head
     lazy val outExample: Out = restApi.requestOutput.examples.values.head
@@ -153,25 +155,17 @@ object endpoints:
     def withRestApi(restApi: CamundaRestApi[In, Out]): T
 
     def withName(n: String): T =
-      withRestApi(restApi.copy(name = Some(n)))
+      withRestApi(restApi.copy(name = n))
 
     def withTag(t: String): T =
-      withRestApi(restApi.copy(tag = Some(t)))
+      withRestApi(restApi.copy(tag = t))
 
     def withDescr(description: String): T =
       withRestApi(restApi.copy(descr = Some(description)))
 
-    def withInExample(example: In): T =
-      withRestApi(restApi.copy(requestInput = RequestInput(example)))
-
     def withInExample(label: String, example: In): T =
       withRestApi(
         restApi.copy(requestInput = restApi.requestInput :+ (label, example))
-      )
-
-    def withOutExample(example: Out): T =
-      withRestApi(
-        restApi.copy(requestOutput = RequestOutput(outStatusCode, example))
       )
 
     def withOutExample(label: String, example: Out): T =
@@ -424,18 +418,23 @@ object endpoints:
     ): UserTaskEndpoint[In, Out] = copy(restApi = restApi)
 
     def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
-      val in = completeTask.restApi.copy(requestInput =
+      val in = completeTask.restApi.copy(
+        requestInput =
         RequestInput(restApi.requestOutput.examples)
       )
       val out = getTaskFormVariables.restApi.copy(requestOutput =
         RequestOutput(outStatusCode, restApi.requestInput.examples)
       )
-      getActiveTask.create() ++
+      getActiveTask
+        .withTag(restApi.tag)
+        .create() ++
         getTaskFormVariables
           .withRestApi(out)
+          .withTag(restApi.tag)
           .create() ++
         completeTask
           .withRestApi(in)
+          .withTag(restApi.tag)
           .create()
 
     protected def inMapper() = ???
@@ -481,21 +480,12 @@ object endpoints:
   end UserTaskEndpoint
    */
 
-  enum HitPolicy:
-
-    case UNIQUE
-    case FIRST
-    case ANY
-    case COLLECT
-    case RULE_ORDER
-  end HitPolicy
-
   case class EvaluateDecision[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
       decisionDefinitionKey: String,
-      hitPolicy: HitPolicy,
+      hitPolicy: pure.HitPolicy,
       restApi: CamundaRestApi[In, Out]
   ) extends ApiEndpoint[In, Out, EvaluateDecision[In, Out]]:
 
@@ -528,7 +518,7 @@ object endpoints:
         .map(id => basePath / "tenant-id" / tenantIdPath(id) / "evaluate")
         .getOrElse(basePath / "evaluate") / s"--REMOVE:${restApi.name}--"
 
-    import HitPolicy.*
+    import pure.HitPolicy.*
 
     protected def inMapper() =
       restApi.inMapper[EvaluateDecisionIn[In]] { (example: In) =>

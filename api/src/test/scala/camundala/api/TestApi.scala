@@ -15,7 +15,7 @@ object TestApi extends APICreator {
 
   def version = "1.0"
 
-  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] = ???
+  def apiEndpoints: Seq[ApiEndpoints] = ???
   //  createProcess(Sample.testProcess)
 
 }
