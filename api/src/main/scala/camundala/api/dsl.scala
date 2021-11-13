@@ -1,6 +1,7 @@
 package camundala
 package api
 
+import api.endpoints.*
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
 import sttp.model.*

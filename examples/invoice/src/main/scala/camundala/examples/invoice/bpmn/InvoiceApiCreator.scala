@@ -2,6 +2,7 @@ package camundala
 package examples.invoice.bpmn
 
 import camundala.api.*
+import camundala.api.endpoints.*
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
 import os.*
@@ -33,13 +34,10 @@ object InvoiceApiCreator extends APICreator {
 
   def apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
       invoiceReceiptProcess.endpoints ++
-        approveInvoiceUT.endpoints(invoiceReceiptProcess, completeExamples = Map(
+        approveInvoiceUT.endpoints/*(invoiceReceiptProcess, completeExamples = Map(
           "Invoice approved" -> ApproveInvoice(),
           "Invoice NOT approved" -> ApproveInvoice(false)
-        )) ++
-        prepareBankTransferUT.endpoints(invoiceReceiptProcess)
-
-  private def invoiceReceiptEndpoints: (ApiEndpoint[_, _, _], Seq[ApiEndpoint[_, _, _]]) =
-    (invoiceReceiptProcess, approveInvoiceUT)
+        ))*/ ++
+        prepareBankTransferUT.endpoints//(invoiceReceiptProcess)
 
 }
