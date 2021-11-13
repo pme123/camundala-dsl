@@ -2,8 +2,11 @@ package camundala
 package examples.invoice.bpmn
 
 import camundala.api.*
+import io.circe.generic.auto.*
+import io.circe.{Decoder, Encoder}
 import os.*
 import sttp.tapir.Endpoint
+import sttp.tapir.generic.auto.*
 
 object InvoiceApiCreator extends APICreator {
 
@@ -26,8 +29,17 @@ object InvoiceApiCreator extends APICreator {
   )
   override def basePath: Path = pwd / "examples" / "invoice"
 
+  import InvoiceApi.*
+
   def apiEndpoints: Seq[ApiEndpoint[_, _, _]] =
-    InvoiceApi.invoiceReceiptApi.endpoints ++
-      InvoiceApi.reviewInvoiceApi.endpoints
+      invoiceReceiptProcess.endpoints ++
+        approveInvoiceUT.endpoints(invoiceReceiptProcess, completeExamples = Map(
+          "Invoice approved" -> ApproveInvoice(),
+          "Invoice NOT approved" -> ApproveInvoice(false)
+        )) ++
+        prepareBankTransferUT.endpoints(invoiceReceiptProcess)
+
+  private def invoiceReceiptEndpoints: (ApiEndpoint[_, _, _], Seq[ApiEndpoint[_, _, _]]) =
+    (invoiceReceiptProcess, approveInvoiceUT)
 
 }

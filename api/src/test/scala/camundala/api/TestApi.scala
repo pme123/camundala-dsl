@@ -14,11 +14,12 @@ object TestApi extends APICreator {
 
   def version = "1.0"
 
-  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] = Sample.testProcess.endpoints
+  def apiEndpoints: Seq[ApiEndpoint[_, _, _]] = ???
+  //  createProcess(Sample.testProcess)
 
 }
 
-object Sample extends EndpointDSL:
+object Sample extends pure.PureDsl:
   val name = "sample-process"
 
   @description("My Sample input object to make the point.")
@@ -53,8 +54,14 @@ object Sample extends EndpointDSL:
        |""".stripMargin
 
   lazy val testProcess =
-    process(name)
-      .startProcessInstance(
+
+    process(name,
+      descr,
+      standardSample,
+      SampleOut()
+    )
+
+    /*  .startProcessInstance(
         name,
         name,
         descr,
@@ -66,4 +73,4 @@ object Sample extends EndpointDSL:
           "standard" -> SampleOut(),
           "other output" -> SampleOut(success = -1)
         )
-      )
+      )*/

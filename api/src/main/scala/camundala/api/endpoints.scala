@@ -1,6 +1,7 @@
 package camundala
 package api
 
+import api.pure
 import io.circe.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
@@ -95,6 +96,26 @@ case class CamundaRestApi[
   lazy val noOutputMapper: Option[EndpointOutput[_]] =
     None
 
+end CamundaRestApi
+
+object CamundaRestApi:
+
+  def apply[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      e: pure.InOutDescr[In, Out],
+      tag: String,
+      requestErrorOutputs: List[RequestErrorOutput]
+  ): CamundaRestApi[In, Out] =
+    CamundaRestApi(
+      e.id,
+      tag,
+      e.descr,
+      RequestInput(Map("standard" -> e.in)),
+      RequestOutput(StatusCode.Ok, Map("standard" -> e.out)),
+      requestErrorOutputs
+    )
 end CamundaRestApi
 
 sealed trait ApiEndpoint[
@@ -206,32 +227,55 @@ case class StartProcessInstance[
 
   override lazy val descr: String = restApi.maybeDescr.getOrElse("") +
     s"""
-      |
-      |Usage as _CallActivity_:
-      |```
-      |lazy val $name =
-      |          callActivity("$processDefinitionKey") //TODO adjust to your CallActivity id!
-      |            .calledElement("$processDefinitionKey")
-      |            ${inSources}
-      |            ${outSources}
-      |```
-      |""".stripMargin
+       |
+       |Usage as _CallActivity_:
+       |```
+       |lazy val $name =
+       |          callActivity("$processDefinitionKey") //TODO adjust to your CallActivity id!
+       |            .calledElement("$processDefinitionKey")
+       |            ${inSources}
+       |            ${outSources}
+       |```
+       |""".stripMargin
 
   private lazy val inSources =
     inExample match
       case NoInput() => ""
       case _ =>
-        inExample.productElementNames.mkString(""".inSource("""",
+        inExample.productElementNames.mkString(
+          """.inSource("""",
           """"
-            |            .inSource("""".stripMargin, """")""")
+            |            .inSource("""".stripMargin,
+          """")"""
+        )
 
   private lazy val outSources =
     outExample match
       case NoOutput() => ""
       case _ =>
-        outExample.productElementNames.mkString(""".outSource("""",
+        outExample.productElementNames.mkString(
+          """.outSource("""",
           """"
-            |            .outSource("""".stripMargin, """")""")
+            |            .outSource("""".stripMargin,
+          """")"""
+        )
+
+end StartProcessInstance
+
+object StartProcessInstance:
+
+  def apply[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](e: pure.InOutDescr[In, Out]): StartProcessInstance[In, Out] =
+    StartProcessInstance[In, Out](
+      e.id,
+      CamundaRestApi(
+        e,
+        e.id,
+        List.empty //standardErrors
+      )
+    )
 
 end StartProcessInstance
 
@@ -351,18 +395,18 @@ case class UserTaskEndpoint[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
-    restApi: CamundaRestApi[In, Out],
     getActiveTask: GetActiveTask,
     getTaskFormVariables: GetTaskFormVariables[In],
     completeTask: CompleteTask[Out]
 ) extends ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]]:
+  // not used
+  val restApi: CamundaRestApi[In, Out] = CamundaRestApi[In, Out]()
 
   val outStatusCode = StatusCode.Ok //not used
 
   def withRestApi(
       restApi: CamundaRestApi[In, Out]
-  ): UserTaskEndpoint[In, Out] =
-    copy(restApi = restApi)
+  ): UserTaskEndpoint[In, Out] = ???
 
   def create()(implicit tenantId: Option[String]): Seq[Endpoint[_, _, _, _]] =
     val in = completeTask.restApi.copy(requestInput =
@@ -384,6 +428,43 @@ case class UserTaskEndpoint[
   protected def outMapper(): Option[EndpointOutput[_]] = ???
 
 end UserTaskEndpoint
+
+/*
+object UserTaskEndpoint:
+
+  def apply[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](e: pure.InOutDescr[In, Out], tag: String): StartProcessInstance[In, Out] =
+    UserTaskEndpoint[In, Out](
+      GetActiveTask(
+        CamundaRestApi(
+          e.id,
+          tag,
+          e.descr
+        )
+      ),
+      GetTaskFormVariables[In](
+        CamundaRestApi(
+          e.id,
+          e.id,
+          e.descr,
+          requestOutput = RequestOutput(StatusCode.Ok, e.in)
+          // List.empty//standardErrors
+        )
+      ),
+      CompleteTask[Out](
+        CamundaRestApi(
+          e.id,
+          e.id,
+          e.descr,
+          requestInput = RequestInput(e.out)
+          // List.empty //List(badRequest, serverError)
+        )
+      )
+    )
+end UserTaskEndpoint
+  */
 
 enum HitPolicy:
 

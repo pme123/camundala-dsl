@@ -17,7 +17,7 @@ import java.util.Base64
 // One import for this ADT/JSON codec
 import org.latestbit.circe.adt.codec._
 
-object InvoiceApi extends EndpointDSL:
+object InvoiceApi extends pure.PureDsl:
 
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
@@ -80,17 +80,28 @@ object InvoiceApi extends EndpointDSL:
   case class AssignedReviewer(reviewer: String = "John")
   case class InvoiceReviewed(clarified: Boolean = true)
 
-  lazy val invoiceReceiptApi: process =
+  lazy val approveInvoiceUT: pure.UserTask[InvoiceReceipt,ApproveInvoice] = userTask(
+    id = "ApproveInvoice",
+    descr = "Approve the invoice (or not).",
+    in = InvoiceReceipt(),
+    out = ApproveInvoice()
+  )
+
+  lazy val prepareBankTransferUT = userTask(
+    id = "PrepareBankTransfer",
+    descr = "Prepare the bank transfer in the Financial Accounting System.",
+    in = InvoiceReceipt(),
+    out = PrepareBankTransfer()
+  )
+
+  lazy val invoiceReceiptProcess: pure.Process[InvoiceReceipt,NoOutput] =
     val processId = "InvoiceReceipt"
-    val processName = "Invoice Receipt"
-    process(processName)
-      .startProcessInstance(
-        processDefinitionKey = processId,
-        name = processId,
-        descr = "This starts the Invoice Receipt Process.",
-        inExamples = InvoiceReceipt()
-      )
-      .evaluateDecision(
+    process(
+      id = processId,
+      descr = "This starts the Invoice Receipt Process.",
+      in = InvoiceReceipt(),
+    )
+  /*    .dmn(
         decisionDefinitionKey = "invoice-assign-approver",
         name = "Assign Approver Group",
         inExamples = SelectApproverGroup(),
@@ -111,19 +122,16 @@ object InvoiceApi extends EndpointDSL:
         formExamples = InvoiceReceipt(),
         completeExamples = PrepareBankTransfer()
       )
-
-  lazy val reviewInvoiceApi: process =
+*/
+  lazy val reviewInvoiceApi: pure.Process[InvoiceReceipt,InvoiceReviewed] =
     val processId = "ReviewInvoice"
-    val processName = "Review Invoice"
-    process(processName)
-      .startProcessInstance(
-        processDefinitionKey = processId,
-        name = processId,
+    process(
+        id = processId,
         descr = "This starts the Review Invoice Process.",
-        inExamples = InvoiceReceipt(),
-        outExamples = InvoiceReviewed()
+        in= InvoiceReceipt(),
+        out = InvoiceReviewed()
       )
-      .userTask(
+    /*  .userTask(
         name = "Assign Reviewer",
         descr = "Select the Reviewer.",
         formExamples = InvoiceReceipt(),
@@ -137,4 +145,4 @@ object InvoiceApi extends EndpointDSL:
           "Invoice clarified" -> InvoiceReviewed(),
           "Invoice NOT clarified" -> InvoiceReviewed(false)
         )
-      )
+      )*/

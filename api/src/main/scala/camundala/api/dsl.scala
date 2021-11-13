@@ -61,13 +61,6 @@ trait EndpointDSL extends ApiErrorDSL, ApiInputDSL:
     ) = copy(
       ePoints = ePoints :+
         UserTaskEndpoint[In, Out](
-          camundaRestApi(
-            name,
-            processName,
-            descr,
-            formExamples,
-            completeExamples
-          ),
           getActiveTask(name, processName, descr),
           getTaskFormVariables[In](name, processName, descr, formExamples),
           completeTask[Out](name, processName, descr, completeExamples)
