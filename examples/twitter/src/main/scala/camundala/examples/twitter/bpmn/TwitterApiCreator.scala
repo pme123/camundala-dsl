@@ -3,8 +3,21 @@ package examples.twitter
 package bpmn
 
 import camundala.api.*
+import api.pure.UserTask
+import api.endpoints.*
+import camundala.examples.twitter.bpmn.TwitterApi.*
+import io.circe.generic.auto.*
+import io.circe.{Decoder, Encoder}
+import laika.api.*
+import laika.ast.MessageFilter
+import laika.format.*
+import laika.markdown.github.GitHubFlavor
 import os.*
-import sttp.tapir.Endpoint
+import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
+import sttp.tapir.generic.auto.*
+import sttp.tapir.openapi.circe.yaml.*
+import sttp.tapir.openapi.{Contact, Info, OpenAPI, Server}
+import sttp.tapir.{Endpoint, Schema}
 
 object TwitterApiCreator extends APICreator {
 
@@ -14,18 +27,16 @@ object TwitterApiCreator extends APICreator {
 
   override lazy val serverPort = 8887
 
-  override def description: Option[String] = super.description.map(
-    _ +
-      """
-        |This example demonstrates how you can use a BPMN process and the Tweeter API to build a simple Twitter client.
-        |
-        |>This is the [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter)
-        |""".stripMargin
-  )
-
   override def basePath: Path = pwd / "examples" / "twitter"
 
-  def apiEndpoints: Seq[ApiEndpoint[_,_,_]] = TwitterApi.processApi.endpoints
-
+  def apiEndpoints: Seq[ApiEndpoints] =
+    Seq(
+      twitterDemoProcess
+        .endpoints(
+          reviewTweetUT.endpoint
+            .withOutExample("Tweet accepted", ReviewTweet())
+            .withOutExample("Tweet rejected", ReviewTweet(false)),
+        )
+    )
 
 }

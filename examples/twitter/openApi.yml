@@ -13,8 +13,8 @@ info:
     \ to run it\n> **this needs [sbt](https://www.scala-sbt.org)**\n\n`sbt exampleTwitter/run`\n\
     \nNow you can select 1 or 2:\n```\nMultiple main classes detected. Select one\
     \ to run:\n [1] camundala.examples.twitter.TwitterServletProcessApplication\n\
-    \ [2] camundala.examples.twitter.bpmn.TwitterProcessRunnerApp\n ```\n\n# This\
-    \ is the [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter):\n\
+    \ [2] camundala.examples.twitter.bpmn.TwitterProcessRunnerApp\n ```\nThis is the\
+    \ [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter)\n\
     \nThis example demonstrates how you can use a BPMN process and the Tweeter API\
     \ to build a simple Twitter client. \nIt uses `camunda-bpm-spring-boot-starter-webapp`\
     \ and thus embed Tomcat as a web container.\n\nThe example contains:\n- a process\
@@ -48,9 +48,7 @@ info:
     \ login/password from `application.yaml`, default: demo/demo) then go to Tasklist\
     \ and try to start the process and complete the tasks, observe log entries or\
     \ the real tweet when `TweetContentDelegate` is used.\n\nThere is no CHANGELOG.md\
-    \ in the Package.\n\nThis example demonstrates how you can use a BPMN process\
-    \ and the Tweeter API to build a simple Twitter client.\n\n>This is the [original\
-    \ README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter)\n"
+    \ in the Package.\n"
 servers:
 - url: http://localhost:8887/engine-rest
 paths:
@@ -59,9 +57,11 @@ paths:
       tags:
       - TwitterDemoProcess
       summary: 'TwitterDemoProcess: StartProcessInstance'
-      description: 'This runs the Twitter Approvement Process.
-
-        '
+      description: "This runs the Twitter Approvement Process.\n\nUsage as _CallActivity_:\n\
+        ```\nlazy val TwitterDemoProcess: StartProcessInstance =\n          callActivity(\"\
+        TwitterDemoProcess\") //TODO adjust to your CallActivity id!\n           \
+        \ .calledElement(\"TwitterDemoProcess\")\n            .inSource(\"email\"\n\
+        \            .inSource(\"content\")\n            \n```\n"
       operationId: 'TwitterDemoProcess: StartProcessInstance'
       parameters:
       - name: key
@@ -118,9 +118,12 @@ paths:
                   value:
                     type: BadRequest
                     message: The instance could not be created due to an invalid variable
-                      value, for example if the value could not be parsed to an Integer
-                      value or the passed variable type is not supported. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      value,
+
+                      for example if the value could not be parsed to an Integer value
+                      or the passed variable type is not supported.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
         '404':
           description: ''
@@ -133,7 +136,9 @@ paths:
                   value:
                     type: NotFound
                     message: The instance could not be created due to a non existing
-                      process definition key. See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                      process definition key.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
         '500':
           description: ''
@@ -145,19 +150,32 @@ paths:
                 standardExample:
                   value:
                     type: InternalServerError
-                    message: The instance could not be created successfully. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                    message: The instance could not be created successfully.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
-  /task/--REMOVE%3AReview+Tweet--:
+  /task/--REMOVE%3AReviewTweet--:
     post:
       tags:
       - TwitterDemoProcess
-      summary: 'Review Tweet: GetActiveTask'
+      summary: 'ReviewTweet: GetActiveTask'
       description: ''
-      operationId: 'Review Tweet: GetActiveTask'
+      operationId: 'ReviewTweet: GetActiveTask'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetActiveTaskIn'
+        required: true
       responses:
         '200':
           description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GetActiveTaskOut'
         '400':
           description: ''
           content:
@@ -168,23 +186,23 @@ paths:
                 standardExample:
                   value:
                     type: BadRequest
-                    message: The instance could not be created due to an invalid variable
-                      value, for example if the value could not be parsed to an Integer
-                      value or the passed variable type is not supported. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
-                      for the error response format.
-  /task/{taskId}/form-variables/--REMOVE%3AReview+Tweet--:
+                    message: "Returned if some of the query parameters are invalid,\
+                      \ for example if a sortOrder parameter is supplied, but no sortBy,\n\
+                      \ or if an invalid operator for variable comparison is used.\n\
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)\
+                      \ for the error response format."
+  /task/{taskId}/form-variables/--REMOVE%3AReviewTweet--:
     get:
       tags:
       - TwitterDemoProcess
-      summary: 'Review Tweet: GetTaskFormVariables'
+      summary: 'ReviewTweet: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
         The form variables take form data specified on the task into account.
 
         If form fields are defined, the variable types and default values of the form
         fields are taken into account.
-      operationId: 'Review Tweet: GetTaskFormVariables'
+      operationId: 'ReviewTweet: GetTaskFormVariables'
       parameters:
       - name: taskId
         in: path
@@ -228,7 +246,7 @@ paths:
               examples:
                 standard:
                   value: {}
-        '400':
+        '404':
           description: ''
           content:
             application/json:
@@ -237,19 +255,18 @@ paths:
               examples:
                 standardExample:
                   value:
-                    type: BadRequest
-                    message: The instance could not be created due to an invalid variable
-                      value, for example if the value could not be parsed to an Integer
-                      value or the passed variable type is not supported. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                    type: NotFound
+                    message: Task id is null or does not exist.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
-  /task/{taskId}/complete/--REMOVE%3AReview+Tweet--:
+  /task/{taskId}/complete/--REMOVE%3AReviewTweet--:
     post:
       tags:
       - TwitterDemoProcess
-      summary: 'Review Tweet: CompleteTask'
+      summary: 'ReviewTweet: CompleteTask'
       description: ''
-      operationId: 'Review Tweet: CompleteTask'
+      operationId: 'ReviewTweet: CompleteTask'
       parameters:
       - name: taskId
         in: path
@@ -268,6 +285,15 @@ paths:
             schema:
               $ref: '#/components/schemas/CompleteTaskIn_In'
             examples:
+              standard:
+                value:
+                  _api_doc:
+                    approved: true
+                  variables:
+                    approved:
+                      value: true
+                      type: Boolean
+                  withVariablesInReturn: true
               Tweet accepted:
                 value:
                   _api_doc:
@@ -300,10 +326,11 @@ paths:
                 standardExample:
                   value:
                     type: BadRequest
-                    message: The instance could not be created due to an invalid variable
-                      value, for example if the value could not be parsed to an Integer
-                      value or the passed variable type is not supported. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                    message: The variable value or type is invalid, for example if
+                      the value could not be parsed to an Integer value or the passed
+                      variable type is not supported.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
         '500':
           description: ''
@@ -315,8 +342,10 @@ paths:
                 standardExample:
                   value:
                     type: InternalServerError
-                    message: The instance could not be created successfully. See the
-                      [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
+                    message: If the task does not exist or the corresponding process
+                      instance could not be resumed successfully.
+
+                      See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
 components:
   schemas:
@@ -469,6 +498,55 @@ components:
         - content: The content of the Tweet.
 
         '
+    GetActiveTaskIn:
+      required:
+      - processInstanceId
+      - active
+      type: object
+      properties:
+        processInstanceId:
+          type: string
+          description: The id of the process - you want to get the active tasks.
+
+            > This is the result id of the `StartProcessOut`
+        active:
+          type: boolean
+          description: We are only interested in the active Task(s)
+      description: A JSON object with the following properties
+    GetActiveTaskOut:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          description: 'The Task Id you need to complete Task
+
+
+            > **Postman**:
+
+            >
+
+            > Add the following to the tests to set the `taskId`:
+
+            >
+
+            >```
+
+            let taskId = pm.response.json()[0].id
+
+            console.log("taskId: " + taskId)
+
+            pm.collectionVariables.set("taskId", taskId)
+
+            >```
+
+            >
+
+            > This returns an Array!
+
+            '
+      description: A JSON object representing the newly created process instance.
     Map_CamundaVariable:
       type: object
       additionalProperties:

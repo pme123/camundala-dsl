@@ -24,8 +24,7 @@ Multiple main classes detected. Select one to run:
  [1] camundala.examples.twitter.TwitterServletProcessApplication
  [2] camundala.examples.twitter.bpmn.TwitterProcessRunnerApp
  ```
-
-# This is the [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter):
+This is the [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter)
 
 This example demonstrates how you can use a BPMN process and the Tweeter API to build a simple Twitter client. 
 It uses `camunda-bpm-spring-boot-starter-webapp` and thus embed Tomcat as a web container.

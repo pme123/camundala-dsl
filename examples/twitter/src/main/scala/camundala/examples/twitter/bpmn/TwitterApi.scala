@@ -11,9 +11,8 @@ import api.*
 import api.CamundaVariable.*
 import io.circe.{Decoder, Encoder}
 
-object TwitterApi extends EndpointDSL:
-  val processId = "TwitterDemoProcess"
-  override implicit def tenantId: Option[String] = Some("{{tenantId}}")
+object TwitterApi extends pure.PureDsl:
+  implicit def tenantId: Option[String] = Some("{{tenantId}}")
 
   @description("""Every employee may create a Tweet.
                  |
@@ -32,24 +31,15 @@ object TwitterApi extends EndpointDSL:
       approved: Boolean = true
   ) extends InOutObject
 
-  lazy val standardSample: CreateTweet = CreateTweet()
-  private val descr =
-    s"""This runs the Twitter Approvement Process.
-       |""".stripMargin
-
-  lazy val processApi =
-    process(processId)
-      .startProcessInstance(
-        processDefinitionKey = processId,
-        name = processId,
-        descr = Some(descr),
-        inExamples = standardSample
-      )
-      .userTask(
-        name = "Review Tweet",
-        formExamples = NoInput(),
-        completeExamples = Map(
-          "Tweet accepted" -> ReviewTweet(),
-          "Tweet rejected" -> ReviewTweet(false)
-        )
-      )
+  val twitterDemoProcess: pure.Process[CreateTweet, NoOutput] =
+    val processId = "TwitterDemoProcess"
+    process(
+      id = processId,
+      descr = "This runs the Twitter Approvement Process.",
+      in = CreateTweet()
+    )
+  val reviewTweetUT = userTask(
+    id = "ReviewTweet",
+    in = NoInput(),
+    out = ReviewTweet()
+  )
