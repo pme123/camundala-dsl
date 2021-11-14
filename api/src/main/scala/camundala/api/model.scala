@@ -1,9 +1,6 @@
 package camundala
 package api
 
-import io.circe.{Decoder, Encoder}
-import sttp.tapir.Schema
-
 case class InOutDescr[
   In <: Product: Encoder: Decoder: Schema,
   Out <: Product: Encoder: Decoder: Schema

@@ -1,20 +1,16 @@
 package camundala
 package api
 
-import api.UserTask
 import api.endpoints.*
 import io.circe.generic.auto.*
-import io.circe.{Decoder, Encoder}
 import laika.api.*
 import laika.ast.MessageFilter
 import laika.format.*
 import laika.markdown.github.GitHubFlavor
-import os.*
 import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.generic.auto.*
 import sttp.tapir.openapi.circe.yaml.*
 import sttp.tapir.openapi.{Contact, Info, OpenAPI, Server}
-import sttp.tapir.{Endpoint, Schema}
 
 trait APICreator extends App:
 
