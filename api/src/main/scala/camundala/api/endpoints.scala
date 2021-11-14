@@ -6,7 +6,7 @@ import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import io.circe.syntax.*
 import sttp.model.StatusCode
-import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput, path, query}
+import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput}
 
 import java.util.Base64
 

@@ -1,21 +1,12 @@
 package camundala
 package examples.invoice.bpmn
 
-import api.*
-import camundala.api.CamundaVariable.*
+import camundala.api.*
 import io.circe.generic.auto.*
-import io.circe.{Decoder, Encoder}
-import os.*
-import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
-import sttp.tapir.json.circe.*
-import sttp.tapir.{Endpoint, Schema, SchemaType}
-
-import java.io.File
-import java.util.Base64
 
 // One import for this ADT/JSON codec
-import org.latestbit.circe.adt.codec._
+import org.latestbit.circe.adt.codec.*
 
 object InvoiceApi extends PureDsl:
 

@@ -3,13 +3,8 @@ package examples.twitter
 package bpmn
 
 import io.circe.generic.auto.*
-import sttp.model.StatusCode
-import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
-import sttp.tapir.{Endpoint, Schema, SchemaType}
-import api.*
-import api.CamundaVariable.*
-import io.circe.{Decoder, Encoder}
+import camundala.api.*
 
 object TwitterApi extends PureDsl:
   implicit def tenantId: Option[String] = Some("{{tenantId}}")

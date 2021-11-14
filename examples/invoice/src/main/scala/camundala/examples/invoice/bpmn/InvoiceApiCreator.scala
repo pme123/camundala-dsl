@@ -2,11 +2,7 @@ package camundala
 package examples.invoice.bpmn
 
 import camundala.api.*
-import camundala.api.endpoints.*
 import io.circe.generic.auto.*
-import io.circe.{Decoder, Encoder}
-import os.*
-import sttp.tapir.Endpoint
 import sttp.tapir.generic.auto.*
 
 object InvoiceApiCreator extends APICreator {
@@ -21,7 +17,7 @@ object InvoiceApiCreator extends APICreator {
 
   import InvoiceApi.*
 
-  def apiEndpoints: Seq[ApiEndpoints] =
+  def apiEndpoints =
     Seq(
       invoiceReceiptProcess
         .endpoints(
