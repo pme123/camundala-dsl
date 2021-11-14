@@ -60,7 +60,7 @@ trait APICreator extends App:
 
   def servers = List(Server(s"http://localhost:$serverPort/engine-rest"))
 
-  def info = Info(title, version, description, contact = contact)
+  def info(title: String) = Info(title, version, description, contact = contact)
 
   //def processes: Seq[pure.Process[_ <: Product, _]]
 
@@ -68,12 +68,12 @@ trait APICreator extends App:
 
   def openApi: OpenAPI =
     openAPIDocsInterpreter
-      .toOpenAPI(apiEndpoints.flatMap(_.create()), info)
+      .toOpenAPI(apiEndpoints.flatMap(_.create()), info(title))
       .servers(servers)
 
   def postmanOpenApi: OpenAPI =
     openAPIDocsInterpreter
-      .toOpenAPI(apiEndpoints.flatMap(_.createPostman()), info)
+      .toOpenAPI(apiEndpoints.flatMap(_.createPostman()), info(s"Postman: $title"))
       .servers(servers)
 
   lazy val openAPIDocsInterpreter = OpenAPIDocsInterpreter(docsOptions =

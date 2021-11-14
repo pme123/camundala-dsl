@@ -217,6 +217,7 @@ object RequestInput:
 
 case class RequestOutput[T](
     statusCode: StatusCode,
+    hasManyResults: Boolean,
     examples: Map[String, T]
 ):
   lazy val noOutdput =
@@ -227,27 +228,38 @@ case class RequestOutput[T](
 object RequestOutput {
 
   def apply[Out <: Product](): RequestOutput[Out] =
-    RequestOutput(StatusCode.Ok, Map.empty)
+    RequestOutput(StatusCode.Ok, false, Map.empty)
 
   def apply[Out <: Product](
       statusCode: StatusCode,
+      hasManyResults: Boolean,
       example: Out
   ): RequestOutput[Out] =
-    RequestOutput(statusCode, Map("standard" -> example))
+    RequestOutput(statusCode, hasManyResults, Map("standard" -> example))
 
-  def ok[Out <: Product](example: Out): RequestOutput[Out] =
-    apply(StatusCode.Ok, example)
-
-  def created[Out <: Product](example: Out): RequestOutput[Out] =
-    apply(StatusCode.Created, example)
-
-  def ok[Out <: Product](examples: Map[ExampleName, Out]): RequestOutput[Out] =
-    RequestOutput(StatusCode.Ok, examples)
+  def ok[Out <: Product](
+      example: Out,
+      hasManyResults: Boolean
+  ): RequestOutput[Out] =
+    apply(StatusCode.Ok, hasManyResults, example)
 
   def created[Out <: Product](
-      examples: Map[ExampleName, Out]
+      example: Out,
+      hasManyResults: Boolean
   ): RequestOutput[Out] =
-    RequestOutput(StatusCode.Created, examples)
+    apply(StatusCode.Created, hasManyResults, example)
+
+  def ok[Out <: Product](
+      examples: Map[ExampleName, Out],
+      hasManyResults: Boolean
+  ): RequestOutput[Out] =
+    RequestOutput(StatusCode.Ok, hasManyResults, examples)
+
+  def created[Out <: Product](
+      examples: Map[ExampleName, Out],
+      hasManyResults: Boolean
+  ): RequestOutput[Out] =
+    RequestOutput(StatusCode.Created, hasManyResults, examples)
 
 }
 

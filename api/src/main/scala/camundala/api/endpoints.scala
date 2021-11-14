@@ -118,21 +118,34 @@ object endpoints:
 
     def outMapper(): Option[EndpointOutput[_]] =
       Some(
-        oneOf[Out](
-          oneOfMappingValueMatcher(
-            requestOutput.statusCode,
-            jsonBody[Out]
-              .examples(requestOutput.examples.map { case (name, ex: Out) =>
-                Example(
-                  ex,
-                  Some(name),
-                  None
-                )
-              }.toList)
-          ) { case _ =>
-            true
-          }
-        )
+        if (requestOutput.hasManyResults)
+          oneOf[List[Out]](
+            oneOfMappingValueMatcher(
+              requestOutput.statusCode,
+              jsonBody[List[Out]]
+                .examples(requestOutput.examples.map { case (name, ex: Out) =>
+                  Example(
+                    List(ex),
+                    Some(name),
+                    None
+                  )
+                }.toList)
+            ) { case _ => true }
+          )
+        else
+          oneOf[Out](
+            oneOfMappingValueMatcher(
+              requestOutput.statusCode,
+              jsonBody[Out]
+                .examples(requestOutput.examples.map { case (name, ex: Out) =>
+                  Example(
+                    ex,
+                    Some(name),
+                    None
+                  )
+                }.toList)
+            ) { case _ => true }
+          )
       )
 
     lazy val noOutputMapper: Option[EndpointOutput[_]] =
@@ -155,7 +168,7 @@ object endpoints:
         tag,
         e.descr,
         RequestInput(Map("standard" -> e.in)),
-        RequestOutput(StatusCode.Ok, Map("standard" -> e.out)),
+        RequestOutput.ok(Map("standard" -> e.out), e.hasManyOuts),
         requestErrorOutputs
       )
   end CamundaRestApi
@@ -217,13 +230,6 @@ object endpoints:
     def withOutExample(label: String, example: Out): T =
       withRestApi(
         restApi.copy(requestOutput = restApi.requestOutput :+ (label, example))
-      )
-
-    def withOutExamples(examples: Map[String, Out]): T =
-      withRestApi(
-        restApi.copy(requestOutput =
-          RequestOutput[Out](outStatusCode, examples)
-        )
       )
 
     def baseEndpoint: Endpoint[_, _, _, _] =
@@ -498,7 +504,7 @@ object endpoints:
         requestInput = RequestInput(restApi.requestOutput.examples)
       )
       val out = getTaskFormVariables.restApi.copy(requestOutput =
-        RequestOutput(outStatusCode, restApi.requestInput.examples)
+        RequestOutput(outStatusCode, false, restApi.requestInput.examples)
       )
       getActiveTask
         .withTag(restApi.tag)
@@ -607,16 +613,14 @@ object endpoints:
       }
 
     protected def outMapper() =
-      hitPolicy match
-        case UNIQUE | FIRST | ANY =>
-          restApi.outMapper[Map[String, CamundaVariable]] { (example: Out) =>
-            CamundaVariable.toCamunda(example)
-          }
-        case _ =>
-          restApi.outMapper[Seq[Map[String, CamundaVariable]]] {
-            (example: Out) =>
-              Seq(CamundaVariable.toCamunda(example))
-          }
+      if (hitPolicy.hasManyResults)
+        restApi.outMapper[Seq[Map[String, CamundaVariable]]] { (example: Out) =>
+          Seq(CamundaVariable.toCamunda(example))
+        }
+      else
+        restApi.outMapper[Map[String, CamundaVariable]] { (example: Out) =>
+          CamundaVariable.toCamunda(example)
+        }
 
   end EvaluateDecision
 

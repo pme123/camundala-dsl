@@ -12,7 +12,8 @@ case class InOutDescr[
     id: String,
     descr: Option[String] | String = None,
     in: In = NoInput(),
-    out: Out = NoOutput()
+    out: Out = NoOutput(),
+    hasManyOuts: Boolean
 ):
 
   lazy val maybeDescr = descr match
@@ -61,7 +62,6 @@ case class Process[
     Out <: Product: Encoder: Decoder: Schema
 ](
     inOutDescr: InOutDescr[In, Out],
-    activitySeq: Seq[Activity[_, _, _]] = Seq.empty
 ) extends InOut[In, Out, Process[In, Out]]:
 
   def withInOutDescr(descr: InOutDescr[In, Out]): Process[In, Out] =
@@ -84,6 +84,8 @@ enum HitPolicy:
   case ANY
   case COLLECT
   case RULE_ORDER
+
+  def hasManyResults = !Seq(UNIQUE, FIRST, ANY).contains(this)
 end HitPolicy
   
 case class DecisionDmn[
@@ -125,21 +127,10 @@ trait PureDsl:
       descr: Option[String] | String = None,
       in: In = NoInput(),
       out: Out = NoOutput(),
-      acts: Activity[_, _, _]*
   ) =
     Process(
-      InOutDescr(id, descr, in, out),
-      acts
+      InOutDescr(id, descr, in, out, false)
     )
-
-  extension [
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](p: Process[In, Out])
-    def activities(acts: Activity[_, _, _]*): Process[In, Out] =
-      p.copy(activitySeq = acts)
-
-  end extension
 
   def userTask[
       In <: Product: Encoder: Decoder: Schema,
@@ -151,7 +142,7 @@ trait PureDsl:
       out: Out = NoOutput()
   ): UserTask[In, Out] =
     UserTask(
-      InOutDescr(id, descr, in, out)
+      InOutDescr(id, descr, in, out, false)
     )
 
   def dmn[
@@ -168,7 +159,7 @@ trait PureDsl:
     DecisionDmn[In, Out](
       decisionDefinitionKey,
       hitPolicy,
-      InOutDescr(id, descr, in, out)
+      InOutDescr(id, descr, in, out, hitPolicy.hasManyResults)
     )
 
   import reflect.Selectable.reflectiveSelectable

@@ -56,6 +56,12 @@ object InvoiceApi extends pure.PureDsl:
   )
 
   case class AssignApproverGroup(
+      @description(
+        enumDescr(
+          ApproverGroup,
+          Some("The following Groups can approve the invoice:")
+        )
+      )
       approverGroups: ApproverGroup = ApproverGroup.sales
   )
 
@@ -81,7 +87,7 @@ object InvoiceApi extends pure.PureDsl:
   case class AssignedReviewer(reviewer: String = "John")
   case class InvoiceReviewed(clarified: Boolean = true)
 
-  val invoiceReceiptProcess: pure.Process[InvoiceReceipt, NoOutput] =
+  val invoiceReceiptProcess =
     val processId = "InvoiceReceipt"
     process(
       id = processId,
@@ -97,7 +103,7 @@ object InvoiceApi extends pure.PureDsl:
     out = AssignApproverGroup()
   )
 
-  val approveInvoiceUT: pure.UserTask[InvoiceReceipt, ApproveInvoice] =
+  val approveInvoiceUT =
     userTask(
       id = "ApproveInvoice",
       descr = "Approve the invoice (or not).",
@@ -132,4 +138,3 @@ object InvoiceApi extends pure.PureDsl:
     in = InvoiceReceipt(),
     out = InvoiceReviewed()
   )
-
