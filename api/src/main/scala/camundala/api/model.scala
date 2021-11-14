@@ -197,13 +197,12 @@ case class GetActiveTaskIn(
   "A JSON object with the following properties:"
 )
 case class EvaluateDecisionIn[T <: Product](
-                                             _api_doc: Option[T],
-                                             // use the description of the object
-                                             variables: Map[String, CamundaVariable],
-                                           )
+    _api_doc: Option[T],
+    // use the description of the object
+    variables: Map[String, CamundaVariable]
+)
 
-case class
-RequestInput[T <: Product](examples: Map[String, T]):
+case class RequestInput[T](examples: Map[String, T]):
   def :+(label: String, example: T) =
     copy(examples = examples + (label -> example))
   lazy val noInput =
@@ -216,10 +215,12 @@ object RequestInput:
   def apply[T <: Product]() =
     new RequestInput[T](Map.empty)
 
-case class RequestOutput[T <: Product](
+case class RequestOutput[T](
     statusCode: StatusCode,
     examples: Map[String, T]
 ):
+  lazy val noOutdput =
+    examples.isEmpty
   def :+(label: String, example: T) =
     copy(examples = examples + (label -> example))
 

@@ -19,12 +19,6 @@ case class InOutDescr[
     case d: Option[String] => d
     case d: String => Some(d)
 
-  lazy val maybeIn =
-    if (in.isInstanceOf[Option[_]]) in else Some(in)
-
-  lazy val maybeOut =
-    if (out.isInstanceOf[Option[_]]) out else Some(out)
-
 sealed trait InOut[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema,
