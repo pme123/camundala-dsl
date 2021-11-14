@@ -20,7 +20,7 @@ object TestApi extends APICreator {
 
 }
 
-object Sample extends pure.PureDsl:
+object Sample extends PureDsl:
   val name = "sample-process"
 
   @description("My Sample input object to make the point.")

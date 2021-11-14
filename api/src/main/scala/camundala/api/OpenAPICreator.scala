@@ -1,7 +1,7 @@
 package camundala
 package api
 
-import api.pure.UserTask
+import api.UserTask
 import api.endpoints.*
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
@@ -62,7 +62,7 @@ trait APICreator extends App:
 
   def info(title: String) = Info(title, version, description, contact = contact)
 
-  //def processes: Seq[pure.Process[_ <: Product, _]]
+  //def processes: Seq[Process[_ <: Product, _]]
 
   def apiEndpoints: Seq[ApiEndpoints]
 
@@ -136,8 +136,8 @@ trait APICreator extends App:
   extension [
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
-      T <: pure.InOut[In, Out, T]
-  ](process: pure.Process[In, Out])
+      T <: InOut[In, Out, T]
+  ](process: Process[In, Out])
     def endpoints(activities: ApiEndpoint[_, _, _]*) =
       ApiEndpoints(
         process.id,
@@ -155,7 +155,7 @@ trait APICreator extends App:
   extension [
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
-  ](userTask: pure.UserTask[In, Out])
+  ](userTask: UserTask[In, Out])
     def endpoint: ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]] =
       UserTaskEndpoint(
         CamundaRestApi(
@@ -193,7 +193,7 @@ trait APICreator extends App:
   extension [
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
-  ](dmn: pure.DecisionDmn[In, Out])
+  ](dmn: DecisionDmn[In, Out])
     def endpoint: ApiEndpoint[In, Out, EvaluateDecision[In, Out]] =
       EvaluateDecision(
         dmn.decisionDefinitionKey,

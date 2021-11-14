@@ -11,7 +11,7 @@ import api.*
 import api.CamundaVariable.*
 import io.circe.{Decoder, Encoder}
 
-object TwitterApi extends pure.PureDsl:
+object TwitterApi extends PureDsl:
   implicit def tenantId: Option[String] = Some("{{tenantId}}")
 
   @description("""Every employee may create a Tweet.
@@ -31,7 +31,7 @@ object TwitterApi extends pure.PureDsl:
       approved: Boolean = true
   ) extends InOutObject
 
-  val twitterDemoProcess: pure.Process[CreateTweet, NoOutput] =
+  val twitterDemoProcess =
     val processId = "TwitterDemoProcess"
     process(
       id = processId,

@@ -3,7 +3,6 @@ package examples.invoice.bpmn
 
 import api.*
 import camundala.api.CamundaVariable.*
-import camundala.api.pure.HitPolicy
 import io.circe.generic.auto.*
 import io.circe.{Decoder, Encoder}
 import os.*
@@ -18,7 +17,7 @@ import java.util.Base64
 // One import for this ADT/JSON codec
 import org.latestbit.circe.adt.codec._
 
-object InvoiceApi extends pure.PureDsl:
+object InvoiceApi extends PureDsl:
 
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
@@ -97,7 +96,7 @@ object InvoiceApi extends pure.PureDsl:
 
   val invoiceAssignApproverDMN = dmn(
     decisionDefinitionKey = "invoice-assign-approver",
-    hitPolicy = pure.HitPolicy.COLLECT,
+    hitPolicy = HitPolicy.COLLECT,
     id = "Assign Approver Group",
     in = SelectApproverGroup(),
     out = AssignApproverGroup()
@@ -118,7 +117,7 @@ object InvoiceApi extends pure.PureDsl:
     out = PrepareBankTransfer()
   )
 
-  val reviewInvoiceProcess: pure.Process[InvoiceReceipt, InvoiceReviewed] =
+  val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =
     val processId = "ReviewInvoice"
     process(
       id = processId,

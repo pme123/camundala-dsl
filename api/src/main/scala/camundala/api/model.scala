@@ -1,327 +1,174 @@
 package camundala
 package api
 
-import io.circe.*
-import io.circe.generic.auto.*
-import sttp.tapir.generic.auto.*
-import io.circe.syntax.*
-import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput, query, path}
-//import sttp.tapir.EndpointIO.annotations.{query, path as pathParam, endpointInput}
+import io.circe.{Decoder, Encoder}
+import sttp.tapir.Schema
 
-import java.util.Base64
-import scala.collection.immutable.HashMap
+case class InOutDescr[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema
+](
+   id: String,
+   descr: Option[String] | String = None,
+   in: In = NoInput(),
+   out: Out = NoOutput(),
+   hasManyOuts: Boolean
+ ):
 
-type ExampleName = String
+  lazy val maybeDescr = descr match
+    case d: Option[String] => d
+    case d: String => Some(d)
 
-case class RequestErrorOutput(
-    statusCode: StatusCode,
-    examples: Map[ExampleName, CamundaError] = Map.empty
-)
+sealed trait InOut[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema,
+  T <: InOut[In, Out, T]
+]:
 
-case class CamundaError(
-    `type`: String = "SomeExceptionClass",
-    message: String = "a detailed message"
-)
+  def inOutDescr: InOutDescr[In, Out]
 
-case class CamundaAuthError(
-    private val `type`: String = "AuthorizationException",
-    message: String = "a detailed message",
-    userId: String = "jonny",
-    permissionName: String = "DELETE",
-    resourceName: String = "User",
-    resourceId: String = "Mary"
-)
+  lazy val id = inOutDescr.id
+  lazy val descr = inOutDescr.descr
+  lazy val in = inOutDescr.in
+  lazy val out = inOutDescr.out
 
-sealed trait CamundaVariable
+  def withInOutDescr(inOutDescr: InOutDescr[In, Out]): T
 
-object CamundaVariable:
-  /* import scala.language.implicitConversions
-  implicit def toCString(v: String): CString = CString(v)
-  implicit def toCInteger(v: Int): CInteger = CInteger(v)
-  implicit def toCLong(v: Long): CLong = CLong(v)
-  implicit def toCDouble(v: Double): CDouble = CDouble(v)
-  implicit def toCBoolean(v: Boolean): CBoolean = CBoolean(v)
-  implicit def toCEnum(v: String): CEnum = CEnum(v)
-   */
+  def withId(i: String): T =
+    withInOutDescr(inOutDescr.copy(id = i))
 
-  implicit val encodeCamundaVariable: Encoder[CamundaVariable] =
-    Encoder.instance {
-      case v: CString => v.asJson
-      case v: CInteger => v.asJson
-      case v: CLong => v.asJson
-      case v: CDouble => v.asJson
-      case v: CBoolean => v.asJson
-      case v: CFile => v.asJson
-      case v: CJson => v.asJson
-      case v: CEnum => v.asJson
-    }
+  def withDescr(description: String): T =
+    withInOutDescr(inOutDescr.copy(descr = Some(description)))
+
+  def withIn(in: In): T =
+    withInOutDescr(inOutDescr.copy(in = in))
+
+  def withOutExample(out: Out): T =
+    withInOutDescr(
+      inOutDescr.copy(out = out)
+    )
+
+sealed trait Activity[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema,
+  T <: InOut[In, Out, T]
+] extends InOut[In, Out, T] //:
+
+// def endpoint: api.ApiEndpoint[In, Out, T]
+
+case class Process[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema
+](
+   inOutDescr: InOutDescr[In, Out],
+ ) extends InOut[In, Out, Process[In, Out]]:
+
+  def withInOutDescr(descr: InOutDescr[In, Out]): Process[In, Out] =
+    copy(inOutDescr = descr)
+
+case class UserTask[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema
+](
+   inOutDescr: InOutDescr[In, Out]
+ ) extends Activity[In, Out, UserTask[In, Out]]:
+
+  def withInOutDescr(descr: InOutDescr[In, Out]): UserTask[In, Out] =
+    copy(inOutDescr = descr)
+
+enum HitPolicy:
+
+  case UNIQUE
+  case FIRST
+  case ANY
+  case COLLECT
+  case RULE_ORDER
+
+  def hasManyResults = !Seq(UNIQUE, FIRST, ANY).contains(this)
+end HitPolicy
+
+case class DecisionDmn[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema
+](
+   decisionDefinitionKey: String,
+   hitPolicy: HitPolicy,
+   inOutDescr: InOutDescr[In, Out]
+ ) extends Activity[In, Out, DecisionDmn[In, Out]]:
+
+  def withInOutDescr(descr: InOutDescr[In, Out]): DecisionDmn[In, Out] =
+    copy(inOutDescr = descr)
+
+case class CallActivity[
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema
+](
+   inOutDescr: InOutDescr[In, Out]
+ ) extends Activity[In, Out, CallActivity[In, Out]]:
+
+  def withInOutDescr(descr: InOutDescr[In, Out]): CallActivity[In, Out] =
+    copy(inOutDescr = descr)
+
+object CallActivity:
+  def apply[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+  ](process: Process[In, Out]): CallActivity[In, Out] =
+    CallActivity(process.inOutDescr)
+
+trait PureDsl:
+
+  def process[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+  ](
+     id: String,
+     descr: Option[String] | String = None,
+     in: In = NoInput(),
+     out: Out = NoOutput(),
+   ) =
+    Process(
+      InOutDescr(id, descr, in, out, false)
+    )
+
+  def userTask[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+  ](
+     id: String,
+     descr: Option[String] | String = None,
+     in: In = NoInput(),
+     out: Out = NoOutput()
+   ): UserTask[In, Out] =
+    UserTask(
+      InOutDescr(id, descr, in, out, false)
+    )
+
+  def dmn[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+  ](
+     decisionDefinitionKey: String,
+     hitPolicy: HitPolicy,
+     id: String,
+     descr: Option[String] | String = None,
+     in: In = NoInput(),
+     out: Out = NoOutput()
+   ) =
+    DecisionDmn[In, Out](
+      decisionDefinitionKey,
+      hitPolicy,
+      InOutDescr(id, descr, in, out, hitPolicy.hasManyResults)
+    )
 
   import reflect.Selectable.reflectiveSelectable
+  def enumDescr(
+                 enumeration: { def values: Array[?] },
+                 descr: Option[String] = None
+               ) =
+    val enumDescription =
+      s"Enumeration: \n- ${enumeration.values.mkString("\n- ")}"
+    descr
+      .map(_ + s"\n\n$enumDescription")
+      .getOrElse(enumDescription)
 
-  def toCamunda[T <: Product: Encoder: Decoder: Schema](
-      product: T
-  ): Map[String, CamundaVariable] =
-    product.productElementNames
-      .zip(product.productIterator)
-      .flatMap {
-        case (k, v: String) =>
-          Some(k -> CString(v))
-        case (k, v: Int) =>
-          Some(k -> CInteger(v))
-        case (k, v: Long) =>
-          Some(k -> CLong(v))
-        case (k, v: Boolean) =>
-          Some(k -> CBoolean(v))
-        case (k, v: Float) =>
-          Some(k -> CDouble(v.toDouble))
-        case (k, v: Double) =>
-          Some(k -> CDouble(v))
-        case (k, f @ FileInOut(fileName, _, mimeType)) =>
-          Some(
-            k -> CFile(
-              f.contentAsBase64,
-              CFileValueInfo(
-                fileName,
-                mimeType
-              )
-            )
-          )
-        case (k, v: { def values: Array[?] }) =>
-          Some(k -> CEnum(v.toString))
-        case (k, v: Product) =>
-          Some(
-            k -> CJson(
-              product.asJson.hcursor
-                .downField(k)
-                .as[Json]
-                .toOption
-                .map(_.toString)
-                .getOrElse(s"$k -> v could NOT be Parsed to a JSON!")
-            )
-          )
-
-      }
-      .toMap
-
-  case class CString(value: String, private val `type`: String = "String")
-      extends CamundaVariable
-  case class CInteger(value: Int, private val `type`: String = "Integer")
-      extends CamundaVariable
-  case class CLong(value: Long, private val `type`: String = "Long")
-      extends CamundaVariable
-  case class CBoolean(value: Boolean, private val `type`: String = "Boolean")
-      extends CamundaVariable
-
-  case class CDouble(value: Double, private val `type`: String = "Double")
-      extends CamundaVariable
-
-  case class CFile(
-      @description("The File's content as Base64 encoded String.")
-      value: String,
-      valueInfo: CFileValueInfo,
-      private val `type`: String = "File"
-  ) extends CamundaVariable
-
-  case class CFileValueInfo(
-      filename: String,
-      mimetype: Option[String]
-  )
-
-  case class CEnum(value: String, private val `type`: String = "String")
-      extends CamundaVariable
-
-  case class CJson(value: String, private val `type`: String = "Json")
-      extends CamundaVariable
-
-case class NoInput()
-
-case class FileInOut(
-    fileName: String,
-    @description("The content of the File as a Byte Array.")
-    content: Array[Byte],
-    mimeType: Option[String]
-):
-  lazy val contentAsBase64 = Base64.getEncoder.encodeToString(content)
-
-@description(
-  "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
-)
-case class StartProcessIn[T <: Product](
-    _api_doc: Option[T],
-    // use the description of the object
-    variables: Map[String, CamundaVariable],
-    @description("The business key of the process instance.")
-    businessKey: Option[String] = Some("example-businesskey"),
-    @description("Set to false will not return the Process Variables.")
-    withVariablesInReturn: Boolean = true
-)
-
-/*
-@endpointInput("task/{taskId}/form-variables")
-case class GetTaskFormVariablesPath(
-                                    @pathParam
-                                    taskId: String = "{{taskId}}",
-                                    @query
-                                    variableNames: Option[String] = None,
-                                    @query
-                                    deserializeValues: Boolean = true
-                                  )
- */
-@description(
-  "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
-)
-case class CompleteTaskIn[T <: Product](
-    _api_doc: Option[T],
-    // use the description of the object
-    variables: Map[String, CamundaVariable],
-    @description(
-      "Set to false will not return the Process Variables and the Result Status is 204."
-    )
-    withVariablesInReturn: Boolean = true
-)
-
-@description(
-  "A JSON object with the following properties"
-)
-case class GetActiveTaskIn(
-    @description(
-      """The id of the process - you want to get the active tasks.
-        |> This is the result id of the `StartProcessOut`""".stripMargin
-    )
-    processInstanceId: String = "{{processInstanceId}}",
-    @description("We are only interested in the active Task(s)")
-    active: Boolean = true
-)
-
-@description(
-  "A JSON object with the following properties:"
-)
-case class EvaluateDecisionIn[T <: Product](
-    _api_doc: Option[T],
-    // use the description of the object
-    variables: Map[String, CamundaVariable]
-)
-
-case class RequestInput[T](examples: Map[String, T]):
-  def :+(label: String, example: T) =
-    copy(examples = examples + (label -> example))
-  lazy val noInput =
-    examples.isEmpty
-
-object RequestInput:
-  def apply[T <: Product](example: T) =
-    new RequestInput[T](Map("standard" -> example))
-
-  def apply[T <: Product]() =
-    new RequestInput[T](Map.empty)
-
-case class RequestOutput[T](
-    statusCode: StatusCode,
-    hasManyResults: Boolean,
-    examples: Map[String, T]
-):
-  lazy val noOutdput =
-    examples.isEmpty
-  def :+(label: String, example: T) =
-    copy(examples = examples + (label -> example))
-
-object RequestOutput {
-
-  def apply[Out <: Product](): RequestOutput[Out] =
-    RequestOutput(StatusCode.Ok, false, Map.empty)
-
-  def apply[Out <: Product](
-      statusCode: StatusCode,
-      hasManyResults: Boolean,
-      example: Out
-  ): RequestOutput[Out] =
-    RequestOutput(statusCode, hasManyResults, Map("standard" -> example))
-
-  def ok[Out <: Product](
-      example: Out,
-      hasManyResults: Boolean
-  ): RequestOutput[Out] =
-    apply(StatusCode.Ok, hasManyResults, example)
-
-  def created[Out <: Product](
-      example: Out,
-      hasManyResults: Boolean
-  ): RequestOutput[Out] =
-    apply(StatusCode.Created, hasManyResults, example)
-
-  def ok[Out <: Product](
-      examples: Map[ExampleName, Out],
-      hasManyResults: Boolean
-  ): RequestOutput[Out] =
-    RequestOutput(StatusCode.Ok, hasManyResults, examples)
-
-  def created[Out <: Product](
-      examples: Map[ExampleName, Out],
-      hasManyResults: Boolean
-  ): RequestOutput[Out] =
-    RequestOutput(StatusCode.Created, hasManyResults, examples)
-
-}
-
-case class NoOutput()
-
-@description(
-  """A JSON object representing the newly created process instance.
-    |""".stripMargin
-)
-case class StartProcessOut[T <: Product](
-    _api_doc: Option[T],
-    @description(
-      "The Process Variables - Be aware that returns everything stored in the Process."
-    )
-    variables: Map[String, CamundaVariable],
-    @description(
-      """The id of the process instance.
-        |
-        |> **Postman**:
-        |>
-        |> Add the following to the tests to set the `processInstanceId`:
-        |>
-        |>```
-        |let processInstanceId = pm.response.json().id
-        |console.log("processInstanceId: " + processInstanceId)
-        |pm.collectionVariables.set("processInstanceId", processInstanceId)
-        |>```
-        |""".stripMargin
-    )
-    id: String = "f150c3f1-13f5-11ec-936e-0242ac1d0007",
-    @description("The id of the process definition.")
-    definitionId: String =
-      "processDefinitionKey:1:6fe66514-12ea-11ec-936e-0242ac1d0007",
-    @description("The business key of the process instance.")
-    businessKey: Option[String] = Some("example-businesskey")
-)
-
-@description("A JSON object representing the newly created process instance.")
-case class CompleteTaskOut[T <: Product](
-    @description(
-      "The Process Variables - Be aware that returns everything stored in the Process."
-    )
-    variables: T
-)
-
-@description("A JSON object representing the newly created process instance.")
-case class GetActiveTaskOut(
-    @description(
-      """The Task Id you need to complete Task
-        |
-        |> **Postman**:
-        |>
-        |> Add the following to the tests to set the `taskId`:
-        |>
-        |>```
-        |let taskId = pm.response.json()[0].id
-        |console.log("taskId: " + taskId)
-        |pm.collectionVariables.set("taskId", taskId)
-        |>```
-        |>
-        |> This returns an Array!
-        |""".stripMargin
-    )
-    id: String = "f150c3f1-13f5-11ec-936e-0242ac1d0007"
-)

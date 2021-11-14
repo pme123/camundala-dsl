@@ -3,7 +3,7 @@ package examples.twitter
 package bpmn
 
 import camundala.api.*
-import api.pure.UserTask
+import api.UserTask
 import api.endpoints.*
 import camundala.examples.twitter.bpmn.TwitterApi.*
 import io.circe.generic.auto.*
