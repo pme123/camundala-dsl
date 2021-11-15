@@ -88,7 +88,7 @@ object InvoiceApi extends PureDsl:
   val invoiceAssignApproverDMN = dmn(
     decisionDefinitionKey = "invoice-assign-approver",
     hitPolicy = HitPolicy.COLLECT,
-    id = "Assign Approver Group",
+    id = "AssignApproverGroup",
     in = SelectApproverGroup(),
     out = AssignApproverGroup()
   )

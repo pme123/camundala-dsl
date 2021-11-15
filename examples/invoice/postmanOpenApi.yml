@@ -6295,11 +6295,11 @@ paths:
 
                       See the [Introduction](https://docs.camunda.org/manual/7.15/reference/rest/overview/#error-handling)
                       for the error response format.
-  /decision-definition/key/{key}/evaluate/--REMOVE%3AAssign+Approver+Group--:
+  /decision-definition/key/{key}/evaluate/--REMOVE%3Ainvoice-assign-approver--:
     post:
       tags:
       - InvoiceReceipt
-      summary: 'Assign Approver Group: EvaluateDecision'
+      summary: 'invoice-assign-approver: EvaluateDecision'
       description: '
 
 
@@ -6310,7 +6310,7 @@ paths:
         - _hitPolicy_: `COLLECT`,
 
         '
-      operationId: 'Assign Approver Group: EvaluateDecision'
+      operationId: 'invoice-assign-approver: EvaluateDecision'
       parameters:
       - name: key
         in: path
