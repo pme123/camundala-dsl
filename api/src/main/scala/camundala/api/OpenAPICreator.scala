@@ -58,26 +58,24 @@ trait APICreator extends App:
 
   def info(title: String) = Info(title, version, description, contact = contact)
 
-  //def processes: Seq[Process[_ <: Product, _]]
+  def apiEndpoints(apiEP: ApiEndpoints*) =
+    writeOpenApi(openApiPath, openApi(apiEP))
+    writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
 
-  def apiEndpoints: Seq[ApiEndpoints]
-
-  def openApi: OpenAPI =
+  def openApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
-      .toOpenAPI(apiEndpoints.flatMap(_.create()), info(title))
+      .toOpenAPI(apiEP.flatMap(_.create()), info(title))
       .servers(servers)
 
-  def postmanOpenApi: OpenAPI =
+  def postmanOpenApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
-      .toOpenAPI(apiEndpoints.flatMap(_.createPostman()), info(s"Postman: $title"))
+      .toOpenAPI(apiEP.flatMap(_.createPostman()), info(s"Postman: $title"))
       .servers(servers)
 
   lazy val openAPIDocsInterpreter = OpenAPIDocsInterpreter(docsOptions =
     OpenAPIDocsOptions.default.copy(defaultDecodeFailureOutput = _ => None)
   )
 
-  writeOpenApi(openApiPath, openApi)
-  writeOpenApi(postmanOpenApiPath, postmanOpenApi)
 
   def writeOpenApi(path: Path, api: OpenAPI): Unit =
     if (os.exists(path))

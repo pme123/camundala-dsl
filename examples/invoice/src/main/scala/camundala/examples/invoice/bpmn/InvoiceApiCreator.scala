@@ -17,8 +17,7 @@ object InvoiceApiCreator extends APICreator {
 
   import InvoiceApi.*
 
-  def apiEndpoints =
-    Seq(
+  apiEndpoints(
       invoiceReceiptProcess
         .endpoints(
           invoiceAssignApproverDMN.endpoint,
