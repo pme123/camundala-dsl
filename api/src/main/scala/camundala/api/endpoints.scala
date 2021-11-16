@@ -597,16 +597,15 @@ object endpoints:
         .getOrElse(basePath / "start") / s"--REMOVE:${restApi.name}--"
 
     protected def inMapper() =
-      restApi.inMapper[StartProcessIn[In]] { (example: In) =>
+      restApi.inMapper[StartProcessIn] { (example: In) =>
         StartProcessIn(
-          Some(example),
           CamundaVariable.toCamunda(example)
         )
       }
 
     protected def outMapper() =
-      restApi.outMapper[StartProcessOut[Out]] { (example: Out) =>
-        StartProcessOut(Some(example), CamundaVariable.toCamunda(example))
+      restApi.outMapper[StartProcessOut] { (example: Out) =>
+        StartProcessOut(CamundaVariable.toCamunda(example))
       }
 
     override lazy val descr: String = restApi.maybeDescr.getOrElse("") +
@@ -745,8 +744,8 @@ object endpoints:
       "task" / taskIdPath() / "complete" / s"--REMOVE:${restApi.name}--"
 
     protected def inMapper() =
-      restApi.inMapper[CompleteTaskIn[In]] { (example: In) =>
-        CompleteTaskIn(Some(example), CamundaVariable.toCamunda(example))
+      restApi.inMapper[CompleteTaskIn] { (example: In) =>
+        CompleteTaskIn(CamundaVariable.toCamunda(example))
       }
 
     protected def outMapper(): Option[EndpointOutput[_]] =
@@ -909,9 +908,8 @@ object endpoints:
     import HitPolicy.*
 
     protected def inMapper() =
-      restApi.inMapper[EvaluateDecisionIn[In]] { (example: In) =>
+      restApi.inMapper[EvaluateDecisionIn] { (example: In) =>
         EvaluateDecisionIn(
-          Some(example),
           CamundaVariable.toCamunda(example)
         )
       }
