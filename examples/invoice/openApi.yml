@@ -6213,11 +6213,11 @@ paths:
               examples:
                 standard:
                   value: {}
-  /api-docs/invoice-assign-approverDecisionDmn:
+  /api-docs/AssignApproverGroupDecisionDmn:
     get:
       tags:
       - InvoiceReceipt
-      summary: 'invoice-assign-approver: DecisionDmn'
+      summary: 'AssignApproverGroup: DecisionDmn'
       description: '
 
 
@@ -6228,7 +6228,7 @@ paths:
         - _hitPolicy_: `COLLECT`,
 
         '
-      operationId: 'invoice-assign-approver: DecisionDmn'
+      operationId: 'AssignApproverGroup: DecisionDmn'
       requestBody:
         content:
           application/json:
