@@ -11,9 +11,16 @@ trait DmnTesterConfigCreator extends App:
   def dmnBasePath: Path = pwd / "dmnTester" / "dmns"
   def defaultDmnPath(dmnKey: String) = dmnBasePath / s"$dmnKey.dmn"
 
-  def dmnTesterObjects: Seq[DmnTesterObject]
+  def dmnTester(dmnTesterObjects: DmnTesterObject*) =
+    dmnConfigs(dmnTesterObjects).map { c =>
+      val path = basePath / s"${c.decisionId}.conf"
+      if (os.exists(path))
+        os.remove(path)
+      os.write(path, c.asJson.toString, createFolders = true)
+      println(s"Created Open API $path")
+    }
 
-  def dmnConfigs: Seq[DmnConfig] =
+  private def dmnConfigs(dmnTesterObjects: Seq[DmnTesterObject]): Seq[DmnConfig] =
     dmnTesterObjects.map { dmnTO =>
       val dmn = dmnTO.dDmn
       val in: Product = dmn.in
@@ -24,7 +31,7 @@ trait DmnTesterConfigCreator extends App:
 
   import reflect.Selectable.reflectiveSelectable
 
-  def toConfig[T <: Product](
+  private def toConfig[T <: Product](
       product: T,
       addTestValues: Map[String, List[String]]
   ) =
@@ -56,14 +63,6 @@ trait DmnTesterConfigCreator extends App:
             s"Not supported for DMN Input ($k -> $v)"
           )
       }
-
-  dmnConfigs.map { c =>
-    val path = basePath / s"${c.decisionId}.conf"
-    if (os.exists(path))
-      os.remove(path)
-    os.write(path, c.asJson.toString, createFolders = true)
-    println(s"Created Open API $path")
-  }
 
   case class DmnTesterObject(dDmn: DecisionDmn[_, _],
                              dmnPath: Path,
