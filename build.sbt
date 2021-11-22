@@ -42,7 +42,6 @@ lazy val dsl = project
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
     // libraryDependencies += "eu.timepit" %% "refined" % "0.9.20",
     // To cross compile with Dotty and Scala 2
-    crossScalaVersions := Seq(scala3Version, scala2Version)
   )
 
 val tapirVersion = "0.18.3"
@@ -60,11 +59,11 @@ lazy val api = project
       "org.planet42" %% "laika-core" % "0.18.0"
     ),
     // To cross compile with Dotty and Scala 2
-    crossScalaVersions := Seq(scala3Version, scala2Version),
     scalacOptions ++= Seq(
       "-Xmax-inlines", "50"
     )
-  )
+  ).enablePlugins(JavaAppPackaging)
+
 
 // EXAMPLES
 val springBootVersion = "2.4.4"
@@ -108,7 +107,7 @@ ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
 ThisBuild / githubWorkflowPublishTargetBranches +=
   RefPredicate.StartsWith(Ref.Tag("v"))
 
-//ThisBuild / crossScalaVersions := supportedScalaVersion
+ThisBuild / crossScalaVersions := Seq(scala3Version, scala2Version)
 
 ThisBuild / githubWorkflowPublish := Seq(WorkflowStep.Sbt(List("ci-release")))
 
