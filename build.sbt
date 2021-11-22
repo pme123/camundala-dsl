@@ -1,3 +1,5 @@
+import sbt.url
+
 val projectVersion = "0.1.0-SNAPSHOT"
 val scala2Version = "2.13.4"
 val scala3Version = "3.0.2"
@@ -48,6 +50,7 @@ lazy val api = project
   .in(file("./api"))
   .settings(projectSettings("api"))
   .settings(
+    publishArtifact := true,
     libraryDependencies ++= Seq(
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
@@ -99,3 +102,43 @@ lazy val exampleInvoice = project
     // libraryDependencies += "org.camunda.bpm.example" % "camunda-example-invoice" % camundaVersion % Test
   )
   .dependsOn(dsl, api)
+
+// https://github.com/djspiewak/sbt-github-actions
+ThisBuild / githubWorkflowTargetTags ++= Seq("v*")
+ThisBuild / githubWorkflowPublishTargetBranches +=
+  RefPredicate.StartsWith(Ref.Tag("v"))
+
+//ThisBuild / crossScalaVersions := supportedScalaVersion
+
+ThisBuild / githubWorkflowPublish := Seq(WorkflowStep.Sbt(List("ci-release")))
+
+ThisBuild / githubWorkflowPublish := Seq(
+  WorkflowStep.Sbt(
+    List("ci-release"),
+    env = Map(
+      "PGP_PASSPHRASE" -> "${{ secrets.PGP_PASSPHRASE }}",
+      "PGP_SECRET" -> "${{ secrets.PGP_SECRET }}",
+      "SONATYPE_PASSWORD" -> "${{ secrets.SONATYPE_PASSWORD }}",
+      "SONATYPE_USERNAME" -> "${{ secrets.SONATYPE_USERNAME }}"
+    )
+  )
+)
+
+inThisBuild(List(
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  homepage := Some(url("https://github.com/pme123/camundala-dsl")),
+  scmInfo := Some(
+    ScmInfo(
+      url("https://github.com/pme123/camunda-dsl"),
+      "scm:git:github.com:/pme123/camunda-dsl"
+    )
+  ),
+  developers := List(
+    Developer(
+      id    = "pme123",
+      name  = "Pascal Mengelt",
+      email = "pascal.mengelt@gmail.com",
+      url   = url("https://github.com/pme123")
+    )
+  )
+))
