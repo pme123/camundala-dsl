@@ -10,7 +10,6 @@ import org.camunda.bpm.BpmPlatform
 import org.camunda.bpm.example.invoice.InvoiceProcessApplication
 import org.springframework.context.event.EventListener
 
-import java.beans.BeanProperty
 import javax.annotation.PostConstruct
 
 @SpringBootApplication
