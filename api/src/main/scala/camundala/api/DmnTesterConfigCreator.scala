@@ -46,16 +46,16 @@ trait DmnTesterConfigCreator extends App:
           TesterInput(k, true, List("true", "false"))
         case (k, v: Boolean) =>
           TesterInput(k, false, List("true", "false"))
-        case (k, v: { def values: Array[?] }) =>
-          TesterInput(
-            k,
-            false,
-            v.values.map(_.toString).toList
-          )
         case (k, Some(v: { def values: Array[?] })) =>
           TesterInput(
             k,
             true,
+            v.values.map(_.toString).toList
+          )
+        case (k, v: { def values: Array[?] }) =>
+          TesterInput(
+            k,
+            false,
             v.values.map(_.toString).toList
           )
         case (k, v) =>
