@@ -1,4 +1,4 @@
-package camundala.examples.twitter.bpmn
+package camundala.examples.invoice.bpmn
 
 import camundala.dsl.DSL.Givens._
 import camundala.examples.invoice.bpmn.ExampleInvoice2
@@ -18,7 +18,7 @@ class ExampleInvoiceTest
   val bpmnsConfigToTest = ExampleInvoice2.config
 
 
-  @Test
+  //@Test
   def testTODO(): Unit =
     println("TODO with automatic testing")
 

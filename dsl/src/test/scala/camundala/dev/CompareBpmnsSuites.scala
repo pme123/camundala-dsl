@@ -2,6 +2,8 @@ package camundala
 package dev
 package test
 
+import zio.test.TestAspect.ignore
+
 object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
 
   val bpmn1 =
@@ -10,12 +12,12 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
         bpmn("myBpmn.bpmn")
           .processes(
             process("myProcess")
-            /*  .nodes(
+              .nodes(
                 startEvent("LetsStart"),
                 serviceTask("serviceTaskA"),
                 userTask("userTaskA"),
                 businessRuleTask("Rulez")
-              )*/
+              )
               .flows(
                 flow("no_1234_1234")
               )
@@ -34,12 +36,12 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
         bpmn("myBpmn.bpmn")
           .processes(
             process("myProcess")
-          /*    .nodes(
+              .nodes(
                 startEvent("LetsStart"),
                 serviceTask("serviceTaskB"),
                 userTask("userTaskA"),
                 businessRuleTask("Rulez")
-              )*/
+              )
               .flows(
                 flow("no_1234_1234")
               )
@@ -51,7 +53,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       val audit = bpmn1.compareWith(bpmn1.bpmns.bpmns)
       audit.print()
       assert(audit.entries.head.msg)(
-        equalTo("BPMN ident match (myBpmn.bpmn).")
+        equalTo("BPMN ident match (myBpmn$$bpmn).")
       ) &&
       assert(audit.entries.drop(1).head.msg)(
         equalTo("Process 'myProcess' exists.")
@@ -67,7 +69,9 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       val audit = bpmn1.compareWith(bpmn2.bpmns.bpmns)
       audit.print()
       assert(audit.entries.head.msg)(
-        equalTo("BPMN ident has changed: myBpmn.bpmn -> new Bpmns: myBpmn2.bpmn.")
+        equalTo(
+          "BPMN ident has changed: myBpmn$$bpmn -> new Bpmns: myBpmn2$$bpmn."
+        )
       ) &&
       assert(audit.entries.size)(equalTo(1)) &&
       assert(audit.maxLevel())(equalTo(AuditLevel.WARN))
@@ -76,7 +80,7 @@ object CompareBpmnsSuites extends DefaultRunnableSpec with CompareBpmns:
       val audit = bpmn1.compareWith(bpmn3.bpmns.bpmns)
       audit.print()
       assert(audit.entries.head.msg)(
-        equalTo("BPMN ident match (myBpmn.bpmn).")
+        equalTo("BPMN ident match (myBpmn$$bpmn).")
       ) &&
       assert(audit.entries.drop(1).head.msg)(
         equalTo("Process 'myProcess' exists.")

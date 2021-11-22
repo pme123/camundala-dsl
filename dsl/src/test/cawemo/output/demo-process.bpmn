@@ -17,7 +17,7 @@
   <bpmn2:process camunda:candidateStarterGroups="admin" camunda:candidateStarterUsers="admin, dev" id="TestDSLProcess" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
             
     
-    <bpmn2:exclusiveGateway camunda:asyncAfter="true" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="Fork" name="Fork">
+    <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="Fork" name="Fork">
                   
       
       <bpmn2:incoming>flow2__ServiceTask__Fork</bpmn2:incoming>
@@ -32,7 +32,7 @@
     </bpmn2:exclusiveGateway>
             
     
-    <bpmn2:userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="my-form-key" completionQuantity="1" id="UserTaskA" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
+    <bpmn2:userTask completionQuantity="1" id="UserTaskA" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
                   
       
       <bpmn2:incoming>IsNOTBar__Fork__UserTaskA</bpmn2:incoming>
@@ -44,22 +44,7 @@
     </bpmn2:userTask>
             
     
-    <bpmn2:userTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" completionQuantity="1" id="UserTaskB" implementation="##unspecified" isForCompensation="false" name="User Task B" startQuantity="1">
-      <extensionElements xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
-        <camunda:formData>
-          <camunda:formField id="name" label="Name" type="string">
-            <camunda:properties/>
-            <camunda:validation>
-              <camunda:constraint name="required"/>
-              <camunda:constraint config="3" name="minlength"/>
-            </camunda:validation>
-          </camunda:formField>
-          <camunda:formField id="firstName" label="First Name" type="string">
-            <camunda:properties/>
-            <camunda:validation/>
-          </camunda:formField>
-        </camunda:formData>
-      </extensionElements>
+    <bpmn2:userTask completionQuantity="1" id="UserTaskB" implementation="##unspecified" isForCompensation="false" name="User Task B" startQuantity="1">
                   
       
       <bpmn2:incoming>IsBar__Fork__UserTaskB</bpmn2:incoming>
@@ -71,7 +56,7 @@
     </bpmn2:userTask>
             
     
-    <bpmn2:exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="gatewayJoin">
+    <bpmn2:exclusiveGateway gatewayDirection="Unspecified" id="gatewayJoin">
                   
       
       <bpmn2:incoming>flow5__UserTaskA__gatewayJoin</bpmn2:incoming>
@@ -86,7 +71,7 @@
     </bpmn2:exclusiveGateway>
             
     
-    <bpmn2:endEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="EndProcess" name="End Process">
+    <bpmn2:endEvent id="EndProcess" name="End Process">
                   
       
       <bpmn2:incoming>SequenceFlow_9__ScriptTask__EndProcess</bpmn2:incoming>
@@ -95,7 +80,7 @@
     </bpmn2:endEvent>
             
     
-    <bpmn2:serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:expression="${execution.setVariable('isBar', true)}" completionQuantity="1" id="ServiceTask" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
+    <bpmn2:serviceTask completionQuantity="1" id="ServiceTask" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
                   
       
       <bpmn2:incoming>flow1__StartProcess__ServiceTask</bpmn2:incoming>
@@ -107,7 +92,7 @@
     </bpmn2:serviceTask>
             
     
-    <bpmn2:startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="StartProcess" isInterrupting="true" name="Start Process" parallelMultiple="false">
+    <bpmn2:startEvent id="StartProcess" isInterrupting="true" name="Start Process" parallelMultiple="false">
                   
       
       <bpmn2:outgoing>flow1__StartProcess__ServiceTask</bpmn2:outgoing>
@@ -116,14 +101,13 @@
     </bpmn2:startEvent>
             
     
-    <bpmn2:scriptTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" completionQuantity="1" id="ScriptTask" isForCompensation="false" name="Script Task" scriptFormat="Groovy" startQuantity="1">
+    <bpmn2:scriptTask completionQuantity="1" id="ScriptTask" isForCompensation="false" name="Script Task" startQuantity="1">
                   
       
       <bpmn2:incoming>flow7__gatewayJoin__ScriptTask</bpmn2:incoming>
                   
       
       <bpmn2:outgoing>SequenceFlow_9__ScriptTask__EndProcess</bpmn2:outgoing>
-      <script xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">println "hello there" </script>
                 
     
     </bpmn2:scriptTask>
@@ -136,12 +120,12 @@
             
     
     <bpmn2:sequenceFlow id="IsNOTBar__Fork__UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA">
-      <conditionExpression id="conditionExpression_1caa2d92-7d70-4b54-9bb4-22eeb8fb592b" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
+      <conditionExpression id="conditionExpression_0794ca9f-5344-49f1-9d05-268d5a023656" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">${!isBar}</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
     <bpmn2:sequenceFlow id="IsBar__Fork__UserTaskB" name="is Bar" sourceRef="Fork" targetRef="UserTaskB">
-      <conditionExpression id="conditionExpression_e52d5cda-6d7a-486c-a3d7-3c80d82d5f40" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
+      <conditionExpression id="conditionExpression_9921e446-ee00-40e0-98b9-e1accc6a4973" language="Groovy" xsi:type="bpmn2:tFormalExpression" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">isBar</conditionExpression>
     </bpmn2:sequenceFlow>
             
     
