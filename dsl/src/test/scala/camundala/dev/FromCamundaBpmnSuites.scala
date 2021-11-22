@@ -15,6 +15,7 @@ object FromCamundaBpmnSuites
           DemoProcessRunnerApp.demoConfig.withIdFolder
         )
       ).run()
+        .map((bpmns: Seq[Bpmn]) => bpmns.filter(bpmn => bpmn.ident == Ident("demo__process")))
       assertM(bpmns)(
         hasField(
           "ident",
