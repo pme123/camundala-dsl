@@ -16,3 +16,5 @@ jobs:
         uses: coursier/cache-action@v6
       - name: Compile
         run: sbt compile
+      - name: Test
+        run: sbt test
