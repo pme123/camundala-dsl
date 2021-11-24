@@ -66,7 +66,8 @@ lazy val api = project
     scalacOptions ++= Seq(
       "-Xmax-inlines", "50" // is declared as erased, but is in fact used
     )
-  ).enablePlugins(JavaAppPackaging)
+  )
+  //.enablePlugins(JavaAppPackaging)
 
 
 // EXAMPLES
