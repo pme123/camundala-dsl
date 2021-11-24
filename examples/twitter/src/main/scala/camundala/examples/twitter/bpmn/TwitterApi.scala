@@ -6,6 +6,7 @@ import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import camundala.api.*
 import camundala.bpmn.*
+import camundala.domain.*
 
 object TwitterApi extends PureDsl:
   implicit def tenantId: Option[String] = Some("{{tenantId}}")

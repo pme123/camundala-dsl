@@ -1,7 +1,8 @@
 package camundala
 package api
 
-import camundala.bpmn.*
+import domain.*
+import bpmn.*
 import io.circe.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*

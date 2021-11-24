@@ -1,6 +1,8 @@
 package camundala
 package bpmn
 
+import domain.*
+
 case class InOutDescr[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
@@ -169,5 +171,3 @@ trait PureDsl:
       .map(_ + s"\n\n$enumDescription")
       .getOrElse(enumDescription)
 
-case class NoInput()
-case class NoOutput()

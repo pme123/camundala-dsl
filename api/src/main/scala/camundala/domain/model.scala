@@ -8,6 +8,9 @@ import org.latestbit.circe.adt.codec.impl.{JsonPureTaggedAdtEncoder, JsonPureTag
 import scala.deriving.Mirror
 
 export io.circe.{Decoder, Encoder, Json}
+
+case class NoInput()
+case class NoOutput()
 /*
 trait EnumTrait[T]:
   extension (x: T) def values: Array[T]
