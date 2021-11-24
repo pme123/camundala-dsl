@@ -1,10 +1,5 @@
 package camundala
-package api
-
-import scala.language.implicitConversions
-import scala.math.BigDecimal
-import io.circe.generic.*
-import io.circe.syntax.*
+package dmn
 
 case class DmnConfig(
     decisionId: String,

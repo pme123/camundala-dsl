@@ -1,6 +1,9 @@
 package camundala
-package api
+package dmn
 
+import api.*
+import bpmn.*
+import camundala.bpmn.DecisionDmn
 import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
@@ -20,12 +23,18 @@ trait DmnTesterConfigCreator extends App:
       println(s"Created Open API $path")
     }
 
-  private def dmnConfigs(dmnTesterObjects: Seq[DmnTesterObject]): Seq[DmnConfig] =
+  private def dmnConfigs(
+      dmnTesterObjects: Seq[DmnTesterObject]
+  ): Seq[DmnConfig] =
     dmnTesterObjects.map { dmnTO =>
       val dmn = dmnTO.dDmn
       val in: Product = dmn.in
       val testerData = toConfig(in, dmnTO.addTestValues)
-      DmnConfig(dmn.decisionDefinitionKey, TesterData(testerData.toList), dmnTO.dmnPath.relativeTo(pwd).segments.toList)
+      DmnConfig(
+        dmn.decisionDefinitionKey,
+        TesterData(testerData.toList),
+        dmnTO.dmnPath.relativeTo(pwd).segments.toList
+      )
 
     }
 
@@ -41,7 +50,11 @@ trait DmnTesterConfigCreator extends App:
         case (k, Some(v: (Double | Int | Long | Short | String | Float))) =>
           TesterInput(k, true, addTestValues.get(k).getOrElse(List(v.toString)))
         case (k, v: (Double | Int | Long | Short | String | Float)) =>
-          TesterInput(k, false, addTestValues.get(k).getOrElse(List(v.toString)))
+          TesterInput(
+            k,
+            false,
+            addTestValues.get(k).getOrElse(List(v.toString))
+          )
         case (k, Some(_: Boolean)) =>
           TesterInput(k, true, List("true", "false"))
         case (k, v: Boolean) =>
@@ -64,20 +77,23 @@ trait DmnTesterConfigCreator extends App:
           )
       }
 
-  case class DmnTesterObject(dDmn: DecisionDmn[_, _],
-                             dmnPath: Path,
-                             addTestValues: Map[String, List[String]] = Map.empty)
+  case class DmnTesterObject(
+      dDmn: DecisionDmn[_, _],
+      dmnPath: Path,
+      addTestValues: Map[String, List[String]] = Map.empty
+  )
 
-
-  extension(dDmn: DecisionDmn[_, _])
+  extension (dDmn: DecisionDmn[_, _])
     def tester: DmnTesterObject =
       DmnTesterObject(dDmn, defaultDmnPath(dDmn.decisionDefinitionKey))
 
-  extension(dmnTO: DmnTesterObject)
+  extension (dmnTO: DmnTesterObject)
     def dmnPath(path: Path) =
       dmnTO.copy(dmnPath = path)
 
     def testValues(key: String, values: AnyVal*) =
-      dmnTO.copy(addTestValues = dmnTO.addTestValues + (key -> values.map(_.toString).toList))
+      dmnTO.copy(addTestValues =
+        dmnTO.addTestValues + (key -> values.map(_.toString).toList)
+      )
 
 end DmnTesterConfigCreator

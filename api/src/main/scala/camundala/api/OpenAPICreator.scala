@@ -1,7 +1,9 @@
 package camundala
 package api
 
+import bpmn.*
 import api.endpoints.*
+import camundala.bpmn.{DecisionDmn, InOut, Process, UserTask}
 import io.circe.generic.auto.*
 import laika.api.*
 import laika.ast.MessageFilter

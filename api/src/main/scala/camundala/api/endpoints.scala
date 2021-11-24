@@ -1,11 +1,11 @@
 package camundala
 package api
 
+import camundala.bpmn.*
 import io.circe.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import io.circe.syntax.*
-import sttp.model.StatusCode
 import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput}
 
 import java.util.Base64
@@ -123,8 +123,6 @@ object CamundaVariable:
 
   case class CJson(value: String, private val `type`: String = "Json")
       extends CamundaVariable
-
-case class NoInput()
 
 case class FileInOut(
     fileName: String,
@@ -250,8 +248,6 @@ object RequestOutput {
     RequestOutput(StatusCode.Created, hasManyResults, examples)
 
 }
-
-case class NoOutput()
 
 @description(
   """A JSON object representing the newly created process instance.
@@ -891,7 +887,7 @@ object endpoints:
 
     def createPostman()(implicit
         tenantId: Option[String]
-    ): Seq[Endpoint[_, _, _, _]] =
+    ): Seq[Endpoint[?, ?, ?, ?]] =
       Seq(
         baseEndpoint
           .in(postPath(decisionDefinitionKey))
@@ -905,7 +901,7 @@ object endpoints:
         .map(id => basePath / "tenant-id" / tenantIdPath(id) / "evaluate")
         .getOrElse(basePath / "evaluate") / s"--REMOVE:${restApi.name}--"
 
-    import HitPolicy.*
+    import camundala.bpmn.HitPolicy.*
 
     protected def inMapper() =
       restApi.inMapper[EvaluateDecisionIn] { (example: In) =>

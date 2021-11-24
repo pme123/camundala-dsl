@@ -1,7 +1,8 @@
 package camundala
 package examples.invoice.bpmn
 
-import camundala.api.*
+import api.*
+import bpmn.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 

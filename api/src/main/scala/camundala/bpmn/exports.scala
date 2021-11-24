@@ -1,5 +1,5 @@
 package camundala
-package api
+package bpmn
 
 val camundaVersion = "7.15"
 

@@ -1,8 +1,8 @@
 package camundala
 package examples.invoice.bpmn
 
-import camundala.api.*
-
+import bpmn.*
+import dmn.DmnTesterConfigCreator
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
 
 object InvoiceDmnTesterConfigCreator extends DmnTesterConfigCreator:
