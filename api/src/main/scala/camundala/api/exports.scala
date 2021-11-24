@@ -11,7 +11,7 @@ export os.{pwd, Path, read}
 export sttp.model.StatusCode
 
 // circe
-export io.circe.{Decoder, Encoder}
+export io.circe.{Decoder, Encoder, Json}
 
 // tapir
 export sttp.tapir.EndpointIO.Example

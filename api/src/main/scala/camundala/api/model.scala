@@ -92,7 +92,7 @@ case class DecisionDmn[
    hitPolicy: HitPolicy,
    inOutDescr: InOutDescr[In, Out]
  ) extends Activity[In, Out, DecisionDmn[In, Out]]:
-  
+
   def withInOutDescr(descr: InOutDescr[In, Out]): DecisionDmn[In, Out] =
     copy(inOutDescr = descr)
 
