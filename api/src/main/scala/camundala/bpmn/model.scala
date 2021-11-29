@@ -3,6 +3,9 @@ package bpmn
 
 import domain.*
 
+import scala.deriving.Mirror
+import scala.compiletime.{constValue, constValueTuple}
+
 case class InOutDescr[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
@@ -160,14 +163,13 @@ trait PureDsl:
       InOutDescr(id, descr, in, out, hitPolicy.hasManyResults)
     )
 
-  import reflect.Selectable.reflectiveSelectable
-  def enumDescr(
-      enumeration: { def values: Array[?] },
-      descr: Option[String] = None
-  ) =
+  inline def enumDescr[E](
+                           descr: Option[String] = None
+                         )(using m: Mirror.SumOf[E]): String =
+    val name = constValue[m.MirroredLabel]
+    val values = constValueTuple[m.MirroredElemLabels].productIterator.mkString(", ")
     val enumDescription =
-      s"Enumeration: \n- ${enumeration.values.mkString("\n- ")}"
+      s"Enumeration $name: \n- $values"
     descr
       .map(_ + s"\n\n$enumDescription")
       .getOrElse(enumDescription)
-

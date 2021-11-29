@@ -12,13 +12,14 @@ import org.latestbit.circe.adt.codec.*
 
 object InvoiceApi extends PureDsl:
 
+  val invoiceCategoryDescr: String =
+    enumDescr[InvoiceCategory](Some("There are three possible Categories"))
+
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
       creditor: String = "Great Pizza for Everyone Inc.",
       amount: Double = 30.0,
-      @description(
-        enumDescr(InvoiceCategory, Some("There are three possible Categories"))
-      )
+      @description(invoiceCategoryDescr)
       invoiceCategory: InvoiceCategory =
         InvoiceCategory.`Software License Costs`,
       invoiceNumber: String = "I-12345",
@@ -40,20 +41,17 @@ object InvoiceApi extends PureDsl:
 
   case class SelectApproverGroup(
       amount: Double = 30.0,
-      @description(
-        enumDescr(InvoiceCategory, Some("There are three possible Categories"))
-      )
+      @description(invoiceCategoryDescr)
       invoiceCategory: InvoiceCategory =
         InvoiceCategory.`Software License Costs`
   )
 
+  val approverGroupDescr: String = enumDescr[ApproverGroup](
+    Some("The following Groups can approve the invoice:")
+  )
+
   case class AssignApproverGroup(
-      @description(
-        enumDescr(
-          ApproverGroup,
-          Some("The following Groups can approve the invoice:")
-        )
-      )
+      @description(approverGroupDescr)
       approverGroups: ApproverGroup = ApproverGroup.sales
   )
 

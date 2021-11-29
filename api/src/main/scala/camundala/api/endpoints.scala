@@ -78,7 +78,7 @@ object CamundaVariable:
               )
             )
           )
-        case (k, v: { def values: Array[?] }) =>
+        case (k, v: scala.reflect.Enum) =>
           Some(k -> CEnum(v.toString))
         case (k, v: Product) =>
           Some(
