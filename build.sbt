@@ -42,7 +42,7 @@ lazy val dsl = project
       "org.mockito" % "mockito-core" % "3.1.0",
       "com.novocode" % "junit-interface" % "0.11"
     ),
-    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework"),
+    testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
     // libraryDependencies += "eu.timepit" %% "refined" % "0.9.20",
     // To cross compile with Dotty and Scala 2
   )
@@ -58,17 +58,18 @@ lazy val api = project
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
+      "com.softwaremill.magnolia1_3" %% "magnolia" % "1.0.0-M7",
       "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
       "com.lihaoyi" %% "os-lib" % "0.7.8",
       "org.planet42" %% "laika-core" % "0.18.0"
     ),
     // To cross compile with Dotty and Scala 2
     scalacOptions ++= Seq(
-      "-Xmax-inlines", "50" // is declared as erased, but is in fact used
+      "-Xmax-inlines",
+      "50" // is declared as erased, but is in fact used
     )
   )
-  //.enablePlugins(JavaAppPackaging)
-
+//.enablePlugins(JavaAppPackaging)
 
 // EXAMPLES
 val springBootVersion = "2.4.4"
@@ -150,14 +151,15 @@ inThisBuild(List(
   ),
   developers := developerList
 ))
-*/
+ */
 
 lazy val publicationSettings: Project => Project = _.settings(
   publishMavenStyle := true,
   pomIncludeRepository := { _ => false },
   publishTo := {
     val nexus = "https://s01.oss.sonatype.org/"
-    if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
     else Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),

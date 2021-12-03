@@ -36982,8 +36982,8 @@ components:
           description: If true, the Boss accepted the Invoice
       description: Every Invoice has to be accepted by the Boss.
     ApproverGroup:
-      description: "The following Groups can approve the invoice:\n\nEnumeration:\
-        \ \n- accounting\n- sales\n- management"
+      description: "The following Groups can approve the invoice:\n\nEnumeration ApproverGroup:\
+        \ \n- accounting, sales, management"
       oneOf:
       - $ref: '#/components/schemas/ApproverGroup'
     AssignApproverGroup:
@@ -37015,8 +37015,8 @@ components:
         mimeType:
           type: string
     InvoiceCategory:
-      description: "There are three possible Categories\n\nEnumeration: \n- Travel\
-        \ Expenses\n- Misc\n- Software License Costs"
+      description: "There are three possible Categories\n\nEnumeration InvoiceCategory:\
+        \ \n- Travel Expenses, Misc, Software License Costs"
       oneOf:
       - $ref: '#/components/schemas/InvoiceCategory'
     InvoiceReceipt:
