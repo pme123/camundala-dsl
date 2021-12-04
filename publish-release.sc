@@ -35,7 +35,7 @@ def release(version: String): Unit = {
   val isSnapshot = version.contains("-")
   %.sbt(
     "-J-Xmx3G",
-    "publish"
+    "publishSigned"
   )
 
   if (!isSnapshot) {
@@ -97,7 +97,7 @@ private def replaceVersion(newVersion: String) = {
   val versions: Seq[String] = read.lines ! versionsPath
 
   val updatedVersions: String = versions.toList match {
-    case x::xs => (s"projectV=$newVersion"::xs).mkString("\n")
+    case _::xs => (s"projectV=$newVersion"::xs).mkString("\n")
     case _ => ""
   }
 
