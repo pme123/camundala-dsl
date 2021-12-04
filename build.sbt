@@ -1,6 +1,6 @@
 import sbt.url
 
-val projectVersion = "0.2.0-SNAPSHOT"
+val projectVersion = "0.1.6"
 val scala2Version = "2.13.4"
 val scala3Version = "3.1.0"
 val zioVersion = "1.0.8"
