@@ -23,7 +23,6 @@ build/
 meta.json
 /project/project/
 /project/metals.sbt
-/project/plugins.sbt
 /.vscode/settings.json
 /.vscode/launch.json
 /camunda-db.mv.db

@@ -1,10 +1,12 @@
 import sbt.url
 
-val projectVersion = "0.1.0-SNAPSHOT"
+val projectVersion = "0.2.0-SNAPSHOT"
 val scala2Version = "2.13.4"
 val scala3Version = "3.1.0"
 val zioVersion = "1.0.8"
 val org = "io.github.pme123"
+
+ThisBuild / versionScheme := Some("semver-spec")
 
 lazy val root = project
   .in(file("."))
@@ -165,7 +167,7 @@ lazy val publicationSettings: Project => Project = _.settings(
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   homepage := Some(url("https://github.com/pme123/camundala-dsl")),
-  startYear := Some(2020),
+  startYear := Some(2021),
   logLevel := Level.Debug,
   scmInfo := Some(
     ScmInfo(
