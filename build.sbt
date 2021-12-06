@@ -1,7 +1,7 @@
 import sbt.url
 
-val projectVersion = "0.1.6"
-val scala2Version = "2.13.4"
+lazy val projectVersion = scala.io.Source.fromFile("version").mkString.trim
+val scala2Version = "2.13.6"
 val scala3Version = "3.1.0"
 val zioVersion = "1.0.8"
 val org = "io.github.pme123"
@@ -21,7 +21,7 @@ def projectSettings(projName: String): Seq[Def.Setting[_]] = Seq(
   organization := org,
   scalaVersion := scala3Version,
   version := projectVersion,
-  crossScalaVersions := Seq(scala3Version, scala2Version)
+  crossScalaVersions := Seq(scala3Version)//, scala2Version)
 )
 
 lazy val dsl = project
@@ -60,7 +60,6 @@ lazy val api = project
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
-      "com.softwaremill.magnolia1_3" %% "magnolia" % "1.0.0-M7",
       "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
       "com.lihaoyi" %% "os-lib" % "0.7.8",
       "org.planet42" %% "laika-core" % "0.18.0"

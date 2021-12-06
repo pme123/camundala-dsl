@@ -131,7 +131,7 @@ case class FileInOut(
     content: Array[Byte],
     mimeType: Option[String]
 ):
-  lazy val contentAsBase64 = Base64.getEncoder.encodeToString(content)
+  lazy val contentAsBase64: String = Base64.getEncoder.encodeToString(content)
 
 @description(
   "A JSON object with the following properties: (at least an empty JSON object {} or an empty request body)"
@@ -624,7 +624,7 @@ object endpoints:
         case _ =>
           inExample.productElementNames.mkString(
             """.inSource("""",
-            """"
+            """")
               |            .inSource("""".stripMargin,
             """")"""
           )
@@ -635,7 +635,7 @@ object endpoints:
         case _ =>
           outExample.productElementNames.mkString(
             """.outSource("""",
-            """"
+            """")
               |            .outSource("""".stripMargin,
             """")"""
           )

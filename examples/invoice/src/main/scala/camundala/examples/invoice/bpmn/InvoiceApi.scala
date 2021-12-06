@@ -33,8 +33,7 @@ object InvoiceApi extends PureDsl:
   )
 
   enum InvoiceCategory
-      derives JsonTaggedAdt.PureEncoder,
-        JsonTaggedAdt.PureDecoder:
+      derives JsonTaggedAdt.PureEncoder:
     case `Travel Expenses`
     case Misc
     case `Software License Costs`
@@ -56,8 +55,7 @@ object InvoiceApi extends PureDsl:
   )
 
   enum ApproverGroup
-      derives JsonTaggedAdt.PureEncoder,
-        JsonTaggedAdt.PureDecoder:
+      derives JsonTaggedAdt.PureEncoder:
     case accounting
     case sales
     case management
