@@ -60,8 +60,8 @@ paths:
       description: "This runs the Twitter Approvement Process.\n\nUsage as _CallActivity_:\n\
         ```\nlazy val TwitterDemoProcessProcess =\n          callActivity(\"TwitterDemoProcess\"\
         ) //TODO adjust to your CallActivity id!\n            .calledElement(\"TwitterDemoProcess\"\
-        )\n            .inSource(\"email\"\n            .inSource(\"content\")\n \
-        \           \n```\n"
+        )\n            .inSource(\"email\")\n            .inSource(\"content\")\n\
+        \            \n```\n"
       operationId: 'TwitterDemoProcess: Process'
       requestBody:
         content:

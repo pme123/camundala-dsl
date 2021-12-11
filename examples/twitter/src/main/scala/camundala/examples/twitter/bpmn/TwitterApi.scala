@@ -35,8 +35,13 @@ object TwitterApi extends PureDsl:
       descr = "This runs the Twitter Approvement Process.",
       in = CreateTweet()
     )
-  val reviewTweetUT = userTask(
+  val reviewTweetApprovedUT = userTask(
     id = "ReviewTweet",
     in = NoInput(),
     out = ReviewTweet()
+  )
+  val reviewTweetNotApprovedUT = userTask(
+    id = "ReviewTweet",
+    in = NoInput(),
+    out = ReviewTweet(false)
   )

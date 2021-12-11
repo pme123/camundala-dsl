@@ -22,6 +22,7 @@ trait ProjectDSL extends DSL:
 
     final val createTweetFormPath = "forms/createTweet.html"        
     final val reviewTweetFormPath = "forms/reviewTweet.html" 
+    
     extension [T](hasForm: HasMaybeForm[T])
 
         def createTweetForm: T =

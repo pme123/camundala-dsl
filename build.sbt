@@ -21,7 +21,7 @@ def projectSettings(projName: String): Seq[Def.Setting[_]] = Seq(
   organization := org,
   scalaVersion := scala3Version,
   version := projectVersion,
-  crossScalaVersions := Seq(scala3Version)//, scala2Version)
+  crossScalaVersions := Seq(scala3Version) //, scala2Version)
 )
 
 lazy val dsl = project
@@ -32,18 +32,8 @@ lazy val dsl = project
     libraryDependencies ++= Seq(
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-test" % zioVersion % Test,
-      "dev.zio" %% "zio-test-sbt" % zioVersion % Test,
-      // provide Camunda interaction
-      "org.camunda.bpm" % "camunda-engine" % camundaVersion % Provided,
-      // provide test helper
-      "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
-      "org.assertj" % "assertj-core" % "3.19.0",
-      //     "org.scalactic" %% "scalactic" % "3.2.9",
-      //     "org.scalatest" %% "scalatest" % "3.2.9",
-      //     "org.mockito" % "mockito-scala-scalatest_2.13" % "1.16.37",
-      "org.mockito" % "mockito-core" % "3.1.0",
-      "com.novocode" % "junit-interface" % "0.11"
-    ),
+      "dev.zio" %% "zio-test-sbt" % zioVersion % Test
+    ) ++ camundaTestDependencies,
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
     // libraryDependencies += "eu.timepit" %% "refined" % "0.9.20",
     // To cross compile with Dotty and Scala 2
@@ -60,10 +50,11 @@ lazy val api = project
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
       "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
+      "com.softwaremill.quicklens" %% "quicklens" % "1.7.5", // simple modifying case classes
       "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
       "com.lihaoyi" %% "os-lib" % "0.7.8",
       "org.planet42" %% "laika-core" % "0.18.0"
-    ),
+    ) ++ camundaTestDependencies,
     // To cross compile with Dotty and Scala 2
     scalacOptions ++= Seq(
       "-Xmax-inlines",
@@ -86,6 +77,18 @@ val camundaDependencies = Seq(
   "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-rest" % camundaVersion,
   "org.camunda.bpm.springboot" % "camunda-bpm-spring-boot-starter-webapp" % camundaVersion,
   "com.h2database" % "h2" % h2Version
+)
+val camundaTestDependencies = Seq(
+  // provide Camunda interaction
+  "org.camunda.bpm" % "camunda-engine" % camundaVersion % Provided,
+  // provide test helper
+  "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
+  "org.assertj" % "assertj-core" % "3.19.0",
+  //     "org.scalactic" %% "scalactic" % "3.2.9",
+  //     "org.scalatest" %% "scalatest" % "3.2.9",
+  //     "org.mockito" % "mockito-scala-scalatest_2.13" % "1.16.37",
+  "org.mockito" % "mockito-core" % "3.1.0",
+  "com.novocode" % "junit-interface" % "0.11"
 )
 
 lazy val exampleTwitter = project

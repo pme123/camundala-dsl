@@ -26,7 +26,7 @@ trait TestHelper:
     resources.foreach(r =>
       deployment.addInputStream(
         r,
-        getClass().getClassLoader().getResourceAsStream(r)
+        getClass.getClassLoader.getResourceAsStream(r)
       )
     )
     deployment.deploy()
@@ -100,7 +100,7 @@ trait TestHelper:
         assertThat(t).hasCandidateUser(user.toString)
         )
       userTask.maybePriority.foreach(prio =>
-        assertEquals(prio, t.getPriority()) // no assertThat
+        assertEquals(prio, t.getPriority) // no assertThat
       )
       userTask.maybeDueDate.foreach(date =>
         assertThat(t).hasDueDate(toCamundaDate(date.expression))

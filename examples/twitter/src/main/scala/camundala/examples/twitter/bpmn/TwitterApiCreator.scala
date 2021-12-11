@@ -18,11 +18,10 @@ object TwitterApiCreator extends APICreator {
 
   override def basePath: Path = pwd / "examples" / "twitter"
 
-  def apiEndpoints =
-    Seq(
+  apiEndpoints(
       twitterDemoProcess
         .endpoints(
-          reviewTweetUT.endpoint
+          reviewTweetApprovedUT.endpoint
             .withOutExample("Tweet accepted", ReviewTweet())
             .withOutExample("Tweet rejected", ReviewTweet(false)),
         )
