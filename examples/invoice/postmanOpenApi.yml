@@ -243,8 +243,8 @@ paths:
                 standard:
                   value:
                   - approverGroups:
-                      value: sales
-                      type: String
+                      value: approverGroups -> v could NOT be Parsed to a JSON!
+                      type: Json
         '403':
           description: ''
           content:

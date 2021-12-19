@@ -5,6 +5,8 @@ import api.*
 import bpmn.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
+import InvoiceApi.*
+import camundala.domain.*
 
 object InvoiceApiCreator extends APICreator {
 
@@ -16,7 +18,6 @@ object InvoiceApiCreator extends APICreator {
   
   override def basePath: Path = pwd / "examples" / "invoice"
 
-  import InvoiceApi.*
 
   apiEndpoints(
       invoiceReceiptProcess

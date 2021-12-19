@@ -6258,11 +6258,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AssignApproverGroup'
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AssignApproverGroup'
               examples:
                 standard:
                   value:
-                  - approverGroups: sales
+                  - - approverGroups: management
   /api-docs/ApproveInvoiceUserTask:
     get:
       tags:

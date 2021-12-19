@@ -53,7 +53,13 @@ object CamundaVariable:
   def toCamunda[T <: Product: Encoder: Decoder: Schema](
       product: T
   ): Map[ExampleName, CamundaVariable] =
-    product.productElementNames
+    val p = product match
+      case p: ManyInOut[T] =>
+        p.inOut
+      case inOut => inOut
+
+    println(s"OTHER: $product")
+    p.productElementNames
       .zip(product.productIterator)
       .flatMap {
         case (k, v: String) =>
