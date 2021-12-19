@@ -27,14 +27,13 @@ object InvoiceApi extends PureDsl:
         "invoice.pdf",
         read.bytes(
           pwd / "examples" / "invoice" / "src" / "main" / "resources" / "invoice.pdf"
-        //    pwd / "src" / "main" / "resources" / "invoice.pdf"
+          //    pwd / "src" / "main" / "resources" / "invoice.pdf"
         ),
         Some("application/pdf")
       )
   )
 
-  enum InvoiceCategory
-      derives JsonTaggedAdt.PureEncoder:
+  enum InvoiceCategory derives JsonTaggedAdt.PureEncoder:
     case `Travel Expenses`
     case Misc
     case `Software License Costs`
@@ -55,8 +54,7 @@ object InvoiceApi extends PureDsl:
       approverGroups: ApproverGroup = ApproverGroup.management
   )
 
-  enum ApproverGroup
-      derives JsonTaggedAdt.PureEncoder:
+  enum ApproverGroup derives JsonTaggedAdt.PureEncoder:
     case accounting
     case sales
     case management
@@ -84,13 +82,25 @@ object InvoiceApi extends PureDsl:
       in = InvoiceReceipt()
     )
 
-  lazy val invoiceAssignApproverDMN: DecisionDmn[SelectApproverGroup,  ManyInOut[AssignApproverGroup]] = dmn(
+  lazy val invoiceAssignApproverDMN
+      : DecisionDmn[SelectApproverGroup, ManyInOut[AssignApproverGroup]] = dmn(
     decisionDefinitionKey = "invoice-assign-approver",
     hitPolicy = HitPolicy.COLLECT,
     id = "AssignApproverGroup",
     in = SelectApproverGroup(),
     out = ManyInOut(AssignApproverGroup())
   )
+
+  lazy val invoiceAssignApproverDMN2
+      : DecisionDmn[SelectApproverGroup, ManyInOut[AssignApproverGroup]] =
+    invoiceAssignApproverDMN
+      .withIn(SelectApproverGroup(1050, InvoiceCategory.`Travel Expenses`))
+      .withOut(
+        ManyInOut(
+          AssignApproverGroup(ApproverGroup.accounting),
+          AssignApproverGroup(ApproverGroup.sales)
+        )
+      )
 
   lazy val approveInvoiceUT =
     userTask(

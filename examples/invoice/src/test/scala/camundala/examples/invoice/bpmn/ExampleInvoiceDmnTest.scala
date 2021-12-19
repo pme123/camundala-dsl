@@ -22,5 +22,9 @@ class ExampleInvoiceDmnTest extends DmnTestRunner, ProjectDSL:
   val dmnPath: Path = baseResource / invoice$$v2.invoiceBDsDmn.path
 
   @Test
-  def testReviewReview(): Unit =
+  def testSingleResult(): Unit =
     test(invoiceAssignApproverDMN)
+
+  @Test
+  def testMoreResult(): Unit =
+    test(invoiceAssignApproverDMN2)

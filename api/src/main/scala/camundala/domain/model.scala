@@ -31,6 +31,12 @@ extension (product: Product)
           (k, v.toString)
         case (k, v) => (k, v)
       }
+
+  def inOut: Product = product match
+    case p: ManyInOut[Product] =>
+      p.inOut
+    case inOut => inOut
+
 end extension
 
 case class ManyInOut[
@@ -38,23 +44,11 @@ case class ManyInOut[
 ](inOut: T, examples: T*):
   def toSeq: Seq[T] = inOut +: examples
 
-
 object ManyInOut:
   def apply[
       T <: Product: Encoder: Decoder: Schema
   ](inOuts: Seq[T]): ManyInOut[T] =
     ManyInOut(inOuts.head, inOuts.tail: _*)
-
-import io.circe.Encoder
-import io.circe.generic.auto.*
-
-case class MyExample(someStr: String)
-
-def doIt[
-    Out <: Product: Encoder: Decoder: Schema
-](
-    out: Out
-) = println(s"Auto: $out")
 
 implicit def encodeManyInOut[
     T <: Product: Encoder: Decoder: Schema
@@ -76,8 +70,21 @@ implicit def decodeManyInOut[
     }
 }
 
-implicit def schemaForNel[T <: Product: Encoder: Decoder: Schema]: Schema[ManyInOut[T]] =
+implicit def schemaForNel[T <: Product: Encoder: Decoder: Schema]
+    : Schema[ManyInOut[T]] =
   Schema[ManyInOut[T]](SchemaType.SArray(implicitly[Schema[T]])(_.toSeq))
 
-object runner extends App:
-  doIt(ManyInOut(MyExample("hello")))
+def valueToJson(value: Any): Json =
+  value match
+    case v: Int =>
+      v.asJson
+    case v: Long =>
+      v.asJson
+    case v: Boolean =>
+      v.asJson
+    case v: Float =>
+      v.asJson
+    case v: Double =>
+      v.asJson
+    case v =>
+      v.toString.asJson

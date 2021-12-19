@@ -63,12 +63,11 @@ trait APICreator extends App:
 
   def apiEndpoints(apiEP: ApiEndpoints*) =
     writeOpenApi(openApiPath, openApi(apiEP))
-    writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
+  //  writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
 
   def openApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
       .toOpenAPI(apiEP.flatMap(_.create()), info(title))
-      .servers(servers)
 
   def postmanOpenApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
@@ -199,8 +198,7 @@ trait APICreator extends App:
   ](dmn: DecisionDmn[In, Out])
     def endpoint: ApiEndpoint[In, Out, EvaluateDecision[In, Out]] =
       EvaluateDecision(
-        dmn.decisionDefinitionKey,
-        dmn.hitPolicy,
+        dmn,
         CamundaRestApi(
           dmn.inOutDescr,
           dmn.id,

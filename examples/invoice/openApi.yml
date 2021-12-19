@@ -76,8 +76,6 @@ info:
     >Keep a Changelog</a>,\nand this project adheres to <a href=\"https://semver.org/spec/v2.0.0.html\"\
     >Semantic Versioning</a>.</p>\n\n<h2 id=\"unreleased\" class=\"section\">Unreleased</h2>\n\
     <p>Initial Version</p>\n\n</p>\n</details>\n\n"
-servers:
-- url: http://localhost:8034/engine-rest
 paths:
   /api-docs/InvoiceReceiptProcess:
     get:
@@ -6247,8 +6245,8 @@ paths:
             examples:
               standard:
                 value:
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 1050.0
+                  invoiceCategory: Travel Expenses
         required: true
       responses:
         '200':
@@ -6258,13 +6256,12 @@ paths:
               schema:
                 type: array
                 items:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/AssignApproverGroup'
+                  $ref: '#/components/schemas/Json'
               examples:
                 standard:
                   value:
-                  - - approverGroups: management
+                  - accounting
+                  - sales
   /api-docs/ApproveInvoiceUserTask:
     get:
       tags:
@@ -36993,18 +36990,6 @@ components:
           type: boolean
           description: If true, the Boss accepted the Invoice
       description: Every Invoice has to be accepted by the Boss.
-    ApproverGroup:
-      description: "The following Groups can approve the invoice:\n\nEnumeration ApproverGroup:\
-        \ \n- accounting, sales, management"
-      oneOf:
-      - $ref: '#/components/schemas/ApproverGroup'
-    AssignApproverGroup:
-      required:
-      - approverGroups
-      type: object
-      properties:
-        approverGroups:
-          $ref: '#/components/schemas/ApproverGroup'
     AssignedReviewer:
       required:
       - reviewer
@@ -37059,6 +37044,7 @@ components:
       properties:
         clarified:
           type: boolean
+    Json: {}
     NoOutput:
       type: object
     PrepareBankTransfer:

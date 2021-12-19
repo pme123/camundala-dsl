@@ -22,7 +22,7 @@ object InvoiceApiCreator extends APICreator {
   apiEndpoints(
       invoiceReceiptProcess
         .endpoints(
-          invoiceAssignApproverDMN.endpoint,
+          invoiceAssignApproverDMN2.endpoint,
           approveInvoiceUT.endpoint
             .withOutExample("Invoice approved", ApproveInvoice())
             .withOutExample("Invoice NOT approved", ApproveInvoice(false)),

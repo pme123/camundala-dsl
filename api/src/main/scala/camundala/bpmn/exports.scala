@@ -20,7 +20,6 @@ export sttp.tapir.Endpoint
 export sttp.tapir.endpoint
 export sttp.tapir.EndpointOutput
 export sttp.tapir.EndpointInput
-export sttp.tapir.json.circe.jsonBody
 export sttp.tapir.oneOf
 export sttp.tapir.oneOfMappingValueMatcher
 export sttp.tapir.path

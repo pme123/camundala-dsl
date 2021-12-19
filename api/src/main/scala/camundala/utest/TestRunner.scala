@@ -50,7 +50,7 @@ trait TestRunner extends TestDsl:
   extension (processToTest: ProcessToTest[?, ?])
     def run(): Unit =
       val ProcessToTest(
-        Process(InOutDescr(id, descr, in, out, hasManyOuts)),
+        Process(InOutDescr(id, descr, in, out)),
         activities
       ) = processToTest
       val processInstance = runtimeService.startProcessInstanceByKey(
@@ -79,7 +79,7 @@ trait TestRunner extends TestDsl:
 
   extension (userTask: UserTask[?, ?])
     def run(processInstance: ProcessInstance): Unit =
-      val UserTask(InOutDescr(id, descr, in, out, hasManyOuts)) = userTask
+      val UserTask(InOutDescr(id, descr, in, out)) = userTask
       val t = task()
       assertThat(t)
         .hasDefinitionKey(id)

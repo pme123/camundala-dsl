@@ -13,8 +13,7 @@ case class InOutDescr[
     id: String,
     descr: Option[String] | String = None,
     in: In = NoInput(),
-    out: Out = NoOutput(),
-    hasManyOuts: Boolean
+    out: Out = NoOutput()
 ):
 
   lazy val maybeDescr = descr match
@@ -45,7 +44,7 @@ sealed trait InOut[
   def withIn(in: In): T =
     withInOutDescr(inOutDescr.copy(in = in))
 
-  def withOutExample(out: Out): T =
+  def withOut(out: Out): T =
     withInOutDescr(
       inOutDescr.copy(out = out)
     )
@@ -103,7 +102,8 @@ case class DecisionDmn[
     copy(inOutDescr = descr)
 
   def decisionResultType: DecisionResultType = {
-    val hasManyOutputVars = inOutDescr.out.names().size > 1
+    val inOut = inOutDescr.out.inOut
+    val hasManyOutputVars = inOut.names().size > 1
     (hasManyOutputVars, hitPolicy.hasManyResults) match
       case (false, false) =>
         DecisionResultType.singleEntry
@@ -150,7 +150,7 @@ trait PureDsl:
       out: Out = NoOutput()
   ) =
     Process(
-      InOutDescr(id, descr, in, out, false)
+      InOutDescr(id, descr, in, out)
     )
 
   def userTask[
@@ -163,7 +163,7 @@ trait PureDsl:
       out: Out = NoOutput()
   ): UserTask[In, Out] =
     UserTask(
-      InOutDescr(id, descr, in, out, false)
+      InOutDescr(id, descr, in, out)
     )
 
   def dmn[
@@ -180,7 +180,7 @@ trait PureDsl:
     DecisionDmn[In, Out](
       decisionDefinitionKey,
       hitPolicy,
-      InOutDescr(id, descr, in, out, hitPolicy.hasManyResults)
+      InOutDescr(id, descr, in, out)
     )
 
   inline def enumDescr[E](
