@@ -86,7 +86,8 @@ enum HitPolicy:
   case COLLECT
   case RULE_ORDER
 
-  def hasManyResults = !Seq(UNIQUE, FIRST, ANY).contains(this)
+  def hasManyResults =
+    !Seq(UNIQUE, FIRST, ANY).contains(this)
 end HitPolicy
 
 case class DecisionDmn[
@@ -100,6 +101,25 @@ case class DecisionDmn[
 
   def withInOutDescr(descr: InOutDescr[In, Out]): DecisionDmn[In, Out] =
     copy(inOutDescr = descr)
+
+  def decisionResultType: DecisionResultType = {
+    val hasManyOutputVars = inOutDescr.out.names().size > 1
+    (hasManyOutputVars, hitPolicy.hasManyResults) match
+      case (false, false) =>
+        DecisionResultType.singleEntry
+      case (false, true) =>
+        DecisionResultType.collectEntries
+      case (true, false) =>
+        DecisionResultType.singleResult
+      case (true, true) =>
+        DecisionResultType.resultList
+  }
+
+enum DecisionResultType:
+  case singleEntry // TypedValue
+  case singleResult // Map(String, Object)
+  case collectEntries // List(Object)
+  case resultList // List(Map(String, Object))
 
 case class CallActivity[
     In <: Product: Encoder: Decoder: Schema,

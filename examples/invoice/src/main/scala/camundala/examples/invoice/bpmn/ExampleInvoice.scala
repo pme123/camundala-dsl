@@ -15,7 +15,7 @@ object ExampleInvoice2 extends DSL:
 
   val config = bpmnsConfig
     .dmns(
-      dmn("invoiceBusinessDecisions")
+      invoice$$v2.invoiceBDsDmn
     )
     .users(
       users.demo
@@ -40,7 +40,7 @@ object ExampleInvoice2 extends DSL:
   end groups
 
   object invoice$$v2:
-
+    val invoiceBDsDmn = dmn("invoiceBusinessDecisions")
     val _bpmn = bpmn("invoice$$v2")
       .processes(
         processes.InvoiceReceipt

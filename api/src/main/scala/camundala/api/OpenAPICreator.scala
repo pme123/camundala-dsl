@@ -99,6 +99,12 @@ trait APICreator extends App:
       .build
     transformer.transform(changeLog) match
       case Right(value) => s"""
+                              |.some **CHANGELOG**
+                              |[%collapsible]
+                              |====
+                              |$value
+                              |====
+                              |
                               |<details>
                               |<summary><b>CHANGELOG</b></summary>
                               |<p>

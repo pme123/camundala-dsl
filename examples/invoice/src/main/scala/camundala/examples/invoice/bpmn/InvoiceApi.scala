@@ -27,6 +27,7 @@ object InvoiceApi extends PureDsl:
         "invoice.pdf",
         read.bytes(
           pwd / "examples" / "invoice" / "src" / "main" / "resources" / "invoice.pdf"
+        //    pwd / "src" / "main" / "resources" / "invoice.pdf"
         ),
         Some("application/pdf")
       )
@@ -51,7 +52,7 @@ object InvoiceApi extends PureDsl:
 
   case class AssignApproverGroup(
       @description(approverGroupDescr)
-      approverGroups: ApproverGroup = ApproverGroup.sales
+      approverGroups: ApproverGroup = ApproverGroup.management
   )
 
   enum ApproverGroup
@@ -75,7 +76,7 @@ object InvoiceApi extends PureDsl:
   case class AssignedReviewer(reviewer: String = "John")
   case class InvoiceReviewed(clarified: Boolean = true)
 
-  val invoiceReceiptProcess =
+  lazy val invoiceReceiptProcess =
     val processId = "InvoiceReceipt"
     process(
       id = processId,
@@ -83,7 +84,7 @@ object InvoiceApi extends PureDsl:
       in = InvoiceReceipt()
     )
 
-  val invoiceAssignApproverDMN = dmn(
+  lazy val invoiceAssignApproverDMN = dmn(
     decisionDefinitionKey = "invoice-assign-approver",
     hitPolicy = HitPolicy.COLLECT,
     id = "AssignApproverGroup",
@@ -91,7 +92,7 @@ object InvoiceApi extends PureDsl:
     out = AssignApproverGroup()
   )
 
-  val approveInvoiceUT =
+  lazy val approveInvoiceUT =
     userTask(
       id = "ApproveInvoice",
       descr = "Approve the invoice (or not).",
@@ -99,28 +100,28 @@ object InvoiceApi extends PureDsl:
       out = ApproveInvoice()
     )
 
-  val prepareBankTransferUT = userTask(
+  lazy val prepareBankTransferUT = userTask(
     id = "PrepareBankTransfer",
     descr = "Prepare the bank transfer in the Financial Accounting System.",
     in = InvoiceReceipt(),
     out = PrepareBankTransfer()
   )
 
-  val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =
-    val processId = "ReviewInvoice"
+  lazy val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =
+    val processId = "ReviewInvoiceProcess"
     process(
       id = processId,
       descr = "This starts the Review Invoice Process.",
       in = InvoiceReceipt(),
       out = InvoiceReviewed()
     )
-  val assignReviewerUT = userTask(
+  lazy val assignReviewerUT = userTask(
     id = "AssignReviewer",
     descr = "Select the Reviewer.",
     in = InvoiceReceipt(),
     out = AssignedReviewer()
   )
-  val reviewInvoiceUT = userTask(
+  lazy val reviewInvoiceUT = userTask(
     id = "ReviewInvoice",
     descr = "Review Invoice and approve.",
     in = InvoiceReceipt(),

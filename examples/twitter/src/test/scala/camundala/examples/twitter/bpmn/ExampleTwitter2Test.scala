@@ -17,14 +17,14 @@ import org.junit.{After, Before, Rule, Test}
 import org.mockito.Mockito.*
 import org.mockito.{Mock, MockitoAnnotations}
 
-class ExampleTwitter2Test extends TestRunner, ProjectDSL, TestDsl:
+class ExampleTwitter2Test extends TestRunner:
 
   lazy val config: TestConfig =
       testConfig
         .deployments(
           baseResource / example__twitter.path,
-          formResource / "forms" / "createTweet.html",
-          formResource / "forms" / "reviewTweet.html"
+          formResource / "createTweet.html",
+          formResource / "reviewTweet.html"
         )
         .registries(
           serviceRegistry(

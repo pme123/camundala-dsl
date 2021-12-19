@@ -1,24 +1,19 @@
 package camundala
 package utest
 
+import domain.*
 import bpmn.*
 import org.camunda.bpm.engine.runtime.ProcessInstance
-import org.camunda.bpm.engine.test.ProcessEngineRule
+import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
-  assertThat,
-  repositoryService,
-  runtimeService,
-  task
-}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, repositoryService, runtimeService, task}
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.assertEquals
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
 
-import scala.jdk.CollectionConverters.*
 
-trait TestRunner:
+trait TestRunner extends TestDsl:
 
   def config: TestConfig
   @Rule
@@ -26,7 +21,7 @@ trait TestRunner:
 
   @Before
   def deployment(): Unit =
-    val deployment = repositoryService().createDeployment()
+    val deployment = repositoryService.createDeployment()
     val resources = config.deploymentResources
     println(s"Resources: $resources")
     resources.foreach(r =>
@@ -38,7 +33,7 @@ trait TestRunner:
     deployment.deploy()
 
   @Before
-  def setUp(): Unit =
+  def setUpRegistries(): Unit =
     MockitoAnnotations.initMocks(this)
     val serviceRegistries = config.serviceRegistries
     println(s"ServiceRegistries: $serviceRegistries")
@@ -117,14 +112,4 @@ trait TestRunner:
         .hasPassed(id)
   end extension
 
-  extension (product: Product)
-    def names(): Seq[String] = product.productElementNames.toSeq
 
-    def asVars(): Map[String, Any] =
-      product.productElementNames
-        .zip(product.productIterator)
-        .toMap
-
-    def asJavaVars(): java.util.Map[String, Any] =
-      asVars().asJava
-  end extension

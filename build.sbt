@@ -1,7 +1,7 @@
 import sbt.url
 
 lazy val projectVersion = scala.io.Source.fromFile("version").mkString.trim
-val scala2Version = "2.13.6"
+val scala2Version = "2.13.7"
 val scala3Version = "3.1.0"
 val zioVersion = "1.0.8"
 val org = "io.github.pme123"
@@ -81,9 +81,14 @@ val camundaDependencies = Seq(
 val camundaTestDependencies = Seq(
   // provide Camunda interaction
   "org.camunda.bpm" % "camunda-engine" % camundaVersion % Provided,
+ //
+  //"org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % Provided,
   // provide test helper
   "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
   "org.assertj" % "assertj-core" % "3.19.0",
+  // dmn testing
+ //("org.camunda.bpm.extension.dmn.scala" % "dmn-engine" % "1.7.2-SNAPSHOT").cross(CrossVersion.for3Use2_13),
+  "de.odysseus.juel" % "juel" % "2.1.3",
   //     "org.scalactic" %% "scalactic" % "3.2.9",
   //     "org.scalatest" %% "scalatest" % "3.2.9",
   //     "org.mockito" % "mockito-scala-scalatest_2.13" % "1.16.37",
