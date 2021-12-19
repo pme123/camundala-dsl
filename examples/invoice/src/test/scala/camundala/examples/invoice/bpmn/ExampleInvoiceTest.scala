@@ -5,11 +5,10 @@ import camundala.examples.invoice.bpmn.ExampleInvoice2
 import camundala.examples.invoice.bpmn.ExampleInvoice2.*
 import camundala.examples.invoice.bpmn.InvoiceApi.*
 import camundala.examples.invoice.dsl.ProjectDSL
-import camundala.model.*
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*
 import org.camunda.bpm.engine.test.mock.Mocks
-import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule}
+import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule, ProcessEngineTestCase}
 import org.junit.{After, Before, Rule, Test}
 import org.mockito.{Mock, MockitoAnnotations}
 import camundala.test.*

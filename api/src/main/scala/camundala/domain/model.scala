@@ -1,10 +1,12 @@
 package camundala
 package domain
 
+import camundala.api.FileInOut
 import io.circe.{ACursor, Decoder, Encoder, HCursor, Json}
 import sttp.tapir.{Schema, SchemaType}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
+import org.camunda.bpm.engine.variable.Variables.fileValue
 import sttp.tapir.generic.Derived
 import sttp.tapir.generic.auto.*
 
@@ -17,12 +19,18 @@ extension (product: Product)
   def names(): Seq[String] = product.productElementNames.toSeq
 
   def asVars(): Map[String, Any] =
-    product.productElementNames
-      .zip(product.productIterator)
+    inOut.productElementNames
+      .zip(inOut.productIterator)
       .toMap
 
   def asJavaVars(): java.util.Map[String, Any] =
-    asVars().asJava
+    asVars().map {
+      case (k, FileInOut(fileName, content, mimeType)) =>
+        k -> fileValue(fileName).file(content).mimeType(mimeType.orNull).create
+      case (k, e: scala.reflect.Enum) =>
+        k -> e.toString
+      case other => other
+    }.asJava
 
   def asDmnVars(): Map[String, Any] =
     asVars()

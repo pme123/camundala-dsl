@@ -19,7 +19,7 @@ import os.Path
 
 class ExampleInvoiceDmnTest extends DmnTestRunner, ProjectDSL:
 
-  val dmnPath: Path = baseResource / invoice$$v2.invoiceBDsDmn.path
+  val dmnPath = baseResource / invoice$$v2.invoiceBDsDmn.path
 
   @Test
   def testSingleResult(): Unit =

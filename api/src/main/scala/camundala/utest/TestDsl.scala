@@ -1,7 +1,7 @@
 package camundala
 package utest
 
-import os.{Path, pwd}
+import os.{Path, ResourcePath, pwd}
 
 trait TestDsl:
 
@@ -10,7 +10,7 @@ trait TestDsl:
 
   extension (testConfig: TestConfig)
 
-    def deployments(deployments: Path*): TestConfig =
+    def deployments(deployments: ResourcePath*): TestConfig =
       testConfig.copy(deploymentResources = deployments.toSet)
     def registries(sRegistries: ServiceRegistry*): TestConfig =
       testConfig.copy(serviceRegistries = sRegistries.toSet)
@@ -18,5 +18,5 @@ trait TestDsl:
   end extension
 
   def serviceRegistry(key: String, value: Any): ServiceRegistry = ServiceRegistry(key, value)
-  val baseResource: Path = pwd / "src" / "main" / "resources"
-  def formResource: Path = baseResource / "static" / "forms"
+  val baseResource: ResourcePath = os.resource
+  def formResource: ResourcePath = os.resource / "static" / "forms"

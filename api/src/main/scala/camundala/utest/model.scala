@@ -1,11 +1,11 @@
 package camundala
 package utest
 
-import os.Path
+import os.{Path, ResourcePath}
 import bpmn.*
 
 case class TestConfig(
-    deploymentResources: Set[Path] = Set.empty,
+    deploymentResources: Set[ResourcePath] = Set.empty,
     serviceRegistries: Set[ServiceRegistry] = Set.empty
 )
 

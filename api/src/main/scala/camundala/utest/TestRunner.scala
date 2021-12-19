@@ -3,23 +3,33 @@ package utest
 
 import domain.*
 import bpmn.*
+import org.camunda.bpm.engine.ProcessEngineConfiguration
+import org.camunda.bpm.engine.impl.test.TestHelper
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, repositoryService, runtimeService, task}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
+  assertThat,
+  task
+}
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.assertEquals
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
 
+import java.io.FileNotFoundException
 
 trait TestRunner extends TestDsl:
 
   def config: TestConfig
-  @Rule
-  def processEngineRule = new ProcessEngineRule
+  //@Rule
+  // def processEngineRule = new ProcessEngineRule
 
   @Before
+  def init(): Unit =
+    deployment()
+    setUpRegistries()
+
   def deployment(): Unit =
     val deployment = repositoryService.createDeployment()
     val resources = config.deploymentResources
@@ -32,7 +42,6 @@ trait TestRunner extends TestDsl:
     )
     deployment.deploy()
 
-  @Before
   def setUpRegistries(): Unit =
     MockitoAnnotations.initMocks(this)
     val serviceRegistries = config.serviceRegistries
@@ -69,12 +78,12 @@ trait TestRunner extends TestDsl:
           )
       }
       // check process outputs
-      assertThat(processInstance).isEnded
       val variables = assertThat(processInstance).variables()
       for
         (k, v) <- out.asVars()
         _ = assertThat(processInstance).hasVariables(k)
       yield variables.containsEntry(k, v)
+      assertThat(processInstance).isEnded
   end extension
 
   extension (userTask: UserTask[?, ?])
@@ -112,4 +121,11 @@ trait TestRunner extends TestDsl:
         .hasPassed(id)
   end extension
 
+  // From ProcessEngineTestCase
+  protected lazy val configurationResource: String = "camunda.cfg.xml"
+  protected lazy val processEngine =
+    TestHelper.getProcessEngine(configurationResource)
+  protected lazy val repositoryService = processEngine.getRepositoryService
+  protected lazy val runtimeService = processEngine.getRuntimeService
 
+end TestRunner

@@ -9,17 +9,12 @@ import org.camunda.bpm.dmn.engine.test.DmnEngineRule
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.ProcessEngineRule
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
-  assertThat,
-  repositoryService,
-  runtimeService,
-  task
-}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, repositoryService, runtimeService, task}
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.assertEquals
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
-import os.Path
+import os.{Path, ResourcePath}
 import org.camunda.bpm.engine.variable.VariableMap
 import org.camunda.bpm.engine.variable.Variables
 import org.camunda.bpm.model.dmn.DmnModelInstance
@@ -29,7 +24,7 @@ import scala.jdk.CollectionConverters.*
 
 trait DmnTestRunner extends TestDsl:
 
-  def dmnPath: Path
+  def dmnPath: ResourcePath
 
   @Rule
   lazy val dmnEngineRule = new DmnEngineRule()
@@ -49,16 +44,6 @@ trait DmnTestRunner extends TestDsl:
 
     val cDecision: DmnDecision =
       dmnEngine.parseDecision(decisionDmn.decisionDefinitionKey, dmnInputStream)
-    val dependentDecisions = cDecision.getRequiredDecisions.asScala
-    variables.putAll(
-      dependentDecisions
-        .flatMap(d => {
-          val r = dmnEngine.evaluateDecision(d, variables)
-          r.getFirstResult.getEntryMap.asScala
-        })
-        .toMap
-        .asJava
-    )
     val result = dmnEngine.evaluateDecisionTable(cDecision, variables)
 
     val resultList = result.getResultList.asScala

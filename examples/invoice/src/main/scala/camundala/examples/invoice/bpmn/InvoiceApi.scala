@@ -26,8 +26,7 @@ object InvoiceApi extends PureDsl:
       invoiceDocument: FileInOut = FileInOut(
         "invoice.pdf",
         read.bytes(
-          pwd / "examples" / "invoice" / "src" / "main" / "resources" / "invoice.pdf"
-          //    pwd / "src" / "main" / "resources" / "invoice.pdf"
+          os.resource / "invoice.pdf"
         ),
         Some("application/pdf")
       )
