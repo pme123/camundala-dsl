@@ -53,24 +53,23 @@ trait DmnTestRunner extends TestDsl:
       case DecisionResultType.singleResult =>
         println(s"singleResult: ${result.getSingleResult.getEntryMap}")
       case DecisionResultType.collectEntries =>
+        val expKey = decisionDmn.out.productElementNames.next()
+        val expResults = decisionDmn.out.productIterator.next()
         assert(
-          decisionDmn.out.isInstanceOf[ManyInOut[?]],
-          "For DecisionResultType.collectEntries you need to have ManyInOut[?] object."
+          expResults.isInstanceOf[Iterable[?]],
+          "For DecisionResultType.collectEntries you need to have Iterable[?] object."
         )
-        val expResults: Seq[Map[String, Any]] = decisionDmn.out match
-          case manyInOut: ManyInOut[?] =>
-            manyInOut.toSeq.map(_.asDmnVars())
-          case m =>
-            Seq(m.asDmnVars())
+        val expResultDmn =
+          expResults.asInstanceOf[Seq[?]]
+            .map(_.toString)
 
-        assert(expResults.size == resultList.size)
-        for i <- expResults.indices
+        assert(expResultDmn.size == resultList.size)
+        for i <- expResultDmn.indices
         yield
           val rMap = resultList(i)
-          expResults(i).foreach { case (expKey, expValue) =>
-            println(s"assert $expKey: ${rMap.get(expKey)} == $expValue")
-            assert(rMap.get(expKey) == expValue)
-          }
+          println(s"assert $expKey: ${rMap.get(expKey)} == ${expResultDmn(i)}")
+          assert(rMap.get(expKey) == expResultDmn(i))
+
 
       case DecisionResultType.resultList =>
         println(s"resultList: $resultList")
