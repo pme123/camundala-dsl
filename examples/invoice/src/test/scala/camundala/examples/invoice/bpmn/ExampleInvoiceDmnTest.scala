@@ -7,7 +7,7 @@ import camundala.examples.invoice.bpmn.InvoiceApi.*
 import camundala.examples.invoice.dsl.ProjectDSL
 import camundala.model.*
 import camundala.test.*
-import camundala.utest.{DmnTestRunner, TestConfig, TestDsl, TestRunner}
+import camundala.test.{DmnTestRunner, TestConfig, TestDsl, TestRunner}
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*
 import org.camunda.bpm.engine.test.mock.Mocks

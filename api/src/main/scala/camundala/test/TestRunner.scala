@@ -1,5 +1,5 @@
 package camundala
-package utest
+package test
 
 import domain.*
 import bpmn.*
@@ -8,10 +8,7 @@ import org.camunda.bpm.engine.impl.test.TestHelper
 import org.camunda.bpm.engine.runtime.{Job, ProcessInstance}
 import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
-  assertThat,
-  task
-}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, managementService, repositoryService, runtimeService, task}
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.{assertEquals, assertNotNull}
 import org.junit.{Before, Rule}
@@ -24,8 +21,8 @@ import java.util
 trait TestRunner extends TestDsl:
 
   def config: TestConfig
-  //@Rule
-  // def processEngineRule = new ProcessEngineRule
+  @Rule
+  def processEngineRule = new ProcessEngineRule
 
   @Before
   def init(): Unit =
@@ -142,14 +139,6 @@ trait TestRunner extends TestDsl:
 
       checkOutput(out, processInstance)
   end extension
-
-  // From ProcessEngineTestCase
-  protected lazy val configurationResource: String = "camunda.cfg.xml"
-  protected lazy val processEngine =
-    TestHelper.getProcessEngine(configurationResource)
-  protected lazy val repositoryService = processEngine.getRepositoryService
-  protected lazy val runtimeService = processEngine.getRuntimeService
-  protected lazy val managementService = processEngine.getManagementService
 
   private def checkOutput[T <: Product](
       out: T,

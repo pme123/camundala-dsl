@@ -12,7 +12,7 @@ import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule, ProcessEngine
 import org.junit.{After, Before, Rule, Test}
 import org.mockito.{Mock, MockitoAnnotations}
 import camundala.test.*
-import camundala.utest.{TestConfig, TestDsl, TestRunner}
+import camundala.test.{TestConfig, TestDsl, TestRunner}
 import org.camunda.bpm.engine.task.IdentityLink
 import org.junit.Assert.{assertEquals, assertTrue}
 import org.mockito.Mockito.mock

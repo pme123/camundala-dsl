@@ -1,5 +1,5 @@
 package camundala
-package utest
+package test
 
 import os.{Path, ResourcePath, pwd}
 
