@@ -98,8 +98,8 @@ paths:
               standard:
                 value:
                   creditor: Great Pizza for Everyone Inc.
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 300.0
+                  invoiceCategory: Travel Expenses
                   invoiceNumber: I-12345
                   invoiceDocument:
                     fileName: invoice.pdf
@@ -6278,8 +6278,8 @@ paths:
               standard:
                 value:
                   creditor: Great Pizza for Everyone Inc.
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 300.0
+                  invoiceCategory: Travel Expenses
                   invoiceNumber: I-12345
                   invoiceDocument:
                     fileName: invoice.pdf
@@ -12424,8 +12424,8 @@ paths:
               standard:
                 value:
                   creditor: Great Pizza for Everyone Inc.
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 300.0
+                  invoiceCategory: Travel Expenses
                   invoiceNumber: I-12345
                   invoiceDocument:
                     fileName: invoice.pdf
@@ -18569,8 +18569,8 @@ paths:
               standard:
                 value:
                   creditor: Great Pizza for Everyone Inc.
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 300.0
+                  invoiceCategory: Travel Expenses
                   invoiceNumber: I-12345
                   invoiceDocument:
                     fileName: invoice.pdf
@@ -24709,8 +24709,8 @@ paths:
               standard:
                 value:
                   creditor: Great Pizza for Everyone Inc.
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 300.0
+                  invoiceCategory: Travel Expenses
                   invoiceNumber: I-12345
                   invoiceDocument:
                     fileName: invoice.pdf
@@ -30849,8 +30849,8 @@ paths:
               standard:
                 value:
                   creditor: Great Pizza for Everyone Inc.
-                  amount: 30.0
-                  invoiceCategory: Software License Costs
+                  amount: 300.0
+                  invoiceCategory: Travel Expenses
                   invoiceNumber: I-12345
                   invoiceDocument:
                     fileName: invoice.pdf

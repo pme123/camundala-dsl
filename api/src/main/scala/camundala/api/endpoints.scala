@@ -900,15 +900,11 @@ object endpoints:
           }
         case DecisionResultType.collectEntries =>
           restApi.outMapper[Seq[Json]] { (example: Out) =>
-            example match
-              case many: ManyInOut[Out] =>
-                many.toSeq.map(inOut =>
-                  valueToJson(inOut.productIterator.next())
-                )
-              case inOut =>
-                Seq(
-                  valueToJson(inOut.productIterator.next())
-                )
+            example.productIterator.next() match
+              case l: Iterable[_] =>
+                   l.map(valueToJson).toSeq
+              case o =>
+                Seq(valueToJson(o))
           }
         case DecisionResultType.resultList =>
           restApi.outMapper[Seq[Out]] {
