@@ -23,4 +23,6 @@ sealed trait BpmnTestStep
 case class ProcessToTest[
     In <: Product,
     Out <: Product
-](process: Process[In, Out], steps: List[Activity[?, ?, ?]] = List.empty)
+](process: Process[In, Out], steps: List[Activity[?, ?, ?] | CustomTests] = List.empty)
+
+case class CustomTests(tests: () => Unit)

@@ -18,10 +18,10 @@ object InvoiceApi extends PureDsl:
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
       creditor: String = "Great Pizza for Everyone Inc.",
-      amount: Double = 30.0,
+      amount: Double = 300.0,
       @description(invoiceCategoryDescr)
       invoiceCategory: InvoiceCategory =
-        InvoiceCategory.`Software License Costs`,
+        InvoiceCategory.`Travel Expenses`,
       invoiceNumber: String = "I-12345",
       invoiceDocument: FileInOut = FileInOut(
         "invoice.pdf",
@@ -114,6 +114,11 @@ object InvoiceApi extends PureDsl:
     descr = "Prepare the bank transfer in the Financial Accounting System.",
     in = InvoiceReceipt(),
     out = PrepareBankTransfer()
+  )
+
+  lazy val archiveInvoiceST = serviceTask(
+    id = "ArchiveInvoice",
+    descr = "Archive the Invoice."
   )
 
   lazy val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =

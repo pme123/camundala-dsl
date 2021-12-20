@@ -87,6 +87,7 @@ enum HitPolicy:
 
   def hasManyResults =
     !Seq(UNIQUE, FIRST, ANY).contains(this)
+
 end HitPolicy
 
 case class DecisionDmn[
@@ -138,6 +139,16 @@ object CallActivity:
   ](process: Process[In, Out]): CallActivity[In, Out] =
     CallActivity(process.inOutDescr)
 
+case class ServiceTask [
+  In <: Product: Encoder: Decoder: Schema,
+  Out <: Product: Encoder: Decoder: Schema
+](
+   inOutDescr: InOutDescr[In, Out]
+ ) extends Activity[In, Out, ServiceTask [In, Out]]:
+
+  def withInOutDescr(descr: InOutDescr[In, Out]): ServiceTask [In, Out] =
+    copy(inOutDescr = descr)
+
 trait PureDsl:
 
   def process[
@@ -183,11 +194,25 @@ trait PureDsl:
       InOutDescr(id, descr, in, out)
     )
 
+  def serviceTask[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      id: String,
+      descr: Option[String] | String = None,
+      in: In = NoInput(),
+      out: Out = NoOutput()
+  ): ServiceTask[In, Out] =
+    ServiceTask(
+      InOutDescr(id, descr, in, out)
+    )
+
   inline def enumDescr[E](
-                           descr: Option[String] = None
-                         )(using m: Mirror.SumOf[E]): String =
+      descr: Option[String] = None
+  )(using m: Mirror.SumOf[E]): String =
     val name = constValue[m.MirroredLabel]
-    val values = constValueTuple[m.MirroredElemLabels].productIterator.mkString(", ")
+    val values =
+      constValueTuple[m.MirroredElemLabels].productIterator.mkString(", ")
     val enumDescription =
       s"Enumeration $name: \n- $values"
     descr

@@ -13,7 +13,12 @@ import org.junit.{After, Before, Rule, Test}
 import org.mockito.{Mock, MockitoAnnotations}
 import camundala.test.*
 import camundala.utest.{TestConfig, TestDsl, TestRunner}
+import org.camunda.bpm.engine.task.IdentityLink
+import org.junit.Assert.{assertEquals, assertTrue}
 import org.mockito.Mockito.mock
+
+import java.util
+import java.util.{HashSet, List, Set}
 
 class ExampleInvoiceTest extends TestRunner, ProjectDSL:
 
@@ -41,6 +46,21 @@ class ExampleInvoiceTest extends TestRunner, ProjectDSL:
   @Test
   def testInvoiceReceipt(): Unit =
     test(invoiceReceiptProcess)(
+      checkGroupIds,
       approveInvoiceUT,
-      prepareBankTransferUT
+      prepareBankTransferUT,
+      archiveInvoiceST,
     )
+  import scala.jdk.CollectionConverters.IterableHasAsScala
+
+  def checkGroupIds =
+    custom{
+      val links = taskService.getIdentityLinksForTask(task.getId).asScala
+      val approverGroups = new util.HashSet[String]
+      for (link <- links) {
+        approverGroups.add(link.getGroupId)
+      }
+      assertEquals(2, approverGroups.size)
+      assertTrue(approverGroups.contains("accounting"))
+      assertTrue(approverGroups.contains("sales"))
+    }

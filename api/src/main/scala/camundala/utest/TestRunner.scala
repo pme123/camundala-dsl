@@ -5,15 +5,12 @@ import domain.*
 import bpmn.*
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.impl.test.TestHelper
-import org.camunda.bpm.engine.runtime.ProcessInstance
+import org.camunda.bpm.engine.runtime.{Job, ProcessInstance}
 import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
-  assertThat,
-  task
-}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, task}
 import org.camunda.bpm.engine.test.mock.Mocks
-import org.junit.Assert.assertEquals
+import org.junit.Assert.{assertEquals, assertNotNull}
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
 
@@ -53,8 +50,10 @@ trait TestRunner extends TestDsl:
   def test[
       In <: Product,
       Out <: Product
-  ](process: Process[In, Out])(activities: Activity[?, ?, ?]*): Unit =
+  ](process: Process[In, Out])(activities: (Activity[?, ?, ?] | CustomTests)*): Unit =
     ProcessToTest(process, activities.toList).run()
+
+  def custom (tests: => Unit): CustomTests = CustomTests(() => tests)
 
   extension (processToTest: ProcessToTest[?, ?])
     def run(): Unit =
@@ -71,7 +70,9 @@ trait TestRunner extends TestDsl:
       // run manual tasks
       activities.foreach {
         case ut: UserTask[?, ?] => ut.run(processInstance)
+        case st: ServiceTask[?, ?] => st.run(processInstance)
         //(a: Activity[?,?,?]) => a.run(processInstance)
+        case ct: CustomTests => ct.tests()
         case other =>
           throw IllegalArgumentException(
             s"This Activity is not supported: $other"
@@ -121,11 +122,22 @@ trait TestRunner extends TestDsl:
         .hasPassed(id)
   end extension
 
+  extension (serviceTask: ServiceTask[?, ?])
+    def run(processInstance: ProcessInstance): Unit =
+      val ServiceTask(InOutDescr(id, descr, in, out)) = serviceTask
+      val archiveInvoiceJob = managementService.createJobQuery.singleResult
+      assertNotNull(archiveInvoiceJob)
+      managementService.executeJob(archiveInvoiceJob.getId)
+      assertThat(processInstance)
+        .hasPassed(id)
+  end extension
+
   // From ProcessEngineTestCase
   protected lazy val configurationResource: String = "camunda.cfg.xml"
   protected lazy val processEngine =
     TestHelper.getProcessEngine(configurationResource)
   protected lazy val repositoryService = processEngine.getRepositoryService
   protected lazy val runtimeService = processEngine.getRuntimeService
+  protected lazy val managementService = processEngine.getManagementService
 
 end TestRunner
