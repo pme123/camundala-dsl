@@ -46,6 +46,7 @@ class ExampleInvoiceTest extends TestRunner, ProjectDSL:
   @Test
   def testInvoiceReceipt(): Unit =
     test(invoiceReceiptProcess)(
+      invoiceAssignApproverDMN2,
       checkGroupIds,
       approveInvoiceUT,
       prepareBankTransferUT,

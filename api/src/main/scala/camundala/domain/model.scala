@@ -29,7 +29,14 @@ extension (product: Product)
         k -> fileValue(fileName).file(content).mimeType(mimeType.orNull).create
       case (k, e: scala.reflect.Enum) =>
         k -> e.toString
-      case other => other
+      case (k, it: Seq[?]) =>
+        k -> it.map {
+          case e: scala.reflect.Enum => e.toString
+          case e: AnyVal => e
+          case o => o.toString
+        }.asJava
+      case other =>
+        other
     }.asJava
 
   def asDmnVars(): Map[String, Any] =

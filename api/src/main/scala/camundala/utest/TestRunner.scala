@@ -8,13 +8,18 @@ import org.camunda.bpm.engine.impl.test.TestHelper
 import org.camunda.bpm.engine.runtime.{Job, ProcessInstance}
 import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, task}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
+  assertThat,
+  task
+}
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.{assertEquals, assertNotNull}
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
 
+import scala.jdk.CollectionConverters.*
 import java.io.FileNotFoundException
+import java.util
 
 trait TestRunner extends TestDsl:
 
@@ -50,10 +55,12 @@ trait TestRunner extends TestDsl:
   def test[
       In <: Product,
       Out <: Product
-  ](process: Process[In, Out])(activities: (Activity[?, ?, ?] | CustomTests)*): Unit =
+  ](process: Process[In, Out])(
+      activities: (Activity[?, ?, ?] | CustomTests)*
+  ): Unit =
     ProcessToTest(process, activities.toList).run()
 
-  def custom (tests: => Unit): CustomTests = CustomTests(() => tests)
+  def custom(tests: => Unit): CustomTests = CustomTests(() => tests)
 
   extension (processToTest: ProcessToTest[?, ?])
     def run(): Unit =
@@ -71,6 +78,7 @@ trait TestRunner extends TestDsl:
       activities.foreach {
         case ut: UserTask[?, ?] => ut.run(processInstance)
         case st: ServiceTask[?, ?] => st.run(processInstance)
+        case dd: DecisionDmn[?, ?] => dd.run(processInstance)
         //(a: Activity[?,?,?]) => a.run(processInstance)
         case ct: CustomTests => ct.tests()
         case other =>
@@ -78,12 +86,7 @@ trait TestRunner extends TestDsl:
             s"This Activity is not supported: $other"
           )
       }
-      // check process outputs
-      val variables = assertThat(processInstance).variables()
-      for
-        (k, v) <- out.asVars()
-        _ = assertThat(processInstance).hasVariables(k)
-      yield variables.containsEntry(k, v)
+      checkOutput(out, processInstance)
       assertThat(processInstance).isEnded
   end extension
 
@@ -132,6 +135,14 @@ trait TestRunner extends TestDsl:
         .hasPassed(id)
   end extension
 
+  extension (decisionDmn: DecisionDmn[?, ?])
+    def run(processInstance: ProcessInstance): Unit =
+      val DecisionDmn(key, hitPolicy, InOutDescr(id, descr, in, out)) =
+        decisionDmn
+
+      checkOutput(out, processInstance)
+  end extension
+
   // From ProcessEngineTestCase
   protected lazy val configurationResource: String = "camunda.cfg.xml"
   protected lazy val processEngine =
@@ -139,5 +150,15 @@ trait TestRunner extends TestDsl:
   protected lazy val repositoryService = processEngine.getRepositoryService
   protected lazy val runtimeService = processEngine.getRuntimeService
   protected lazy val managementService = processEngine.getManagementService
+
+  private def checkOutput[T <: Product](
+      out: T,
+      processInstance: ProcessInstance
+  ) =
+    val variables = assertThat(processInstance).variables()
+    for
+      (k, v) <- out.asJavaVars().asScala
+      _ = assertThat(processInstance).hasVariables(k)
+    yield variables.containsEntry(k, v)
 
 end TestRunner
