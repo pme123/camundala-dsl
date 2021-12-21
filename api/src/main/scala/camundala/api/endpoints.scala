@@ -56,12 +56,8 @@ object CamundaVariable:
   def toCamunda[T <: Product: Encoder: Decoder: Schema](
       product: T
   ): Map[ExampleName, CamundaVariable] =
-    val p = product match
-      case p: ManyInOut[T] =>
-        p.inOut
-      case inOut => inOut
 
-    p.productElementNames
+    product.productElementNames
       .zip(product.productIterator)
       .flatMap {
         case (k, f @ FileInOut(fileName, _, mimeType)) =>
@@ -888,7 +884,7 @@ object endpoints:
         )
       }
 
-    override protected def outMapper() =
+ /*   override protected def outMapper() =
       decisionDmn.decisionResultType match
         case DecisionResultType.singleEntry => // SingleEntry
           restApi.outMapper[Json] { (example: Out) =>
@@ -927,26 +923,21 @@ object endpoints:
             }
           case DecisionResultType.collectEntries =>
             restApi.outMapper[Seq[CamundaVariable]] { (example: Out) =>
-              example match
-                case many: ManyInOut[Out] =>
-                  many.toSeq.map(inOut => {
-                    val s =
-                      CamundaVariable.valueToCamunda(inOut.productIterator.next())
-                    s
-                  })
+              example.productIterator.next() match
+                case inOut: Iterable[?] =>
+                    inOut.toSeq.map(CamundaVariable.valueToCamunda)
                 case inOut =>
-                  Seq(
-                    CamundaVariable.valueToCamunda(inOut.productIterator.next())
-                  )
+                  Seq(CamundaVariable.valueToCamunda(inOut))
             }
           case DecisionResultType.resultList =>
             restApi.outMapper[Seq[Map[String, CamundaVariable]]] {
               (example: Out) =>
                 example match
-                  case many: ManyInOut[Out] =>
-                    many.toSeq.map(inOut => CamundaVariable.toCamunda(inOut))
+                  case inOut: Iterable[?] =>
+                    inOut.map(CamundaVariable.valueToCamunda)
                   case inOut => Seq(CamundaVariable.toCamunda(inOut))
             }
+*/
 
   end EvaluateDecision
 

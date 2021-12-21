@@ -6254,14 +6254,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Json'
+                $ref: '#/components/schemas/AssignApproverGroups'
               examples:
                 standard:
                   value:
-                  - accounting
-                  - sales
+                    approverGroups:
+                    - accounting
+                    - sales
   /api-docs/ApproveInvoiceUserTask:
     get:
       tags:
@@ -36990,6 +36989,18 @@ components:
           type: boolean
           description: If true, the Boss accepted the Invoice
       description: Every Invoice has to be accepted by the Boss.
+    ApproverGroup:
+      oneOf:
+      - $ref: '#/components/schemas/ApproverGroup'
+    AssignApproverGroups:
+      type: object
+      properties:
+        approverGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApproverGroup'
+          description: "The following Groups can approve the invoice:\n\nEnumeration\
+            \ ApproverGroup: \n- accounting, sales, management"
     AssignedReviewer:
       required:
       - reviewer
@@ -37044,7 +37055,6 @@ components:
       properties:
         clarified:
           type: boolean
-    Json: {}
     NoOutput:
       type: object
     PrepareBankTransfer:

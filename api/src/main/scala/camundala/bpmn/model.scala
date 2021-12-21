@@ -103,7 +103,7 @@ case class DecisionDmn[
     copy(inOutDescr = descr)
 
   def decisionResultType: DecisionResultType = {
-    val inOut = inOutDescr.out.inOut
+    val inOut = inOutDescr.out
     val hasManyOutputVars = inOut.names().size > 1
     (hasManyOutputVars, hitPolicy.hasManyResults) match
       case (false, false) =>

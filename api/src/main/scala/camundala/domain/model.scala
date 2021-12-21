@@ -19,8 +19,8 @@ extension (product: Product)
   def names(): Seq[String] = product.productElementNames.toSeq
 
   def asVars(): Map[String, Any] =
-    inOut.productElementNames
-      .zip(inOut.productIterator)
+    product.productElementNames
+      .zip(product.productIterator)
       .toMap
 
   def asJavaVars(): java.util.Map[String, Any] =
@@ -47,13 +47,8 @@ extension (product: Product)
         case (k, v) => (k, v)
       }
 
-  def inOut: Product = product match
-    case p: ManyInOut[Product] =>
-      p.inOut
-    case inOut => inOut
-
 end extension
-
+/*
 case class ManyInOut[
     T <: Product: Encoder: Decoder: Schema
 ](inOut: T, examples: T*):
@@ -88,6 +83,7 @@ implicit def decodeManyInOut[
 implicit def schemaForNel[T <: Product: Encoder: Decoder: Schema]
     : Schema[ManyInOut[T]] =
   Schema[ManyInOut[T]](SchemaType.SArray(implicitly[Schema[T]])(_.toSeq))
+*/
 
 def valueToJson(value: Any): Json =
   value match
