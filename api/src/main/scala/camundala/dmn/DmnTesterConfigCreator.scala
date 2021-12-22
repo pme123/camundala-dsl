@@ -8,6 +8,7 @@ import io.circe.generic.auto.*
 import io.circe.syntax.*
 import org.latestbit.circe.adt.codec.JsonTaggedAdt
 
+import scala.language.reflectiveCalls
 import scala.reflect.{ClassTag, classTag}
 
 trait DmnTesterConfigCreator extends App:
@@ -48,39 +49,37 @@ trait DmnTesterConfigCreator extends App:
   ) =
     product.productElementNames
       .zip(product.productIterator)
-      .map{case (k, v) => testValues(k, v, addTestValues)}
+      .map { case (k, v) => testValues(k, v, addTestValues) }
 
-  def testValues [E :ClassTag](k: String, value: E, addTestValues: Map[String, List[String]]) = value match
-    case Some(v: (Double | Int | Long | Short | String | Float)) =>
-      TesterInput(k, true, addTestValues.get(k).getOrElse(List(v.toString)))
-    case v: (Double | Int | Long | Short | String | Float) =>
-      TesterInput(
-        k,
-        false,
-        addTestValues.get(k).getOrElse(List(v.toString))
-      )
-    case Some(_: Boolean) =>
-      TesterInput(k, true, List("true", "false"))
-    case v: Boolean =>
-      TesterInput(k, false, List("true", "false"))
-    case Some(v: scala.reflect.Enum) =>
-      val e:{ def values: Array[?] } = v.asInstanceOf[{ def values: Array[?] }]
-      TesterInput(
-        k,
-        true,
-        e.values.map(_.toString).toList
-      )
-    case v: scala.reflect.Enum =>
-      val e:{ def values: Array[?] } = v.asInstanceOf[{ def values: Array[?] }]
-      TesterInput(
-        k,
-        false,
-        e.values.map(_.toString).toList
-      )
-    case v =>
-      throw new IllegalArgumentException(
-        s"Not supported for DMN Input ($k -> $v)"
-      )
+  def testValues[E: ClassTag](
+      k: String,
+      value: E,
+      addTestValues: Map[String, List[String]]
+  ) =
+    val unwrapValue = value match
+      case Some(v) => v
+      case v => v
+
+    unwrapValue match
+      case v: (Double | Int | Long | Short | String | Float) =>
+        TesterInput(
+          k,
+          false,
+          addTestValues.getOrElse(k, List(v.toString))
+        )
+      case v: Boolean =>
+        TesterInput(k, false, List("true", "false"))
+      case v: scala.reflect.Enum =>
+        val e: { def values: Array[?] } = v.asInstanceOf[{ def values: Array[?] }]
+        TesterInput(
+          k,
+          false,
+          e.values.map(_.toString).toList
+        )
+      case v =>
+        throw new IllegalArgumentException(
+          s"Not supported for DMN Input ($k -> $v)"
+        )
 
   case class DmnTesterObject(
       dDmn: DecisionDmn[_, _],

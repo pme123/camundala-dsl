@@ -56,7 +56,6 @@ object CamundaVariable:
   def toCamunda[T <: Product: Encoder: Decoder: Schema](
       product: T
   ): Map[ExampleName, CamundaVariable] =
-
     product.productElementNames
       .zip(product.productIterator)
       .flatMap {
@@ -411,7 +410,9 @@ object endpoints:
         )
     def outMapper[
         T <: Product | Json | Map[String, CamundaVariable] |
-          Seq[Product | Json | Map[String, CamundaVariable]]: Encoder: Decoder: Schema
+          Seq[
+            Product | Json | Map[String, CamundaVariable]
+          ]: Encoder: Decoder: Schema
     ](
         body: T
     ): Option[EndpointOutput[_]] =
@@ -466,10 +467,6 @@ object endpoints:
   ] extends Product:
     def restApi: CamundaRestApi[In, Out]
 
-    def createPostman()(implicit
-        tenantId: Option[String]
-    ): Seq[Endpoint[_, _, _, _]]
-
     def apiName: String
     lazy val docName: String = s"${restApi.name}: ${apiName}"
     lazy val postmanName: String =
@@ -487,8 +484,6 @@ object endpoints:
       restApi.outMapper()
     protected def inMapperPostman(): Option[EndpointInput[_]] =
       restApi.inMapper()
-    protected def outMapperPostman(): Option[EndpointOutput[_]] =
-      restApi.outMapper()
 
     def withRestApi(restApi: CamundaRestApi[In, Out]): T
 
@@ -511,17 +506,18 @@ object endpoints:
         restApi.copy(requestOutput = restApi.requestOutput :+ (label, example))
       )
 
-    def baseEndpoint: Endpoint[_, _, _, _] =
+    def createPostman()(implicit
+        tenantId: Option[String]
+    ): Seq[Endpoint[_, _, _, _]]
+
+    def postmanBaseEndpoint: Endpoint[_, _, _, _] =
       Some(
         endpoint
           .name(postmanName)
           .tag(tag)
           .summary(postmanName)
           .description(descr)
-          .errorOut(restApi.outputErrors())
-      ).map(ep => inMapperPostman().map(ep.in).getOrElse(ep))
-        .map(ep => outMapperPostman().map(ep.out).getOrElse(ep))
-        .get
+      ).map(ep => inMapperPostman().map(ep.in).getOrElse(ep)).get
 
     def create(): Seq[Endpoint[_, _, _, _]] =
       Seq(
@@ -531,12 +527,9 @@ object endpoints:
           .in("api-docs" / valueName)
           .summary(docName)
           .description(descr)
-          .get
-      ).map((ep: Endpoint[_, _, _, _]) =>
-        inMapper().map(ep.in).getOrElse(ep)
-      ).map((ep: Endpoint[_, _, _, _]) =>
-        outMapper().map(ep.out).getOrElse(ep)
-      )
+          .head
+      ).map(ep => inMapper().map(ep.in).getOrElse(ep))
+        .map(ep => outMapper().map(ep.out).getOrElse(ep))
 
   end ApiEndpoint
 
@@ -559,7 +552,7 @@ object endpoints:
         tenantId: Option[String]
     ): Seq[Endpoint[_, _, _, _]] =
       Seq(
-        baseEndpoint
+        postmanBaseEndpoint
           .in(postPath(processDefinitionKey))
           .post
       )
@@ -569,18 +562,13 @@ object endpoints:
         "process-definition" / "key" / definitionKeyPath(name)
       tenantId
         .map(id => basePath / "tenant-id" / tenantIdPath(id) / "start")
-        .getOrElse(basePath / "start") / s"--REMOVE:${restApi.name}--"
+        .getOrElse(basePath / "start")
 
     override protected def inMapperPostman() =
       restApi.inMapper[StartProcessIn] { (example: In) =>
         StartProcessIn(
           CamundaVariable.toCamunda(example)
         )
-      }
-
-    override protected def outMapperPostman() =
-      restApi.outMapper[StartProcessOut] { (example: Out) =>
-        StartProcessOut(CamundaVariable.toCamunda(example))
       }
 
     override lazy val descr: String = restApi.maybeDescr.getOrElse("") +
@@ -656,7 +644,7 @@ object endpoints:
         tenantId: Option[String]
     ): Seq[Endpoint[_, _, _, _]] =
       Seq(
-        baseEndpoint
+        postmanBaseEndpoint
           .description(
             """Retrieves the form variables for a task.
               |The form variables take form data specified on the task into account.
@@ -685,11 +673,6 @@ object endpoints:
     override protected def inMapperPostman() =
       restApi.noInputMapper
 
-    override protected def outMapperPostman() =
-      restApi.outMapper[Map[String, CamundaVariable]] { (example: Out) =>
-        CamundaVariable.toCamunda(example)
-      }
-
   end GetTaskFormVariables
 
   case class CompleteTask[
@@ -710,7 +693,7 @@ object endpoints:
         tenantId: Option[String]
     ): Seq[Endpoint[_, _, _, _]] =
       Seq(
-        baseEndpoint
+        postmanBaseEndpoint
           .in(postPath)
           .post
       )
@@ -722,9 +705,6 @@ object endpoints:
       restApi.inMapper[CompleteTaskIn] { (example: In) =>
         CompleteTaskIn(CamundaVariable.toCamunda(example))
       }
-
-    override protected def outMapperPostman(): Option[EndpointOutput[_]] =
-      restApi.noOutputMapper
 
   end CompleteTask
 
@@ -743,7 +723,7 @@ object endpoints:
         tenantId: Option[String]
     ): Seq[Endpoint[_, _, _, _]] =
       Seq(
-        baseEndpoint
+        postmanBaseEndpoint
           .in(postPath)
           .post
       )
@@ -753,9 +733,6 @@ object endpoints:
 
     override protected def inMapperPostman() =
       restApi.inMapper(GetActiveTaskIn())
-
-    override protected def outMapperPostman() =
-      restApi.outMapper(Seq(GetActiveTaskOut()))
 
   end GetActiveTask
 
@@ -798,43 +775,6 @@ object endpoints:
 
   end UserTaskEndpoint
 
-  /*
-  object UserTaskEndpoint:
-
-    def apply[
-        In <: Product: Encoder: Decoder: Schema,
-        Out <: Product: Encoder: Decoder: Schema
-    ](e: InOutDescr[In, Out], tag: String): StartProcessInstance[In, Out] =
-      UserTaskEndpoint[In, Out](
-        GetActiveTask(
-          CamundaRestApi(
-            e.id,
-            tag,
-            e.descr
-          )
-        ),
-        GetTaskFormVariables[In](
-          CamundaRestApi(
-            e.id,
-            e.id,
-            e.descr,
-            requestOutput = RequestOutput(StatusCode.Ok, e.in)
-            // List.empty//standardErrors
-          )
-        ),
-        CompleteTask[Out](
-          CamundaRestApi(
-            e.id,
-            e.id,
-            e.descr,
-            requestInput = RequestInput(e.out)
-            // List.empty //List(badRequest, serverError)
-          )
-        )
-      )
-  end UserTaskEndpoint
-   */
-
   case class EvaluateDecision[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
@@ -865,7 +805,7 @@ object endpoints:
         tenantId: Option[String]
     ): Seq[Endpoint[?, ?, ?, ?]] =
       Seq(
-        baseEndpoint
+        postmanBaseEndpoint
           .in(postPath(decisionDefinitionKey))
           .post
       )
@@ -883,62 +823,6 @@ object endpoints:
           CamundaVariable.toCamunda(example)
         )
       }
-
- /*   override protected def outMapper() =
-      decisionDmn.decisionResultType match
-        case DecisionResultType.singleEntry => // SingleEntry
-          restApi.outMapper[Json] { (example: Out) =>
-            valueToJson(example.productIterator.next())
-          }
-        case DecisionResultType.singleResult =>
-          restApi.outMapper[Out] { (example: Out) =>
-            example
-          }
-        case DecisionResultType.collectEntries =>
-          restApi.outMapper[Seq[Json]] { (example: Out) =>
-            example.productIterator.next() match
-              case l: Iterable[_] =>
-                   l.map(valueToJson).toSeq
-              case o =>
-                Seq(valueToJson(o))
-          }
-        case DecisionResultType.resultList =>
-          restApi.outMapper[Seq[Out]] {
-            (example: Out) =>
-              example match
-                case many: ManyInOut[Out] =>
-                  many.toSeq
-                case inOut => Seq(inOut)
-          }
-
-    override protected def outMapperPostman() =
-        decisionDmn.decisionResultType match
-          case DecisionResultType.singleEntry => // SingleEntry
-            restApi.outMapper[CamundaVariable] { (example: Out) =>
-              CamundaVariable.valueToCamunda(example.productIterator.next())
-            }
-          case DecisionResultType.singleResult =>
-            restApi.outMapper[Map[String, CamundaVariable]] { (example: Out) =>
-              CamundaVariable.toCamunda(example)
-            }
-          case DecisionResultType.collectEntries =>
-            restApi.outMapper[Seq[CamundaVariable]] { (example: Out) =>
-              example.productIterator.next() match
-                case inOut: Iterable[?] =>
-                    inOut.toSeq.map(CamundaVariable.valueToCamunda)
-                case inOut =>
-                  Seq(CamundaVariable.valueToCamunda(inOut))
-            }
-          case DecisionResultType.resultList =>
-            restApi.outMapper[Seq[Map[String, CamundaVariable]]] {
-              (example: Out) =>
-                example match
-                  case inOut: Iterable[?] =>
-                    inOut.map(CamundaVariable.valueToCamunda)
-                  case inOut => Seq(CamundaVariable.toCamunda(inOut))
-            }
-*/
-
   end EvaluateDecision
 
   private def definitionKeyPath(key: String) =

@@ -78,7 +78,7 @@ info:
     <p>Initial Version</p>\n\n</p>\n</details>\n\n"
 paths:
   /api-docs/InvoiceReceiptProcess:
-    get:
+    head:
       tags:
       - InvoiceReceipt
       summary: 'InvoiceReceipt: Process'
@@ -6222,7 +6222,7 @@ paths:
                 standard:
                   value: {}
   /api-docs/AssignApproverGroupDecisionDmn:
-    get:
+    head:
       tags:
       - InvoiceReceipt
       summary: 'AssignApproverGroup: DecisionDmn'
@@ -6262,7 +6262,7 @@ paths:
                     - accounting
                     - sales
   /api-docs/ApproveInvoiceUserTask:
-    get:
+    head:
       tags:
       - InvoiceReceipt
       summary: 'ApproveInvoice: UserTask'
@@ -12408,7 +12408,7 @@ paths:
                   value:
                     approved: false
   /api-docs/PrepareBankTransferUserTask:
-    get:
+    head:
       tags:
       - InvoiceReceipt
       summary: 'PrepareBankTransfer: UserTask'
@@ -18547,7 +18547,7 @@ paths:
                 standard:
                   value: {}
   /api-docs/ReviewInvoiceProcessProcess:
-    get:
+    head:
       tags:
       - ReviewInvoiceProcess
       summary: 'ReviewInvoiceProcess: Process'
@@ -24693,7 +24693,7 @@ paths:
                   value:
                     clarified: true
   /api-docs/AssignReviewerUserTask:
-    get:
+    head:
       tags:
       - ReviewInvoiceProcess
       summary: 'AssignReviewer: UserTask'
@@ -30833,7 +30833,7 @@ paths:
                   value:
                     reviewer: John
   /api-docs/ReviewInvoiceUserTask:
-    get:
+    head:
       tags:
       - ReviewInvoiceProcess
       summary: 'ReviewInvoice: UserTask'

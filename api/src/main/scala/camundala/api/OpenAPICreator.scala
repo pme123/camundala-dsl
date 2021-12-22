@@ -1,10 +1,8 @@
 package camundala
 package api
 
+import endpoints.*
 import bpmn.*
-import api.endpoints.*
-import camundala.bpmn.{DecisionDmn, InOut, Process, UserTask}
-import camundala.domain.ManyInOut
 import io.circe.generic.auto.*
 import laika.api.*
 import laika.ast.MessageFilter
@@ -63,7 +61,7 @@ trait APICreator extends App:
 
   def apiEndpoints(apiEP: ApiEndpoints*) =
     writeOpenApi(openApiPath, openApi(apiEP))
-  //  writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
+    writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
 
   def openApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
@@ -71,7 +69,7 @@ trait APICreator extends App:
 
   def postmanOpenApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
-      .toOpenAPI(apiEP.flatMap(_.createPostman()), info(s"Postman: $title"))
+      .toOpenAPI(apiEP.flatMap(_.createPostman()), info(title))
       .servers(servers)
 
   lazy val openAPIDocsInterpreter = OpenAPIDocsInterpreter(docsOptions =
