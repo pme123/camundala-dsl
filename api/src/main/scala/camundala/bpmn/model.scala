@@ -81,12 +81,18 @@ enum HitPolicy:
 
   case UNIQUE
   case FIRST
+  case PRIORITY
   case ANY
   case COLLECT
+  case COLLECT_SUM
+  case COLLECT_MIN
+  case COLLECT_MAX
+  case COLLECT_COUNT
   case RULE_ORDER
+  case OUTPUT_ORDER
 
   def hasManyResults =
-    !Seq(UNIQUE, FIRST, ANY).contains(this)
+    Seq(COLLECT, RULE_ORDER, OUTPUT_ORDER).contains(this)
 
 end HitPolicy
 
@@ -94,17 +100,22 @@ case class DecisionDmn[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
-    decisionDefinitionKey: String,
     hitPolicy: HitPolicy,
     inOutDescr: InOutDescr[In, Out]
 ) extends Activity[In, Out, DecisionDmn[In, Out]]:
+
+  lazy val decisionDefinitionKey: String = inOutDescr.id
 
   def withInOutDescr(descr: InOutDescr[In, Out]): DecisionDmn[In, Out] =
     copy(inOutDescr = descr)
 
   def decisionResultType: DecisionResultType = {
-    val inOut = inOutDescr.out
-    val hasManyOutputVars = inOut.names().size > 1
+    val hasManyOutputVars = inOutDescr.out.productIterator.next() match
+      case p: Iterable[?] => p.head match
+        case p: Product => true
+        case o => false
+      case p: Product => true
+      case o => false
     (hasManyOutputVars, hitPolicy.hasManyResults) match
       case (false, false) =>
         DecisionResultType.singleEntry
@@ -139,14 +150,14 @@ object CallActivity:
   ](process: Process[In, Out]): CallActivity[In, Out] =
     CallActivity(process.inOutDescr)
 
-case class ServiceTask [
-  In <: Product: Encoder: Decoder: Schema,
-  Out <: Product: Encoder: Decoder: Schema
+case class ServiceTask[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
 ](
-   inOutDescr: InOutDescr[In, Out]
- ) extends Activity[In, Out, ServiceTask [In, Out]]:
+    inOutDescr: InOutDescr[In, Out]
+) extends Activity[In, Out, ServiceTask[In, Out]]:
 
-  def withInOutDescr(descr: InOutDescr[In, Out]): ServiceTask [In, Out] =
+  def withInOutDescr(descr: InOutDescr[In, Out]): ServiceTask[In, Out] =
     copy(inOutDescr = descr)
 
 trait PureDsl:
@@ -183,15 +194,13 @@ trait PureDsl:
   ](
       decisionDefinitionKey: String,
       hitPolicy: HitPolicy,
-      id: String,
       descr: Option[String] | String = None,
       in: In = NoInput(),
       out: Out = NoOutput()
   ) =
     DecisionDmn[In, Out](
-      decisionDefinitionKey,
       hitPolicy,
-      InOutDescr(id, descr, in, out)
+      InOutDescr(decisionDefinitionKey, descr, in, out)
     )
 
   def serviceTask[

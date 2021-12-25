@@ -84,7 +84,6 @@ object InvoiceApi extends PureDsl:
       : DecisionDmn[SelectApproverGroup, AssignApproverGroups] = dmn(
     decisionDefinitionKey = "invoice-assign-approver",
     hitPolicy = HitPolicy.COLLECT,
-    id = "AssignApproverGroup",
     in = SelectApproverGroup(),
     out = AssignApproverGroups()
   )
