@@ -6,12 +6,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: dorny/test-reporter@v1
-        with:
-          artifact: test-results            # artifact name
-          name: Scala Tests                  # Name of the check run which will be created
-          path: '**/test-reports/*.xml'                     # Path to test results (inside artifact .zip)
-          reporter: java-junit
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup JDK
@@ -24,3 +18,10 @@ jobs:
         run: sbt compile
       - name: Test
         run: sbt test
+          - uses: dorny/test-reporter@v1
+               with:
+                 artifact: test-results            # artifact name
+                 name: Scala Tests                  # Name of the check run which will be created
+                 path: '**/test-reports/*.xml'                     # Path to test results (inside artifact .zip)
+                 reporter: java-junit
+
