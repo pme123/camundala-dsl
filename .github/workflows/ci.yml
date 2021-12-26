@@ -23,7 +23,7 @@ jobs:
         if: success() || failure()    # run this step even if previous step failed
         with:
           name: Scala Tests            # Name of the check run which will be created
-          path: "**/api/**/test-reports/*.xml,**/invoice/**/test-reports/*.xml"    # Path to test results
+          path: "**/api/**/test-reports/*.xml,**/example/**/test-reports/*.xml"    # Path to test results - problem with ZIO Tests.
           reporter: java-junit        # Format of test results
 
 
