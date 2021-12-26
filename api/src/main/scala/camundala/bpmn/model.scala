@@ -20,7 +20,7 @@ case class InOutDescr[
     case d: Option[String] => d
     case d: String => Some(d)
 
-sealed trait InOut[
+trait InOut[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema,
     T <: InOut[In, Out, T]
@@ -28,10 +28,10 @@ sealed trait InOut[
 
   def inOutDescr: InOutDescr[In, Out]
 
-  lazy val id = inOutDescr.id
-  lazy val descr = inOutDescr.descr
-  lazy val in = inOutDescr.in
-  lazy val out = inOutDescr.out
+  lazy val id: String = inOutDescr.id
+  lazy val maybeDescr: Option[String] = inOutDescr.maybeDescr
+  lazy val in: In = inOutDescr.in
+  lazy val out: Out = inOutDescr.out
 
   def withInOutDescr(inOutDescr: InOutDescr[In, Out]): T
 
@@ -104,128 +104,3 @@ case class ServiceTask[
   def withInOutDescr(descr: InOutDescr[In, Out]): ServiceTask[In, Out] =
     copy(inOutDescr = descr)
 
-trait PureDsl:
-
-  def process[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      id: String,
-      in: In = NoInput(),
-      out: Out = NoOutput(),
-      descr: Option[String] | String = None
-  ) =
-    Process(
-      InOutDescr(id, in, out, descr)
-    )
-
-  def userTask[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      id: String,
-      in: In = NoInput(),
-      out: Out = NoOutput(),
-      descr: Option[String] | String = None
-  ): UserTask[In, Out] =
-    UserTask(
-      InOutDescr(id, in, out, descr)
-    )
-
-  def dmn[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      decisionDefinitionKey: String,
-      in: In = NoInput(),
-      out: Out = NoOutput(),
-      descr: Option[String] | String = None
-  ) =
-    DecisionDmn[In, Out](
-      InOutDescr(decisionDefinitionKey, in, out, descr)
-    )
-
-  def singleEntry[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      decisionDefinitionKey: String,
-      in: In,
-      out: Out
-  ) =
-    require(
-      out.isSingleEntry,
-      "A singleEntry must look like `case class SingleEntry(result: DmnValueType)`"
-    )
-    dmn(decisionDefinitionKey, in, out)
-
-  def collectEntries[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      decisionDefinitionKey: String,
-      in: In,
-      out: Out
-  ) =
-    require(
-      out.isCollectEntries,
-      "A collectEntries must look like `case class CollectEntries(indexes: Int*)`"
-    )
-    dmn(decisionDefinitionKey, in, out)
-
-  def singleResult[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      decisionDefinitionKey: String,
-      in: In,
-      out: Out
-  ) =
-    require(
-      out.isSingleResult,
-      """A singleResult must look like `case class SingleResult(result: ManyOutResult)`
-        | with `case class ManyOutResult(index: Int, emoji: String)`
-        |""".stripMargin
-    )
-    dmn(decisionDefinitionKey, in, out)
-
-  def resultList[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      decisionDefinitionKey: String,
-      in: In,
-      out: Out
-  ) =
-    require(
-      out.isResultList,
-      """A resultList must look like `case class ResultList(results: ManyOutResult*)`
-        | with `case class ManyOutResult(index: Int, emoji: String)`
-        |""".stripMargin
-    )
-    dmn(decisionDefinitionKey, in, out)
-
-  def serviceTask[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
-      id: String,
-      in: In = NoInput(),
-      out: Out = NoOutput(),
-      descr: Option[String] | String = None
-  ): ServiceTask[In, Out] =
-    ServiceTask(
-      InOutDescr(id, in, out, descr)
-    )
-
-  inline def enumDescr[E](
-      descr: Option[String] = None
-  )(using m: Mirror.SumOf[E]): String =
-    val name = constValue[m.MirroredLabel]
-    val values =
-      constValueTuple[m.MirroredElemLabels].productIterator.mkString(", ")
-    val enumDescription =
-      s"Enumeration $name: \n- $values"
-    descr
-      .map(_ + s"\n\n$enumDescription")
-      .getOrElse(enumDescription)

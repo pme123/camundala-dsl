@@ -1,6 +1,17 @@
 package camundala
 package bpmn
 
+import os.Path
+
+case class Dmns(dmns: Seq[Dmn]):
+
+  def :+(dmn: Dmn): Dmns = Dmns(dmns :+ dmn)
+
+object Dmns:
+  def none: Dmns = Dmns(Nil)
+
+case class Dmn(path: Path, decisions: DecisionDmn[?,?]*)
+
 type DmnValueType = String | Boolean | Int | Long | Double | scala.reflect.Enum
 
 enum DecisionResultType:
@@ -10,11 +21,11 @@ enum DecisionResultType:
   case resultList // List(Map(String, Object))
 
 case class DecisionDmn[
-  In <: Product: Encoder: Decoder: Schema,
-  Out <: Product: Encoder: Decoder: Schema
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
 ](
-   inOutDescr: InOutDescr[In, Out]
- ) extends Activity[In, Out, DecisionDmn[In, Out]]:
+    inOutDescr: InOutDescr[In, Out]
+) extends Activity[In, Out, DecisionDmn[In, Out]]:
 
   lazy val decisionDefinitionKey: String = inOutDescr.id
 
@@ -40,7 +51,7 @@ extension (output: Product)
       (output.productIterator.next() match
         case _: DmnValueType => true
         case _ => false
-        )
+      )
 
   def isSingleResult =
     output.productIterator.size == 1 &&
@@ -49,7 +60,7 @@ extension (output: Product)
         case p: Product =>
           p.productIterator.size > 1
         case _ => false
-        )
+      )
 
   def isCollectEntries: Boolean =
     output.productIterator.size == 1 &&
@@ -59,7 +70,7 @@ extension (output: Product)
             case Some(p: DmnValueType) => true
             case o => false
         case o => false
-        )
+      )
 
   def isResultList =
     output.productIterator.size == 1 &&
@@ -70,7 +81,7 @@ extension (output: Product)
               p.productIterator.size > 1
             case o => false
         case o => false
-        )
+      )
   def hasManyOutputVars: Boolean =
     isSingleResult || isResultList
 end extension // Product

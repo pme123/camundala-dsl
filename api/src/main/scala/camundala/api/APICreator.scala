@@ -166,7 +166,7 @@ trait APICreator extends App:
           CamundaRestApi(
             userTask.id,
             userTask.id,
-            userTask.descr,
+            userTask.maybeDescr,
             requestErrorOutputs = getActiveTaskErrors
           )
         ),
@@ -174,7 +174,7 @@ trait APICreator extends App:
           CamundaRestApi(
             userTask.id,
             userTask.id,
-            userTask.descr,
+            userTask.maybeDescr,
             requestErrorOutputs = getTaskFormVariablesErrors
           )
         ),
@@ -182,7 +182,7 @@ trait APICreator extends App:
           CamundaRestApi(
             userTask.id,
             userTask.id,
-            userTask.descr,
+            userTask.maybeDescr,
             requestErrorOutputs = completeTaskErrors
           )
         )
