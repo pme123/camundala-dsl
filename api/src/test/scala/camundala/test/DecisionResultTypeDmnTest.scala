@@ -21,7 +21,7 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
   case class SingleResult(result: ManyOutResult)
   case class ResultList(resultList: ManyOutResult*)
 
-  private lazy val singleEntryDMN = dmn(
+  private lazy val singleEntryDMN = singleEntry(
     decisionDefinitionKey = "singleEntry",
     hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
@@ -64,3 +64,25 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
   @Test
   def testResultList(): Unit =
     test(resultListDMN  )
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testSingleEntryBadHitpolicy(): Unit =
+    test(singleEntryDMNBadHitpolicy)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testSingleEntryBadOutput(): Unit =
+    test(singleEntryDMNBadOutput)
+
+  private def singleEntryDMNBadHitpolicy = singleEntry(
+    decisionDefinitionKey = "singleEntry",
+    hitPolicy = HitPolicy.COLLECT,
+    in = Input("A"),
+    out = SingleEntry(1)
+  )
+
+  private def singleEntryDMNBadOutput = singleEntry(
+    decisionDefinitionKey = "singleEntry",
+    hitPolicy = HitPolicy.UNIQUE,
+    in = Input("A"),
+    out = ManyOutResult(1, "🤩")
+  )

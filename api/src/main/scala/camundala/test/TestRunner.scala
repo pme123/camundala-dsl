@@ -10,7 +10,7 @@ import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, managementService, repositoryService, runtimeService, task}
 import org.camunda.bpm.engine.test.mock.Mocks
-import org.junit.Assert.{assertEquals, assertNotNull}
+import org.junit.Assert.{assertEquals, assertNotNull, fail}
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
 
@@ -49,6 +49,18 @@ trait TestRunner extends TestDsl:
       Mocks.register(key, value)
     }
 
+  def testWithError[
+      In <: Product,
+      Out <: Product,
+      Err <: Exception
+  ](process: Process[In, Out])(
+      activities: (Activity[?, ?, ?] | CustomTests)*
+  ): Unit =
+    try test[In, Out](process)(activities: _*)
+    catch
+      case _: Err => // "ok"
+      case other => fail("")
+
   def test[
       In <: Product,
       Out <: Product
@@ -62,7 +74,7 @@ trait TestRunner extends TestDsl:
   extension (processToTest: ProcessToTest[?, ?])
     def run(): Unit =
       val ProcessToTest(
-        Process(InOutDescr(id, descr, in, out)),
+        Process(InOutDescr(id, in, out, descr)),
         activities
       ) = processToTest
       val processInstance = runtimeService.startProcessInstanceByKey(
@@ -89,7 +101,7 @@ trait TestRunner extends TestDsl:
 
   extension (userTask: UserTask[?, ?])
     def run(processInstance: ProcessInstance): Unit =
-      val UserTask(InOutDescr(id, descr, in, out)) = userTask
+      val UserTask(InOutDescr(id, in, out, descr)) = userTask
       val t = task()
       assertThat(t)
         .hasDefinitionKey(id)
@@ -124,7 +136,7 @@ trait TestRunner extends TestDsl:
 
   extension (serviceTask: ServiceTask[?, ?])
     def run(processInstance: ProcessInstance): Unit =
-      val ServiceTask(InOutDescr(id, descr, in, out)) = serviceTask
+      val ServiceTask(InOutDescr(id, in, out, descr)) = serviceTask
       val archiveInvoiceJob = managementService.createJobQuery.singleResult
       assertNotNull(archiveInvoiceJob)
       managementService.executeJob(archiveInvoiceJob.getId)
@@ -134,7 +146,7 @@ trait TestRunner extends TestDsl:
 
   extension (decisionDmn: DecisionDmn[?, ?])
     def run(processInstance: ProcessInstance): Unit =
-      val DecisionDmn(hitPolicy, InOutDescr(id, descr, in, out)) =
+      val DecisionDmn(hitPolicy, InOutDescr(id, in, out, descr)) =
         decisionDmn
 
       checkOutput(out, processInstance)

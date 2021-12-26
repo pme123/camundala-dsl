@@ -58,9 +58,9 @@ object Sample extends PureDsl:
   lazy val testProcess =
 
     process(name,
-      descr,
       standardSample,
-      SampleOut()
+      SampleOut(),
+      descr,
     )
 
     /*  .startProcessInstance(

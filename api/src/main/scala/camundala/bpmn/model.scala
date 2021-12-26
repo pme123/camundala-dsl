@@ -11,9 +11,9 @@ case class InOutDescr[
     Out <: Product: Encoder: Decoder: Schema
 ](
     id: String,
-    descr: Option[String] | String = None,
     in: In = NoInput(),
-    out: Out = NoOutput()
+    out: Out = NoOutput(),
+    descr: Option[String] | String = None
 ):
 
   lazy val maybeDescr = descr match
@@ -96,6 +96,8 @@ enum HitPolicy:
 
 end HitPolicy
 
+type DmnValueType = String | Boolean | Int | Long | Double
+
 case class DecisionDmn[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
@@ -110,13 +112,7 @@ case class DecisionDmn[
     copy(inOutDescr = descr)
 
   def decisionResultType: DecisionResultType = {
-    val hasManyOutputVars = inOutDescr.out.productIterator.next() match
-      case p: Iterable[?] => p.head match
-        case p: Product => true
-        case o => false
-      case p: Product => true
-      case o => false
-    (hasManyOutputVars, hitPolicy.hasManyResults) match
+    (hasManyOutputVars(inOutDescr.out), hitPolicy.hasManyResults) match
       case (false, false) =>
         DecisionResultType.singleEntry
       case (false, true) =>
@@ -126,6 +122,27 @@ case class DecisionDmn[
       case (true, true) =>
         DecisionResultType.resultList
   }
+
+extension (output: Product)
+  def isSingleEntry =
+    output.productIterator.toList match
+      case (_: DmnValueType) :: Nil => true
+      case _ => false
+end extension // Product
+
+def hasManyOutputVars(output: Product) =
+  println(s"outputxxx: $output")
+  if (output.productIterator.size > 1)
+    true // SingleResult
+  else
+    output.productIterator.next() match
+      case p: Iterable[?] =>
+        p.head match
+          case p: Product => true
+          case o => false
+      case p: Product =>
+        p.productIterator.size > 1
+      case o => false
 
 enum DecisionResultType:
   case singleEntry // TypedValue
@@ -167,12 +184,12 @@ trait PureDsl:
       Out <: Product: Encoder: Decoder: Schema
   ](
       id: String,
-      descr: Option[String] | String = None,
       in: In = NoInput(),
-      out: Out = NoOutput()
+      out: Out = NoOutput(),
+      descr: Option[String] | String = None
   ) =
     Process(
-      InOutDescr(id, descr, in, out)
+      InOutDescr(id, in, out, descr)
     )
 
   def userTask[
@@ -180,12 +197,12 @@ trait PureDsl:
       Out <: Product: Encoder: Decoder: Schema
   ](
       id: String,
-      descr: Option[String] | String = None,
       in: In = NoInput(),
-      out: Out = NoOutput()
+      out: Out = NoOutput(),
+      descr: Option[String] | String = None
   ): UserTask[In, Out] =
     UserTask(
-      InOutDescr(id, descr, in, out)
+      InOutDescr(id, in, out, descr)
     )
 
   def dmn[
@@ -194,26 +211,45 @@ trait PureDsl:
   ](
       decisionDefinitionKey: String,
       hitPolicy: HitPolicy,
-      descr: Option[String] | String = None,
       in: In = NoInput(),
-      out: Out = NoOutput()
+      out: Out = NoOutput(),
+      descr: Option[String] | String = None
   ) =
     DecisionDmn[In, Out](
       hitPolicy,
-      InOutDescr(decisionDefinitionKey, descr, in, out)
+      InOutDescr(decisionDefinitionKey, in, out, descr)
     )
+
+  def singleEntry[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      decisionDefinitionKey: String,
+      hitPolicy: HitPolicy,
+      in: In,
+      out: Out
+  ) =
+    require(
+      out.isSingleEntry,
+      "A singleEntry must look like `case class SingleEntry(result: DmnValueType)`"
+    )
+    require(
+      !hitPolicy.hasManyResults,
+      "The Hitpolicy must have only one Result, like UNIQUE, COLLECT_SUM"
+    )
+    dmn(decisionDefinitionKey, hitPolicy, in, out)
 
   def serviceTask[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
       id: String,
-      descr: Option[String] | String = None,
       in: In = NoInput(),
-      out: Out = NoOutput()
+      out: Out = NoOutput(),
+      descr: Option[String] | String = None
   ): ServiceTask[In, Out] =
     ServiceTask(
-      InOutDescr(id, descr, in, out)
+      InOutDescr(id, in, out, descr)
     )
 
   inline def enumDescr[E](

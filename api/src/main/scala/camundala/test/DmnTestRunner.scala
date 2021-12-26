@@ -9,7 +9,12 @@ import org.camunda.bpm.dmn.engine.test.DmnEngineRule
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.ProcessEngineRule
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests
-import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, repositoryService, runtimeService, task}
+import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{
+  assertThat,
+  repositoryService,
+  runtimeService,
+  task
+}
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.{assertEquals, fail}
 import org.junit.{Before, Rule}
@@ -37,7 +42,7 @@ trait DmnTestRunner extends TestDsl:
   def test[
       In <: Product,
       Out <: Product
-  ](decisionDmn: DecisionDmn[In, Out]): Unit =
+  ](decisionDmn: => DecisionDmn[In, Out]): Unit =
     val variables: VariableMap = Variables.createVariables
     for (k, v) <- decisionDmn.inOutDescr.in.asDmnVars()
     yield variables.putValue(k, v)
@@ -118,11 +123,13 @@ trait DmnTestRunner extends TestDsl:
 
             }.toSeq
           case other =>
-            fail(s"For DecisionResultType.collectEntries you need to have Iterable[?] object. But it was $other")
+            fail(
+              s"For DecisionResultType.collectEntries you need to have Iterable[?] object. But it was $other"
+            )
             Seq.empty
 
-          assert(expResultDmn.size == resultList.size)
-          for (expMap, resMap) <- expResultDmn.zip(resultList)
-            yield
-              println(s"assert $expMap == ${resMap}")
-              assert(expMap == resMap.asScala)
+        assert(expResultDmn.size == resultList.size)
+        for (expMap, resMap) <- expResultDmn.zip(resultList)
+        yield
+          println(s"assert $expMap == ${resMap}")
+          assert(expMap == resMap.asScala)
