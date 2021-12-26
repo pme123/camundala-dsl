@@ -1,7 +1,6 @@
 package camundala
 package api
 
-import endpoints.*
 import bpmn.*
 import io.circe.generic.auto.*
 import laika.api.*
