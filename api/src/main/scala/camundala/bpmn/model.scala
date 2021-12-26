@@ -124,10 +124,32 @@ case class DecisionDmn[
   }
 
 extension (output: Product)
+
   def isSingleEntry =
-    output.productIterator.toList match
-      case (_: DmnValueType) :: Nil => true
-      case _ => false
+    output.productIterator.size == 1 &&
+      (output.productIterator.next() match
+        case _: DmnValueType => true
+        case _ => false
+      )
+
+  def isSingleResult =
+    output.productIterator.size == 1 &&
+      (output.productIterator.next() match
+        case p: Product =>
+          p.productIterator.size > 1
+        case _ => false
+      )
+
+  def isCollectEntries =
+    output.productIterator.size == 1 &&
+      (output.productIterator.next() match
+        case p: Iterable[?] =>
+          p.headOption match
+            case Some(p: DmnValueType) => true
+            case o => false
+        case o => false
+      )
+
 end extension // Product
 
 def hasManyOutputVars(output: Product) =
@@ -232,6 +254,46 @@ trait PureDsl:
     require(
       out.isSingleEntry,
       "A singleEntry must look like `case class SingleEntry(result: DmnValueType)`"
+    )
+    require(
+      !hitPolicy.hasManyResults,
+      "The Hitpolicy must have only one Result, like UNIQUE, COLLECT_SUM"
+    )
+    dmn(decisionDefinitionKey, hitPolicy, in, out)
+
+  def collectEntries[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      decisionDefinitionKey: String,
+      hitPolicy: HitPolicy,
+      in: In,
+      out: Out
+  ) =
+    require(
+      out.isCollectEntries,
+      "A collectEntries must look like `case class CollectEntries(indexes: Int*)`"
+    )
+    require(
+      hitPolicy.hasManyResults,
+      "The Hitpolicy must have only one Result, like COLLECT"
+    )
+    dmn(decisionDefinitionKey, hitPolicy, in, out)
+
+  def singleResult[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      decisionDefinitionKey: String,
+      hitPolicy: HitPolicy,
+      in: In,
+      out: Out
+  ) =
+    require(
+      out.isSingleResult,
+      """A singleResult must look like `case class SingleResult(result: ManyOutResult)`
+        | with `case class ManyOutResult(index: Int, emoji: String)`
+        |""".stripMargin
     )
     require(
       !hitPolicy.hasManyResults,

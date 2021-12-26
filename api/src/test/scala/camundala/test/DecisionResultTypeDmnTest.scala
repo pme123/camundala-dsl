@@ -28,14 +28,14 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
     out = SingleEntry(1)
   )
 
-  private lazy val singleResultDMN = dmn(
+  private lazy val singleResultDMN = singleResult(
     decisionDefinitionKey = "singleResult",
     hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
     out = SingleResult(ManyOutResult(1, "🤩"))
   )
 
-  private lazy val collectEntriesDMN = dmn(
+  private lazy val collectEntriesDMN = collectEntries(
     decisionDefinitionKey = "collectEntries",
     hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
@@ -73,6 +73,26 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
   def testSingleEntryBadOutput(): Unit =
     test(singleEntryDMNBadOutput)
 
+  @Test(expected = classOf[IllegalArgumentException])
+  def testSingleResultBadHitpolicy(): Unit =
+    test(singleResultDMNBadHitpolicy)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testSingleResultBadOutput(): Unit =
+    test(singleResultDMNBadOutput)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testCollectEntriesBadHitpolicy(): Unit =
+    test(collectEntriesDMNBadHitpolicy)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testCollectEntriesBadOutput(): Unit =
+    test(collectEntriesDMNBadOutput)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testCollectEntriesEmptySeq(): Unit =
+    test(collectEntriesDMNEmptySeq)
+
   private def singleEntryDMNBadHitpolicy = singleEntry(
     decisionDefinitionKey = "singleEntry",
     hitPolicy = HitPolicy.COLLECT,
@@ -85,4 +105,38 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
     hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
     out = ManyOutResult(1, "🤩")
+  )
+
+  private def singleResultDMNBadHitpolicy = singleResult(
+    decisionDefinitionKey = "singleResult",
+    hitPolicy = HitPolicy.COLLECT,
+    in = Input("A"),
+    out = SingleResult(ManyOutResult(1, "🤩"))
+  )
+
+  private def singleResultDMNBadOutput = singleResult(
+    decisionDefinitionKey = "singleResult",
+    hitPolicy = HitPolicy.UNIQUE,
+    in = Input("A"),
+    out = ManyOutResult(1, "🤩")
+  )
+
+  private def collectEntriesDMNBadHitpolicy = collectEntries(
+    decisionDefinitionKey = "collectEntries",
+    hitPolicy = HitPolicy.FIRST,
+    in = Input("A"),
+    out = CollectEntries(1)
+  )
+
+  private def collectEntriesDMNBadOutput = collectEntries(
+    decisionDefinitionKey = "collectEntries",
+    hitPolicy = HitPolicy.COLLECT,
+    in = Input("A"),
+    out = ManyOutResult(1, "🤩")
+  )
+  private def collectEntriesDMNEmptySeq = collectEntries(
+    decisionDefinitionKey = "collectEntries",
+    hitPolicy = HitPolicy.COLLECT,
+    in = Input("A"),
+    out = CollectEntries()
   )
