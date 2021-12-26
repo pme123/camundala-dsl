@@ -77,32 +77,12 @@ case class UserTask[
   def withInOutDescr(descr: InOutDescr[In, Out]): UserTask[In, Out] =
     copy(inOutDescr = descr)
 
-enum HitPolicy:
-
-  case UNIQUE
-  case FIRST
-  case PRIORITY
-  case ANY
-  case COLLECT
-  case COLLECT_SUM
-  case COLLECT_MIN
-  case COLLECT_MAX
-  case COLLECT_COUNT
-  case RULE_ORDER
-  case OUTPUT_ORDER
-
-  def hasManyResults =
-    Seq(COLLECT, RULE_ORDER, OUTPUT_ORDER).contains(this)
-
-end HitPolicy
-
 type DmnValueType = String | Boolean | Int | Long | Double | scala.reflect.Enum
 
 case class DecisionDmn[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
-    hitPolicy: HitPolicy,
     inOutDescr: InOutDescr[In, Out]
 ) extends Activity[In, Out, DecisionDmn[In, Out]]:
 
@@ -112,14 +92,14 @@ case class DecisionDmn[
     copy(inOutDescr = descr)
 
   def decisionResultType: DecisionResultType = {
-    (inOutDescr.out.hasManyOutputVars, hitPolicy.hasManyResults) match
-      case (false, false) =>
+    (inOutDescr.out) match
+      case o: Product if o.isSingleEntry =>
         DecisionResultType.singleEntry
-      case (false, true) =>
+      case o: Product if o.isCollectEntries =>
         DecisionResultType.collectEntries
-      case (true, false) =>
+      case o: Product if o.isSingleResult =>
         DecisionResultType.singleResult
-      case (true, true) =>
+      case o: Product if o.isResultList =>
         DecisionResultType.resultList
   }
 
@@ -231,13 +211,11 @@ trait PureDsl:
       Out <: Product: Encoder: Decoder: Schema
   ](
       decisionDefinitionKey: String,
-      hitPolicy: HitPolicy,
       in: In = NoInput(),
       out: Out = NoOutput(),
       descr: Option[String] | String = None
   ) =
     DecisionDmn[In, Out](
-      hitPolicy,
       InOutDescr(decisionDefinitionKey, in, out, descr)
     )
 
@@ -246,7 +224,6 @@ trait PureDsl:
       Out <: Product: Encoder: Decoder: Schema
   ](
       decisionDefinitionKey: String,
-      hitPolicy: HitPolicy,
       in: In,
       out: Out
   ) =
@@ -254,18 +231,13 @@ trait PureDsl:
       out.isSingleEntry,
       "A singleEntry must look like `case class SingleEntry(result: DmnValueType)`"
     )
-    require(
-      !hitPolicy.hasManyResults,
-      "The Hitpolicy must have only one Result, like UNIQUE, COLLECT_SUM"
-    )
-    dmn(decisionDefinitionKey, hitPolicy, in, out)
+    dmn(decisionDefinitionKey, in, out)
 
   def collectEntries[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
       decisionDefinitionKey: String,
-      hitPolicy: HitPolicy,
       in: In,
       out: Out
   ) =
@@ -273,18 +245,13 @@ trait PureDsl:
       out.isCollectEntries,
       "A collectEntries must look like `case class CollectEntries(indexes: Int*)`"
     )
-    require(
-      hitPolicy.hasManyResults,
-      "The Hitpolicy must have only one Result, like COLLECT"
-    )
-    dmn(decisionDefinitionKey, hitPolicy, in, out)
+    dmn(decisionDefinitionKey, in, out)
 
   def singleResult[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
       decisionDefinitionKey: String,
-      hitPolicy: HitPolicy,
       in: In,
       out: Out
   ) =
@@ -294,18 +261,13 @@ trait PureDsl:
         | with `case class ManyOutResult(index: Int, emoji: String)`
         |""".stripMargin
     )
-    require(
-      !hitPolicy.hasManyResults,
-      "The Hitpolicy must have only one Result, like UNIQUE, COLLECT_SUM"
-    )
-    dmn(decisionDefinitionKey, hitPolicy, in, out)
+    dmn(decisionDefinitionKey, in, out)
 
   def resultList[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
       decisionDefinitionKey: String,
-      hitPolicy: HitPolicy,
       in: In,
       out: Out
   ) =
@@ -315,11 +277,7 @@ trait PureDsl:
         | with `case class ManyOutResult(index: Int, emoji: String)`
         |""".stripMargin
     )
-    require(
-      hitPolicy.hasManyResults,
-      "The Hitpolicy must have only one Result, like COLLECT"
-    )
-    dmn(decisionDefinitionKey, hitPolicy, in, out)
+    dmn(decisionDefinitionKey, in, out)
 
   def serviceTask[
       In <: Product: Encoder: Decoder: Schema,

@@ -23,28 +23,24 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
 
   private lazy val singleEntryDMN = singleEntry(
     decisionDefinitionKey = "singleEntry",
-    hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
     out = SingleEntry(1)
   )
 
   private lazy val singleResultDMN = singleResult(
     decisionDefinitionKey = "singleResult",
-    hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
     out = SingleResult(ManyOutResult(1, "🤩"))
   )
 
   private lazy val collectEntriesDMN = collectEntries(
     decisionDefinitionKey = "collectEntries",
-    hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = CollectEntries(1, 2)
   )
 
   private lazy val resultListDMN = resultList(
     decisionDefinitionKey = "resultList",
-    hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = ResultList(ManyOutResult(1, "🤩"), ManyOutResult(2, "😂"))
   )
@@ -66,24 +62,12 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
     test(resultListDMN  )
 
   @Test(expected = classOf[IllegalArgumentException])
-  def testSingleEntryBadHitpolicy(): Unit =
-    test(singleEntryDMNBadHitpolicy)
-
-  @Test(expected = classOf[IllegalArgumentException])
   def testSingleEntryBadOutput(): Unit =
     test(singleEntryDMNBadOutput)
 
   @Test(expected = classOf[IllegalArgumentException])
-  def testSingleResultBadHitpolicy(): Unit =
-    test(singleResultDMNBadHitpolicy)
-
-  @Test(expected = classOf[IllegalArgumentException])
   def testSingleResultBadOutput(): Unit =
     test(singleResultDMNBadOutput)
-
-  @Test(expected = classOf[IllegalArgumentException])
-  def testCollectEntriesBadHitpolicy(): Unit =
-    test(collectEntriesDMNBadHitpolicy)
 
   @Test(expected = classOf[IllegalArgumentException])
   def testCollectEntriesBadOutput(): Unit =
@@ -94,10 +78,6 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
     test(collectEntriesDMNEmptySeq)
 
   @Test(expected = classOf[IllegalArgumentException])
-  def testResultListBadHitpolicy(): Unit =
-    test(resultListDMNBadHitpolicy)
-
-  @Test(expected = classOf[IllegalArgumentException])
   def testResultListBadOutput(): Unit =
     test(resultListDMNBadOutput)
 
@@ -105,70 +85,36 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
   def testResultListEmptySeq(): Unit =
     test(resultListDMNEmptySeq)
 
-  private def singleEntryDMNBadHitpolicy = singleEntry(
-    decisionDefinitionKey = "singleEntry",
-    hitPolicy = HitPolicy.COLLECT,
-    in = Input("A"),
-    out = SingleEntry(1)
-  )
-
   private def singleEntryDMNBadOutput = singleEntry(
     decisionDefinitionKey = "singleEntry",
-    hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
     out = ManyOutResult(1, "🤩")
-  )
-
-  private def singleResultDMNBadHitpolicy = singleResult(
-    decisionDefinitionKey = "singleResult",
-    hitPolicy = HitPolicy.COLLECT,
-    in = Input("A"),
-    out = SingleResult(ManyOutResult(1, "🤩"))
   )
 
   private def singleResultDMNBadOutput = singleResult(
     decisionDefinitionKey = "singleResult",
-    hitPolicy = HitPolicy.UNIQUE,
     in = Input("A"),
     out = ManyOutResult(1, "🤩")
   )
 
-  private def collectEntriesDMNBadHitpolicy = collectEntries(
-    decisionDefinitionKey = "collectEntries",
-    hitPolicy = HitPolicy.FIRST,
-    in = Input("A"),
-    out = CollectEntries(1)
-  )
-
   private def collectEntriesDMNBadOutput = collectEntries(
     decisionDefinitionKey = "collectEntries",
-    hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = ManyOutResult(1, "🤩")
   )
   private def collectEntriesDMNEmptySeq = collectEntries(
     decisionDefinitionKey = "collectEntries",
-    hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = CollectEntries()
   )
 
-  private def resultListDMNBadHitpolicy = resultList(
-    decisionDefinitionKey = "resultList",
-    hitPolicy = HitPolicy.COLLECT_SUM,
-    in = Input("A"),
-    out = ResultList(ManyOutResult(1, "🤩"), ManyOutResult(2, "😂"))
-  )
-
   private def resultListDMNBadOutput = resultList(
     decisionDefinitionKey = "resultList",
-    hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = ManyOutResult(1, "🤩")
   )
   private def resultListDMNEmptySeq = resultList(
     decisionDefinitionKey = "resultList",
-    hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = ResultList()
   )

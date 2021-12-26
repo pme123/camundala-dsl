@@ -786,7 +786,6 @@ object endpoints:
     val outStatusCode = StatusCode.Ok
     val apiName = "DecisionDmn"
     val decisionDefinitionKey = decisionDmn.decisionDefinitionKey
-    val hitPolicy = decisionDmn.hitPolicy
 
     def withRestApi(
         restApi: CamundaRestApi[In, Out]
@@ -798,7 +797,6 @@ object endpoints:
          |
          |Decision DMN:
          |- _decisionDefinitionKey_: `$decisionDefinitionKey`,
-         |- _hitPolicy_: `$hitPolicy`,
          |""".stripMargin
 
     def createPostman()(implicit

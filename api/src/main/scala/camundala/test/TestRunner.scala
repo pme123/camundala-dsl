@@ -146,7 +146,7 @@ trait TestRunner extends TestDsl:
 
   extension (decisionDmn: DecisionDmn[?, ?])
     def run(processInstance: ProcessInstance): Unit =
-      val DecisionDmn(hitPolicy, InOutDescr(id, in, out, descr)) =
+      val DecisionDmn(InOutDescr(id, in, out, descr)) =
         decisionDmn
 
       checkOutput(out, processInstance)

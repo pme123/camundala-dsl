@@ -132,11 +132,11 @@ paths:
       responses:
         '200':
           description: ''
-  /decision-definition/key/{key}/evaluate/--REMOVE%3AAssignApproverGroup--:
+  /decision-definition/key/{key}/evaluate/--REMOVE%3Ainvoice-assign-approver--:
     post:
       tags:
       - InvoiceReceipt
-      summary: 'AssignApproverGroup: EvaluateDecision'
+      summary: 'invoice-assign-approver: EvaluateDecision'
       description: '
 
 
@@ -144,10 +144,8 @@ paths:
 
         - _decisionDefinitionKey_: `invoice-assign-approver`,
 
-        - _hitPolicy_: `COLLECT`,
-
         '
-      operationId: 'AssignApproverGroup: EvaluateDecision'
+      operationId: 'invoice-assign-approver: EvaluateDecision'
       parameters:
       - name: key
         in: path
