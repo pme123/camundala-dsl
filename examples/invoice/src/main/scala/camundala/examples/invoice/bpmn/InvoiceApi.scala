@@ -81,7 +81,7 @@ object InvoiceApi extends PureDsl:
     )
 
   lazy val invoiceAssignApproverDMN
-      : DecisionDmn[SelectApproverGroup, AssignApproverGroups] = dmn(
+      : DecisionDmn[SelectApproverGroup, AssignApproverGroups] = collectEntries(
     decisionDefinitionKey = "invoice-assign-approver",
     hitPolicy = HitPolicy.COLLECT,
     in = SelectApproverGroup(),

@@ -96,7 +96,7 @@ enum HitPolicy:
 
 end HitPolicy
 
-type DmnValueType = String | Boolean | Int | Long | Double
+type DmnValueType = String | Boolean | Int | Long | Double | scala.reflect.Enum
 
 case class DecisionDmn[
     In <: Product: Encoder: Decoder: Schema,
@@ -112,7 +112,7 @@ case class DecisionDmn[
     copy(inOutDescr = descr)
 
   def decisionResultType: DecisionResultType = {
-    (hasManyOutputVars(inOutDescr.out), hitPolicy.hasManyResults) match
+    (inOutDescr.out.hasManyOutputVars, hitPolicy.hasManyResults) match
       case (false, false) =>
         DecisionResultType.singleEntry
       case (false, true) =>
@@ -135,12 +135,13 @@ extension (output: Product)
   def isSingleResult =
     output.productIterator.size == 1 &&
       (output.productIterator.next() match
+        case _: Iterable[?] => false
         case p: Product =>
           p.productIterator.size > 1
         case _ => false
       )
 
-  def isCollectEntries =
+  def isCollectEntries: Boolean =
     output.productIterator.size == 1 &&
       (output.productIterator.next() match
         case p: Iterable[?] =>
@@ -150,21 +151,19 @@ extension (output: Product)
         case o => false
       )
 
+  def isResultList =
+    output.productIterator.size == 1 &&
+      (output.productIterator.next() match
+        case p: Iterable[?] =>
+          p.headOption match
+            case Some(p: Product) =>
+              p.productIterator.size > 1
+            case o => false
+        case o => false
+      )
+  def hasManyOutputVars: Boolean =
+    isSingleResult || isResultList
 end extension // Product
-
-def hasManyOutputVars(output: Product) =
-  println(s"outputxxx: $output")
-  if (output.productIterator.size > 1)
-    true // SingleResult
-  else
-    output.productIterator.next() match
-      case p: Iterable[?] =>
-        p.head match
-          case p: Product => true
-          case o => false
-      case p: Product =>
-        p.productIterator.size > 1
-      case o => false
 
 enum DecisionResultType:
   case singleEntry // TypedValue
@@ -298,6 +297,27 @@ trait PureDsl:
     require(
       !hitPolicy.hasManyResults,
       "The Hitpolicy must have only one Result, like UNIQUE, COLLECT_SUM"
+    )
+    dmn(decisionDefinitionKey, hitPolicy, in, out)
+
+  def resultList[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      decisionDefinitionKey: String,
+      hitPolicy: HitPolicy,
+      in: In,
+      out: Out
+  ) =
+    require(
+      out.isResultList,
+      """A resultList must look like `case class ResultList(results: ManyOutResult*)`
+        | with `case class ManyOutResult(index: Int, emoji: String)`
+        |""".stripMargin
+    )
+    require(
+      hitPolicy.hasManyResults,
+      "The Hitpolicy must have only one Result, like COLLECT"
     )
     dmn(decisionDefinitionKey, hitPolicy, in, out)
 

@@ -19,7 +19,7 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
   // Many Output Parameter
   case class ManyOutResult(index: Int, emoji: String)
   case class SingleResult(result: ManyOutResult)
-  case class ResultList(resultList: ManyOutResult*)
+  case class ResultList(results: ManyOutResult*)
 
   private lazy val singleEntryDMN = singleEntry(
     decisionDefinitionKey = "singleEntry",
@@ -42,7 +42,7 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
     out = CollectEntries(1, 2)
   )
 
-  private lazy val resultListDMN = dmn(
+  private lazy val resultListDMN = resultList(
     decisionDefinitionKey = "resultList",
     hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
@@ -93,6 +93,18 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
   def testCollectEntriesEmptySeq(): Unit =
     test(collectEntriesDMNEmptySeq)
 
+  @Test(expected = classOf[IllegalArgumentException])
+  def testResultListBadHitpolicy(): Unit =
+    test(resultListDMNBadHitpolicy)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testResultListBadOutput(): Unit =
+    test(resultListDMNBadOutput)
+
+  @Test(expected = classOf[IllegalArgumentException])
+  def testResultListEmptySeq(): Unit =
+    test(resultListDMNEmptySeq)
+
   private def singleEntryDMNBadHitpolicy = singleEntry(
     decisionDefinitionKey = "singleEntry",
     hitPolicy = HitPolicy.COLLECT,
@@ -139,4 +151,24 @@ class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
     hitPolicy = HitPolicy.COLLECT,
     in = Input("A"),
     out = CollectEntries()
+  )
+
+  private def resultListDMNBadHitpolicy = resultList(
+    decisionDefinitionKey = "resultList",
+    hitPolicy = HitPolicy.COLLECT_SUM,
+    in = Input("A"),
+    out = ResultList(ManyOutResult(1, "🤩"), ManyOutResult(2, "😂"))
+  )
+
+  private def resultListDMNBadOutput = resultList(
+    decisionDefinitionKey = "resultList",
+    hitPolicy = HitPolicy.COLLECT,
+    in = Input("A"),
+    out = ManyOutResult(1, "🤩")
+  )
+  private def resultListDMNEmptySeq = resultList(
+    decisionDefinitionKey = "resultList",
+    hitPolicy = HitPolicy.COLLECT,
+    in = Input("A"),
+    out = ResultList()
   )
