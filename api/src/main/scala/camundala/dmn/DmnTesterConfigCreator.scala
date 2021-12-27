@@ -51,7 +51,7 @@ trait DmnTesterConfigCreator extends App:
       .zip(product.productIterator)
       .map { case (k, v) => testValues(k, v, addTestValues) }
 
-  def testValues[E: ClassTag](
+  private def testValues[E: ClassTag](
       k: String,
       value: E,
       addTestValues: Map[String, List[String]]

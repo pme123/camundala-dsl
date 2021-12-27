@@ -49,18 +49,6 @@ trait TestRunner extends TestDsl:
       Mocks.register(key, value)
     }
 
-  def testWithError[
-      In <: Product,
-      Out <: Product,
-      Err <: Exception
-  ](process: Process[In, Out])(
-      activities: (Activity[?, ?, ?] | CustomTests)*
-  ): Unit =
-    try test[In, Out](process)(activities: _*)
-    catch
-      case _: Err => // "ok"
-      case other => fail("")
-
   def test[
       In <: Product,
       Out <: Product
