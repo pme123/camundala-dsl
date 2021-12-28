@@ -135,3 +135,80 @@ object InvoiceApi extends PureDsl:
     in = InvoiceReceipt(),
     out = InvoiceReviewed()
   )
+
+  // CAWEMO: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/invoice.v2.bpmn
+
+  val InvoiceReceiptPIdent ="InvoiceReceiptPIdent"
+  lazy val InvoiceReceiptP = process(
+    InvoiceReceiptPIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+
+  val ApproveInvoiceUTIdent ="ApproveInvoiceUTIdent"
+  lazy val ApproveInvoiceUT = process(
+    ApproveInvoiceUTIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+
+  val PrepareBankTransferUTIdent ="PrepareBankTransferUTIdent"
+  lazy val PrepareBankTransferUT = process(
+    PrepareBankTransferUTIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+
+  val ArchiveInvoiceSTIdent ="ArchiveInvoiceSTIdent"
+  lazy val ArchiveInvoiceST = process(
+    ArchiveInvoiceSTIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+
+  val AssignApproverGroupBRTIdent ="AssignApproverGroupBRTIdent"
+  lazy val AssignApproverGroupBRT = process(
+    AssignApproverGroupBRTIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+  // WITH IDS: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/with-ids/invoice.v2.bpmn
+  // CAWEMO: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/reviewInvoice.bpmn
+
+  val ReviewInvoicePIdent ="ReviewInvoicePIdent"
+  lazy val ReviewInvoiceP = process(
+    ReviewInvoicePIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+
+  val AssignReviewerUTIdent ="AssignReviewerUTIdent"
+  lazy val AssignReviewerUT = process(
+    AssignReviewerUTIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+
+  val ReviewInvoiceUTIdent ="ReviewInvoiceUTIdent"
+  lazy val ReviewInvoiceUT = process(
+    ReviewInvoiceUTIdent,
+    in = NoInput(),
+    out = NoOutput(),
+    descr = None
+  )
+
+// WITH IDS: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/with-ids/reviewInvoice.bpmn

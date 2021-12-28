@@ -33,28 +33,30 @@ lazy val dsl = project
       "dev.zio" %% "zio" % zioVersion,
       "dev.zio" %% "zio-test" % zioVersion % Test,
       "dev.zio" %% "zio-test-sbt" % zioVersion % Test
-    ) ++ camundaTestDependencies,
+    ) ++ camundaTestDependencies ++
+      tapirDependencies,
     testFrameworks += new TestFramework("zio.test.sbt.ZTestFramework")
     // libraryDependencies += "eu.timepit" %% "refined" % "0.9.20",
     // To cross compile with Dotty and Scala 2
   )
 
 val tapirVersion = "0.18.3"
+val tapirDependencies = Seq(
+  "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
+  "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
+  "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
+  "com.softwaremill.quicklens" %% "quicklens" % "1.7.5", // simple modifying case classes
+  "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
+  "com.lihaoyi" %% "os-lib" % "0.7.8",
+  "org.planet42" %% "laika-core" % "0.18.0"
+)
 lazy val api = project
   .in(file("./api"))
   .configure(publicationSettings)
   .settings(projectSettings("api"))
   .settings(
     publishArtifact := true,
-    libraryDependencies ++= Seq(
-      "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
-      "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
-      "com.softwaremill.quicklens" %% "quicklens" % "1.7.5", // simple modifying case classes
-      "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
-      "com.lihaoyi" %% "os-lib" % "0.7.8",
-      "org.planet42" %% "laika-core" % "0.18.0"
-    ) ++ camundaTestDependencies,
+    libraryDependencies ++= tapirDependencies ++ camundaTestDependencies,
     // To cross compile with Dotty and Scala 2
     scalacOptions ++= Seq(
       "-Xmax-inlines",
