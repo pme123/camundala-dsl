@@ -1,7 +1,7 @@
 package camundala
 package test
 
-import camundala.bpmn.{Process, ProcessElement}
+import camundala.bpmn.{Process, ProcessNode}
 import os.{Path, ResourcePath, pwd}
 
 trait TestDsl:

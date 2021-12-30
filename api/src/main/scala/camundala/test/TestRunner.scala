@@ -23,7 +23,7 @@ trait TestRunner extends CommonTesting:
       In <: Product,
       Out <: Product
   ](process: Process[In, Out])(
-      activities: (ProcessElement[?, ?, ?] | CustomTests)*
+      activities: (ProcessNode | CustomTests)*
   ): Unit =
     ProcessToTest(process, activities.toList).run()
 
@@ -32,7 +32,7 @@ trait TestRunner extends CommonTesting:
     def run(): Unit =
       val ProcessToTest(
         Process(InOutDescr(id, in, out, descr), _),
-        activities
+        elements
       ) = processToTest
       implicit val processInstance = runtimeService.startProcessInstanceByKey(
         id,
@@ -41,7 +41,7 @@ trait TestRunner extends CommonTesting:
       assertThat(processInstance)
         .isStarted()
       // run manual tasks
-      activities.foreach {
+      elements.foreach {
         case ut: UserTask[?, ?] => ut.run()
         case st: ServiceTask[?, ?] => st.run()
         case dd: DecisionDmn[?, ?] => dd.run()

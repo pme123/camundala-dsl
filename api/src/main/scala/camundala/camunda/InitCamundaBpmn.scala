@@ -57,29 +57,43 @@ trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
     def fromCamunda(): FromCamundable[Process[?, ?]] =
       val ident = camundaProcess.createIdent()
       process(ident).copy(elements =
-        createElements(classOf[CUserTask], UserTask.init) ++
-          createElements(classOf[CServiceTask], ServiceTask.init) ++
-          createElements(classOf[CBusinessRuleTask], DecisionDmn.init) ++
+        createInOuts(classOf[CUserTask], UserTask.init) ++
+          createInOuts(classOf[CServiceTask], ServiceTask.init) ++
+          createInOuts(classOf[CBusinessRuleTask], DecisionDmn.init) ++
           createElements(classOf[CEndEvent], EndEvent.init)
       )
 
-  private def createElements[
+  private def createInOuts[
       T <: CFlowElement,
       C,
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
       clazz: Class[T],
-      constructor: String => ProcessElement[In, Out, ?]
-  ): FromCamundable[Seq[ProcessElement[In, Out, ?]]] = {
-    val elems = summon[CBpmnModelInstance]
-      .getModelElementsByType(clazz)
-      .asScala
-      .toSeq
+      constructor: String => InOut[In, Out, ?]
+  ): FromCamundable[Seq[InOut[In, Out, ?]]] = {
+    val elems: Seq[T] = elements(clazz)
     elems.map { fe =>
       constructor(fe.createIdent())
     }
   }
+
+  private def createElements[T <: CFlowElement](
+      clazz: Class[T],
+      constructor: String => ProcessNode
+  ): FromCamundable[Seq[ProcessNode]] = {
+    val elems: Seq[T] = elements(clazz)
+    elems.map { fe =>
+      constructor(fe.createIdent())
+    }
+  }
+  private def elements[T <: CFlowElement](
+      clazz: Class[T]
+  ): FromCamundable[Seq[T]] =
+    summon[CBpmnModelInstance]
+      .getModelElementsByType(clazz)
+      .asScala
+      .toSeq
 
   extension (process: CProcess)
     def createIdent(): String =
@@ -160,8 +174,11 @@ ${bpmns
         s"  // ${bpmn._1}\n" +
           bpmn._2
             .map { p =>
-              print(p) +
-                p.elements.map(print).mkString("\n", "\n", "")
+              printInOut(p) +
+                p.elements.map{
+                  case io: InOut[?,?,?] => printInOut(io)
+                  case e: ProcessNode => printElem(e)
+                }.mkString("\n", "\n", "")
             }
             .mkString("\n")
       )
@@ -169,17 +186,25 @@ ${bpmns
 
 end ${name}Domain
 """)
-  private def print(inOut: InOut[?, ?, ?]): String =
+
+  private def printInOut(inOut: InOut[?, ?, ?]): String =
     s"""  val ${inOut.id}Ident ="${inOut.id}"
        |  lazy val ${inOut.id} = ${inOut.label}(
        |    ${inOut.id}Ident,
-       |    ${if (inOut.hasInOut)
-      """in = NoInput(),
-       |    out = NoOutput()"""
-    else ""}
+       |    in = NoInput(),
+       |    out = NoOutput(),
        |    descr = None
        |  )
        |""".stripMargin
+
+  private def printElem(processElement: ProcessNode): String =
+    s"""  val ${processElement.id}Ident ="${processElement.id}"
+       |  lazy val ${processElement.id} = ${processElement.label}(
+       |    ${processElement.id}Ident,
+       |    descr = None
+       |  )
+       |""".stripMargin
+
 end InitCamundaBpmn
 
 /*

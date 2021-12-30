@@ -27,7 +27,7 @@ case class DecisionDmn[
     Out <: Product: Encoder: Decoder: Schema
 ](
     inOutDescr: InOutDescr[In, Out]
-) extends ProcessElement[In, Out, DecisionDmn[In, Out]]:
+) extends ProcessNode, InOut[In, Out, DecisionDmn[In, Out]]:
 
   override val label =
     """// use singleEntry / collectEntries / singleResult / resultList

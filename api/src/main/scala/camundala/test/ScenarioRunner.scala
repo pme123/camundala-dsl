@@ -26,7 +26,7 @@ trait ScenarioRunner extends CommonTesting:
       In <: Product,
       Out <: Product
   ](process: Process[In, Out])(
-      elements: (ProcessElement[?, ?, ?] | CustomTests)*
+      elements: (ProcessNode | CustomTests)*
   ): Unit =
     ProcessToTest(process, elements.toList).run()
 

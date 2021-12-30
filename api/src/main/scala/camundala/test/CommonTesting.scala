@@ -36,7 +36,7 @@ trait CommonTesting extends TestDsl:
     In <: Product,
     Out <: Product
   ](process: Process[In, Out])(
-    activities: (ProcessElement[?, ?, ?] | CustomTests)*
+    activities: (ProcessNode | CustomTests)*
   ): Unit 
     
   @Before
