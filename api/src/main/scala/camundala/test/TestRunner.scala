@@ -14,40 +14,10 @@ import org.junit.Assert.{assertEquals, assertNotNull, fail}
 import org.junit.{Before, Rule}
 import org.mockito.MockitoAnnotations
 
-import scala.jdk.CollectionConverters.*
 import java.io.FileNotFoundException
 import java.util
 
-trait TestRunner extends TestDsl:
-
-  def config: TestConfig
-  @Rule
-  def processEngineRule = new ProcessEngineRule
-
-  @Before
-  def init(): Unit =
-    deployment()
-    setUpRegistries()
-
-  def deployment(): Unit =
-    val deployment = repositoryService.createDeployment()
-    val resources = config.deploymentResources
-    println(s"Resources: $resources")
-    resources.foreach(r =>
-      deployment.addInputStream(
-        r.toString,
-        new java.io.ByteArrayInputStream(os.read.bytes(r))
-      )
-    )
-    deployment.deploy()
-
-  def setUpRegistries(): Unit =
-    MockitoAnnotations.initMocks(this)
-    val serviceRegistries = config.serviceRegistries
-    println(s"ServiceRegistries: $serviceRegistries")
-    serviceRegistries.foreach { case ServiceRegistry(key, value) =>
-      Mocks.register(key, value)
-    }
+trait TestRunner extends CommonTesting:
 
   def test[
       In <: Product,
@@ -57,7 +27,6 @@ trait TestRunner extends TestDsl:
   ): Unit =
     ProcessToTest(process, activities.toList).run()
 
-  def custom(tests: => Unit): CustomTests = CustomTests(() => tests)
 
   extension (processToTest: ProcessToTest[?, ?])
     def run(): Unit =
@@ -65,7 +34,7 @@ trait TestRunner extends TestDsl:
         Process(InOutDescr(id, in, out, descr), _),
         activities
       ) = processToTest
-      val processInstance = runtimeService.startProcessInstanceByKey(
+      implicit val processInstance = runtimeService.startProcessInstanceByKey(
         id,
         in.asJavaVars()
       )
@@ -73,9 +42,9 @@ trait TestRunner extends TestDsl:
         .isStarted()
       // run manual tasks
       activities.foreach {
-        case ut: UserTask[?, ?] => ut.run(processInstance)
-        case st: ServiceTask[?, ?] => st.run(processInstance)
-        case dd: DecisionDmn[?, ?] => dd.run(processInstance)
+        case ut: UserTask[?, ?] => ut.run()
+        case st: ServiceTask[?, ?] => st.run()
+        case dd: DecisionDmn[?, ?] => dd.run()
         //(a: Activity[?,?,?]) => a.run(processInstance)
         case ct: CustomTests => ct.tests()
         case other =>
@@ -83,12 +52,12 @@ trait TestRunner extends TestDsl:
             s"This Activity is not supported: $other"
           )
       }
-      checkOutput(out, processInstance)
+      checkOutput(out)
       assertThat(processInstance).isEnded
   end extension
 
   extension (userTask: UserTask[?, ?])
-    def run(processInstance: ProcessInstance): Unit =
+    def run(): FromProcessInstance[Unit] =
       val UserTask(InOutDescr(id, in, out, descr)) = userTask
       val t = task()
       assertThat(t)
@@ -118,36 +87,25 @@ trait TestRunner extends TestDsl:
       )
        */
       BpmnAwareTests.complete(t, out.asJavaVars())
-      assertThat(processInstance)
+      assertThat(summon[CProcessInstance])
         .hasPassed(id)
   end extension
 
   extension (serviceTask: ServiceTask[?, ?])
-    def run(processInstance: ProcessInstance): Unit =
+    def run(): FromProcessInstance[Unit] =
       val ServiceTask(InOutDescr(id, in, out, descr)) = serviceTask
       val archiveInvoiceJob = managementService.createJobQuery.singleResult
       assertNotNull(archiveInvoiceJob)
       managementService.executeJob(archiveInvoiceJob.getId)
-      assertThat(processInstance)
+      assertThat(summon[CProcessInstance])
         .hasPassed(id)
   end extension
 
   extension (decisionDmn: DecisionDmn[?, ?])
-    def run(processInstance: ProcessInstance): Unit =
+    def run(): FromProcessInstance[Unit] =
       val DecisionDmn(InOutDescr(id, in, out, descr)) =
         decisionDmn
-
-      checkOutput(out, processInstance)
+      checkOutput(out)
   end extension
-
-  private def checkOutput[T <: Product](
-      out: T,
-      processInstance: ProcessInstance
-  ) =
-    val variables = assertThat(processInstance).variables()
-    for
-      (k, v) <- out.asJavaVars().asScala
-      _ = assertThat(processInstance).hasVariables(k)
-    yield variables.containsEntry(k, v)
 
 end TestRunner

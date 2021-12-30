@@ -13,8 +13,7 @@ export org.camunda.bpm.model.bpmn.BpmnModelInstance as CBpmnModelInstance
 
 export org.camunda.bpm.model.xml.instance.ModelElementInstance
 // does not work:
-export org.camunda.bpm.model.bpmn.{Bpmn as CBpmn}
-
+export org.camunda.bpm.model.bpmn.Bpmn as CBpmn
 export org.camunda.bpm.model.bpmn.instance.{
   Process as CProcess,
   BaseElement as CBaseElement,
