@@ -5,8 +5,10 @@ import domain.*
 
 import scala.deriving.Mirror
 import scala.compiletime.{constValue, constValueTuple}
+import io.circe.generic.auto.*
+import sttp.tapir.generic.auto.*
 
-trait PureDsl:
+trait BpmnDsl:
 
   def process[
     In <: Product: Encoder: Decoder: Schema,
@@ -118,6 +120,13 @@ trait PureDsl:
    ): ServiceTask[In, Out] =
     ServiceTask(
       InOutDescr(id, in, out, descr)
+    )
+  def endEvent(
+     id: String,
+     descr: Option[String] | String = None
+   ): EndEvent =
+    EndEvent(
+      InOutDescr(id, NoInput(), NoOutput(), descr = descr)
     )
 
   inline def enumDescr[E](

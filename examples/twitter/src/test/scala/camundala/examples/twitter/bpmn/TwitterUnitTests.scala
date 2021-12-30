@@ -1,7 +1,7 @@
 package camundala
 package examples.twitter.bpmn
 
-import camundala.examples.twitter.bpmn.TwitterApi.{reviewTweetApprovedUT, reviewTweetNotApprovedUT, twitterDemoProcess}
+import camundala.examples.twitter.bpmn.TwitterApi.{TweetHandledEE, reviewTweetApprovedUT, reviewTweetNotApprovedUT, twitterDemoProcess}
 import camundala.examples.twitter.bpmn.TwitterProcesses.bpmns.example__twitter
 import camundala.examples.twitter.dsl
 import camundala.examples.twitter.services.{RejectionNotificationDelegate, TweetContentOfflineDelegate}
@@ -31,13 +31,15 @@ trait TwitterUnitTests extends CommonTesting:
   @Test
   def testApprovedPath(): Unit =
     test(twitterDemoProcess)(
-      reviewTweetApprovedUT
+      reviewTweetApprovedUT,
+      TweetHandledEE
     )
 
   @Test
   def testRejectedPath(): Unit =
     test(twitterDemoProcess)(
-      reviewTweetNotApprovedUT
+      reviewTweetNotApprovedUT,
+      TweetHandledEE
     )
 
 class ExampleTwitterTest extends TestRunner, TwitterUnitTests

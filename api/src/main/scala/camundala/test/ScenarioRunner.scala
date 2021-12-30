@@ -13,7 +13,7 @@ import org.camunda.bpm.engine.test.{ProcessEngineRule, ProcessEngineTestCase}
 import org.camunda.bpm.scenario.{ProcessScenario, Scenario}
 import org.junit.Assert.{assertEquals, assertNotNull, fail}
 import org.junit.{Before, Rule}
-import org.mockito.Mockito.{mock, when}
+import org.mockito.Mockito.{mock, verify, when}
 import org.mockito.MockitoAnnotations
 
 import java.io.FileNotFoundException
@@ -45,6 +45,7 @@ trait ScenarioRunner extends CommonTesting:
         case ut: UserTask[?, ?] => ut.prepare()
         case st: ServiceTask[?, ?] => st.prepare()
         case dd: DecisionDmn[?, ?] => dd.prepare()
+        case ee: EndEvent => ee.prepare()
         case ct: CustomTests => // nothing to prepare
         case other =>
           throw new IllegalArgumentException(
@@ -60,6 +61,7 @@ trait ScenarioRunner extends CommonTesting:
         case ut: UserTask[?, ?] => ut.exec()
         case st: ServiceTask[?, ?] => st.exec()
         case dd: DecisionDmn[?, ?] => dd.exec()
+        case ee: EndEvent => ee.exec()
         case ct: CustomTests => ct.tests()
         case other =>
           throw IllegalArgumentException(
@@ -100,6 +102,12 @@ trait ScenarioRunner extends CommonTesting:
   extension (decisionDmn: DecisionDmn[?, ?])
     def prepare(): Unit = ()
     def exec(): FromProcessInstance[Unit] = ()
+  end extension
+
+  extension (endEvent: EndEvent)
+    def prepare(): Unit = ()
+    def exec(): FromProcessInstance[Unit] =
+      verify(mockedProcess).hasFinished(endEvent.id)
   end extension
 
 end ScenarioRunner

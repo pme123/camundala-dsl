@@ -1,173 +1,441 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="http://www.signavio.com/bpmn20" exporter="Camunda Modeler" exporterVersion="4.11.1" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
-  <process id="TwitterDemoProcess" name="TwitterDemoProcess" processType="None" isClosed="false" isExecutable="true" camunda:candidateStarterGroups="" camunda:candidateStarterUsers="">
-    <serviceTask id="SendRejectionNotification" name="Send rejection notification" camunda:exclusive="false" implementation="##WebService" camunda:delegateExpression="${emailAdapter}">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" exporter="Camunda Modeler" exporterVersion="4.7.0" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.signavio.com/bpmn20" typeLanguage="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+      
+  
+  <process camunda:candidateStarterGroups="" camunda:candidateStarterUsers="" id="TwitterDemoP" isClosed="false" isExecutable="true" name="Twitter Demo" processType="None">
+            
+    
+    <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="${emailAdapter}" camunda:exclusive="false" completionQuantity="1" id="SendRejectionNotificationST" implementation="##WebService" isForCompensation="false" name="Send rejection notification" startQuantity="1">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI__Ratio" value="Tweet Rejected" />
+          <camunda:property name="KPI__Ratio" value="Tweet Rejected"/>
         </camunda:properties>
       </extensionElements>
-      <incoming>No__Approved__SendRejectionNotification</incoming>
-      <outgoing>SequenceFlow_4__SendRejectionNotification__Join</outgoing>
+                  
+      
+      <incoming>NoSF__ApprovedEG__SendRejectionNotificationST</incoming>
+                  
+      
+      <outgoing>SequenceFlow_4__SendRejectionNotificationST__JoinEG</outgoing>
+                
+    
     </serviceTask>
-    <sequenceFlow id="SequenceFlow_4__SendRejectionNotification__Join" name="" sourceRef="SendRejectionNotification" targetRef="Join" />
-    <exclusiveGateway id="Approved" name="Approved?" camunda:exclusive="false">
+            
+    
+    <sequenceFlow id="SequenceFlow_4__SendRejectionNotificationST__JoinEG" name="" sourceRef="SendRejectionNotificationST" targetRef="JoinEG"/>
+            
+    
+    <exclusiveGateway camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" gatewayDirection="Unspecified" id="ApprovedEG" name="Approved?">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI__Cycle__End" value="Tweet Approval Time" />
+          <camunda:property name="KPI__Cycle__End" value="Tweet Approval Time"/>
         </camunda:properties>
       </extensionElements>
-      <incoming>SequenceFlow_2__ReviewTweet__Approved</incoming>
-      <outgoing>No__Approved__SendRejectionNotification</outgoing>
-      <outgoing>Yes__Approved__PublishOnTwitter</outgoing>
+                  
+      
+      <incoming>SequenceFlow_2__ReviewTweetUT__ApprovedEG</incoming>
+                  
+      
+      <outgoing>NoSF__ApprovedEG__SendRejectionNotificationST</outgoing>
+                  
+      
+      <outgoing>YesSF__ApprovedEG__PublishOnTwitterST</outgoing>
+                
+    
     </exclusiveGateway>
-    <sequenceFlow id="No__Approved__SendRejectionNotification" name="no " sourceRef="Approved" targetRef="SendRejectionNotification">
+            
+    
+    <sequenceFlow id="NoSF__ApprovedEG__SendRejectionNotificationST" name="no " sourceRef="ApprovedEG" targetRef="SendRejectionNotificationST">
+                  
+      
       <extensionElements>
+                        
+        
         <camunda:properties>
-          <camunda:property name="probability" value="13" />
+                              
+          
+          <camunda:property name="probability" value="13"/>
+                            
+        
         </camunda:properties>
+                      
+      
         <camunda:properties>
-          <camunda:property name="probability" value="13" />
+          <camunda:property name="probability" value="13"/>
         </camunda:properties>
       </extensionElements>
-      <conditionExpression id="conditionExpression_d259258b-1e36-412a-92ab-517bbb17521e">${!approved}</conditionExpression>
+      <conditionExpression id="conditionExpression_e2a377a9-ef84-41b3-8d6e-05ebea096f67">${!approved}</conditionExpression>
+                
+    
     </sequenceFlow>
-    <sequenceFlow id="Yes__Approved__PublishOnTwitter" name="yes" sourceRef="Approved" targetRef="PublishOnTwitter">
+            
+    
+    <sequenceFlow id="YesSF__ApprovedEG__PublishOnTwitterST" name="yes" sourceRef="ApprovedEG" targetRef="PublishOnTwitterST">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="probability" value="87" />
+          <camunda:property name="probability" value="87"/>
         </camunda:properties>
       </extensionElements>
-      <conditionExpression id="conditionExpression_fd617846-7462-44c8-8295-648e8b0fe410">${approved}</conditionExpression>
+      <conditionExpression id="conditionExpression_1de72a5d-8a14-42e5-afac-f769c7535ab6">${approved}</conditionExpression>
     </sequenceFlow>
-    <exclusiveGateway id="Join" name="Join" camunda:exclusive="false">
-      <incoming>SequenceFlow_4__SendRejectionNotification__Join</incoming>
-      <incoming>SequenceFlow_3__PublishOnTwitter__Join</incoming>
-      <outgoing>SequenceFlow_5__Join__TweetHandled</outgoing>
+            
+    
+    <exclusiveGateway gatewayDirection="Unspecified" id="JoinEG" name="Join">
+                  
+      
+      <incoming>SequenceFlow_4__SendRejectionNotificationST__JoinEG</incoming>
+                  
+      
+      <incoming>SequenceFlow_3__PublishOnTwitterST__JoinEG</incoming>
+                  
+      
+      <outgoing>SequenceFlow_5__JoinEG__TweetHandledEE</outgoing>
+                
+    
     </exclusiveGateway>
-    <sequenceFlow id="SequenceFlow_5__Join__TweetHandled" name="" sourceRef="Join" targetRef="TweetHandled" />
-    <serviceTask id="PublishOnTwitter" name="Publish on Twitter" camunda:exclusive="false" implementation="##WebService" camunda:delegateExpression="${tweetAdapter}">
+            
+    
+    <sequenceFlow id="SequenceFlow_5__JoinEG__TweetHandledEE" name="" sourceRef="JoinEG" targetRef="TweetHandledEE"/>
+            
+    
+    <serviceTask camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:delegateExpression="${tweetAdapter}" camunda:exclusive="false" completionQuantity="1" id="PublishOnTwitterST" implementation="##WebService" isForCompensation="false" name="Publish on Twitter" startQuantity="1">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI__Ratio" value="Tweet Approved" />
+          <camunda:property name="KPI__Ratio" value="Tweet Approved"/>
         </camunda:properties>
       </extensionElements>
-      <incoming>Yes__Approved__PublishOnTwitter</incoming>
-      <outgoing>SequenceFlow_3__PublishOnTwitter__Join</outgoing>
+                  
+      
+      <incoming>YesSF__ApprovedEG__PublishOnTwitterST</incoming>
+                  
+      
+      <outgoing>SequenceFlow_3__PublishOnTwitterST__JoinEG</outgoing>
+                
+    
     </serviceTask>
-    <sequenceFlow id="SequenceFlow_3__PublishOnTwitter__Join" name="" sourceRef="PublishOnTwitter" targetRef="Join" />
-    <endEvent id="TweetHandled" name="Tweet handled" camunda:exclusive="false">
-      <incoming>SequenceFlow_5__Join__TweetHandled</incoming>
+            
+    
+    <sequenceFlow id="SequenceFlow_3__PublishOnTwitterST__JoinEG" name="" sourceRef="PublishOnTwitterST" targetRef="JoinEG"/>
+            
+    
+    <endEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" id="TweetHandledEE" name="Tweet handled">
+                  
+      
+      <incoming>SequenceFlow_5__JoinEG__TweetHandledEE</incoming>
+                
+    
     </endEvent>
-    <startEvent id="TweetWritten" name="Tweet written" camunda:exclusive="false" camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator">
+            
+    
+    <startEvent camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:exclusive="false" camunda:formKey="embedded:app:forms/createTweet.html" camunda:initiator="initiator" id="TweetWrittenSE" isInterrupting="true" name="Tweet written" parallelMultiple="false">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="KPI__Cycle__Start" value="Tweet Approval Time" />
+          <camunda:property name="KPI__Cycle__Start" value="Tweet Approval Time"/>
         </camunda:properties>
       </extensionElements>
-      <outgoing>SequenceFlow_9__TweetWritten__ReviewTweet</outgoing>
+                  
+      
+      <outgoing>SequenceFlow_9__TweetWrittenSE__ReviewTweetUT</outgoing>
+                
+    
     </startEvent>
-    <sequenceFlow id="SequenceFlow_9__TweetWritten__ReviewTweet" name="" sourceRef="TweetWritten" targetRef="ReviewTweet" />
-    <userTask id="ReviewTweet" name="Review Tweet" camunda:exclusive="false" implementation="##unspecified" camunda:formKey="embedded:app:forms/reviewTweet.html" camunda:assignee="demo" camunda:candidateUsers="" camunda:candidateGroups="" camunda:dueDate="2021-12-31T12:23:00">
+            
+    
+    <sequenceFlow id="SequenceFlow_9__TweetWrittenSE__ReviewTweetUT" name="" sourceRef="TweetWrittenSE" targetRef="ReviewTweetUT"/>
+            
+    
+    <userTask camunda:assignee="demo" camunda:asyncAfter="false" camunda:asyncBefore="false" camunda:candidateGroups="" camunda:candidateUsers="" camunda:dueDate="2021-12-31T12:23:00" camunda:exclusive="false" camunda:formKey="embedded:app:forms/reviewTweet.html" completionQuantity="1" id="ReviewTweetUT" implementation="##unspecified" isForCompensation="false" name="Review Tweet" startQuantity="1">
       <extensionElements>
         <camunda:properties>
-          <camunda:property name="durationMean" value="10000" />
-          <camunda:property name="durationSd" value="5000" />
+          <camunda:property name="durationMean" value="10000"/>
+          <camunda:property name="durationSd" value="5000"/>
         </camunda:properties>
       </extensionElements>
-      <incoming>SequenceFlow_9__TweetWritten__ReviewTweet</incoming>
-      <outgoing>SequenceFlow_2__ReviewTweet__Approved</outgoing>
+                  
+      
+      <incoming>SequenceFlow_9__TweetWrittenSE__ReviewTweetUT</incoming>
+                  
+      
+      <outgoing>SequenceFlow_2__ReviewTweetUT__ApprovedEG</outgoing>
+                
+    
     </userTask>
-    <sequenceFlow id="SequenceFlow_2__ReviewTweet__Approved" name="" sourceRef="ReviewTweet" targetRef="Approved" />
+            
+    
+    <sequenceFlow id="SequenceFlow_2__ReviewTweetUT__ApprovedEG" name="" sourceRef="ReviewTweetUT" targetRef="ApprovedEG"/>
+          
+  
   </process>
+      
+  
   <bpmndi:BPMNDiagram id="BPMNDiagram_TwitterDemoProcess">
-    <bpmndi:BPMNPlane id="BPMNPlane_TwitterDemoProcess" bpmnElement="TwitterDemoProcess">
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_2" bpmnElement="SequenceFlow_2__ReviewTweet__Approved" sourceElement="BPMNShape_Review_Tweet_3" targetElement="BPMNShape_Approved__3">
-        <omgdi:waypoint x="386" y="194" />
-        <omgdi:waypoint x="517" y="194" />
+            
+    
+    <bpmndi:BPMNPlane bpmnElement="TwitterDemoP" id="BPMNPlane_TwitterDemoProcess">
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2__ReviewTweetUT__ApprovedEG" id="BPMNEdge_SequenceFlow_2" sourceElement="BPMNShape_Review_Tweet_3" targetElement="BPMNShape_Approved__3">
+                        
+        
+        <omgdi:waypoint x="386" y="194"/>
+                        
+        
+        <omgdi:waypoint x="517" y="194"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="337" y="134" width="6" height="6" />
+                              
+          
+          <omgdc:Bounds height="6" width="6" x="337" y="134"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_9" bpmnElement="SequenceFlow_9__TweetWritten__ReviewTweet" sourceElement="BPMNShape_new_tweet_3" targetElement="BPMNShape_Review_Tweet_3">
-        <omgdi:waypoint x="208" y="194" />
-        <omgdi:waypoint x="286" y="194" />
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9__TweetWrittenSE__ReviewTweetUT" id="BPMNEdge_SequenceFlow_9" sourceElement="BPMNShape_new_tweet_3" targetElement="BPMNShape_Review_Tweet_3">
+                        
+        
+        <omgdi:waypoint x="208" y="194"/>
+                        
+        
+        <omgdi:waypoint x="286" y="194"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="103" y="119" width="6" height="6" />
+                              
+          
+          <omgdc:Bounds height="6" width="6" x="103" y="119"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3__PublishOnTwitter__Join" sourceElement="BPMNShape_Publish_on_Twitter_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
-        <omgdi:waypoint x="722" y="274" />
-        <omgdi:waypoint x="777" y="274" />
-        <omgdi:waypoint x="777" y="214" />
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3__PublishOnTwitterST__JoinEG" id="BPMNEdge_SequenceFlow_3" sourceElement="BPMNShape_Publish_on_Twitter_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
+                        
+        
+        <omgdi:waypoint x="722" y="274"/>
+                        
+        
+        <omgdi:waypoint x="777" y="274"/>
+                        
+        
+        <omgdi:waypoint x="777" y="214"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="639" y="226" width="6" height="6" />
+                              
+          
+          <omgdc:Bounds height="6" width="6" x="639" y="226"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_5" bpmnElement="SequenceFlow_5__Join__TweetHandled" sourceElement="BPMNShape_Exclusive_Databased_Gateway_3" targetElement="BPMNShape_EndNoneEvent_3">
-        <omgdi:waypoint x="797" y="194" />
-        <omgdi:waypoint x="912" y="194" />
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_5__JoinEG__TweetHandledEE" id="BPMNEdge_SequenceFlow_5" sourceElement="BPMNShape_Exclusive_Databased_Gateway_3" targetElement="BPMNShape_EndNoneEvent_3">
+                        
+        
+        <omgdi:waypoint x="797" y="194"/>
+                        
+        
+        <omgdi:waypoint x="912" y="194"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="722" y="127" width="6" height="6" />
+                              
+          
+          <omgdc:Bounds height="6" width="6" x="722" y="127"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_yes" bpmnElement="Yes__Approved__PublishOnTwitter" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Publish_on_Twitter_3">
-        <omgdi:waypoint x="537" y="214" />
-        <omgdi:waypoint x="537" y="274" />
-        <omgdi:waypoint x="622" y="274" />
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="YesSF__ApprovedEG__PublishOnTwitterST" id="BPMNEdge_yes" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Publish_on_Twitter_3">
+                        
+        
+        <omgdi:waypoint x="537" y="214"/>
+                        
+        
+        <omgdi:waypoint x="537" y="274"/>
+                        
+        
+        <omgdi:waypoint x="622" y="274"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="544" y="252" width="17" height="14" />
+                              
+          
+          <omgdc:Bounds height="14" width="17" x="544" y="252"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_no" bpmnElement="No__Approved__SendRejectionNotification" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Send_rejection_notification_3">
-        <omgdi:waypoint x="537" y="174" />
-        <omgdi:waypoint x="537" y="124" />
-        <omgdi:waypoint x="622" y="124" />
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="NoSF__ApprovedEG__SendRejectionNotificationST" id="BPMNEdge_no" sourceElement="BPMNShape_Approved__3" targetElement="BPMNShape_Send_rejection_notification_3">
+                        
+        
+        <omgdi:waypoint x="537" y="174"/>
+                        
+        
+        <omgdi:waypoint x="537" y="124"/>
+                        
+        
+        <omgdi:waypoint x="622" y="124"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="546" y="132" width="13" height="14" />
+                              
+          
+          <omgdc:Bounds height="14" width="13" x="546" y="132"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_4__SendRejectionNotification__Join" sourceElement="BPMNShape_Send_rejection_notification_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
-        <omgdi:waypoint x="722" y="124" />
-        <omgdi:waypoint x="777" y="124" />
-        <omgdi:waypoint x="777" y="174" />
+                  
+      
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_4__SendRejectionNotificationST__JoinEG" id="BPMNEdge_SequenceFlow_4" sourceElement="BPMNShape_Send_rejection_notification_3" targetElement="BPMNShape_Exclusive_Databased_Gateway_3">
+                        
+        
+        <omgdi:waypoint x="722" y="124"/>
+                        
+        
+        <omgdi:waypoint x="777" y="124"/>
+                        
+        
+        <omgdi:waypoint x="777" y="174"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="872" y="102" width="6" height="6" />
+                              
+          
+          <omgdc:Bounds height="6" width="6" x="872" y="102"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="BPMNShape_Send_rejection_notification_3" bpmnElement="SendRejectionNotification">
-        <omgdc:Bounds x="622" y="84" width="100" height="80" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="SendRejectionNotificationST" id="BPMNShape_Send_rejection_notification_3">
+                        
+        
+        <omgdc:Bounds height="80" width="100" x="622" y="84"/>
+                      
+      
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_Approved__3" bpmnElement="Approved" isMarkerVisible="true">
-        <omgdc:Bounds x="517" y="174" width="40" height="40" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="ApprovedEG" id="BPMNShape_Approved__3" isMarkerVisible="true">
+                        
+        
+        <omgdc:Bounds height="40" width="40" x="517" y="174"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="563" y="187" width="54" height="14" />
+                              
+          
+          <omgdc:Bounds height="14" width="53" x="557" y="207"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_Exclusive_Databased_Gateway_3" bpmnElement="Join" isMarkerVisible="true">
-        <omgdc:Bounds x="757" y="174" width="40" height="40" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="JoinEG" id="BPMNShape_Exclusive_Databased_Gateway_3" isMarkerVisible="true">
+                        
+        
+        <omgdc:Bounds height="40" width="40" x="757" y="174"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="797" y="207" width="21" height="14" />
+                              
+          
+          <omgdc:Bounds height="14" width="21" x="797" y="207"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_Publish_on_Twitter_3" bpmnElement="PublishOnTwitter">
-        <omgdc:Bounds x="622" y="234" width="100" height="80" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="PublishOnTwitterST" id="BPMNShape_Publish_on_Twitter_3">
+                        
+        
+        <omgdc:Bounds height="80" width="100" x="622" y="234"/>
+                      
+      
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_EndNoneEvent_3" bpmnElement="TweetHandled">
-        <omgdc:Bounds x="912" y="180" width="28" height="28" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="TweetHandledEE" id="BPMNShape_EndNoneEvent_3">
+                        
+        
+        <omgdc:Bounds height="28" width="28" x="912" y="180"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="891" y="210" width="71" height="14" />
+                              
+          
+          <omgdc:Bounds height="14" width="71" x="891" y="210"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_new_tweet_3" bpmnElement="TweetWritten">
-        <omgdc:Bounds x="178" y="179" width="30" height="30" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="TweetWrittenSE" id="BPMNShape_new_tweet_3">
+                        
+        
+        <omgdc:Bounds height="30" width="30" x="178" y="179"/>
+                        
+        
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds x="161" y="211" width="64" height="14" />
+                              
+          
+          <omgdc:Bounds height="14" width="64" x="161" y="211"/>
+                            
+        
         </bpmndi:BPMNLabel>
+                      
+      
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_Review_Tweet_3" bpmnElement="ReviewTweet">
-        <omgdc:Bounds x="286" y="154" width="100" height="80" />
+                  
+      
+      <bpmndi:BPMNShape bpmnElement="ReviewTweetUT" id="BPMNShape_Review_Tweet_3">
+                        
+        
+        <omgdc:Bounds height="80" width="100" x="286" y="154"/>
+                      
+      
       </bpmndi:BPMNShape>
+                
+    
     </bpmndi:BPMNPlane>
+          
+  
   </bpmndi:BPMNDiagram>
+    
+
 </definitions>

@@ -36,7 +36,7 @@ trait InOut[
   lazy val in: In = inOutDescr.in
   lazy val out: Out = inOutDescr.out
   def label: String = getClass.getSimpleName.head.toString.toLowerCase + getClass.getSimpleName.tail
-
+  def hasInOut: Boolean = true
   def withInOutDescr(inOutDescr: InOutDescr[In, Out]): T
 
   def withId(i: String): T =
@@ -121,4 +121,20 @@ object ServiceTask:
   def init(id: String): ServiceTask[NoInput, NoOutput] =
     ServiceTask(
       InOutDescr(id, NoInput(), NoOutput())
+    )
+
+case class EndEvent(
+                     inOutDescr: InOutDescr[NoInput, NoOutput]
+                   ) extends ProcessElement[NoInput, NoOutput, EndEvent]:
+
+  override def hasInOut: Boolean = false
+
+  def withInOutDescr(descr: InOutDescr[NoInput, NoOutput]): EndEvent =
+    copy(inOutDescr = descr)
+
+object EndEvent:
+
+  def init(id: String): EndEvent =
+    EndEvent(
+      InOutDescr(id)
     )

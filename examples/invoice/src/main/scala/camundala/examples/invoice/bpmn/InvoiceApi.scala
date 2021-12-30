@@ -10,7 +10,7 @@ import sttp.tapir.generic.auto.*
 // One import for this ADT/JSON codec
 import org.latestbit.circe.adt.codec.*
 
-object InvoiceApi extends PureDsl:
+object InvoiceApi extends BpmnDsl:
 
   val invoiceCategoryDescr: String =
     enumDescr[InvoiceCategory](Some("There are three possible Categories"))

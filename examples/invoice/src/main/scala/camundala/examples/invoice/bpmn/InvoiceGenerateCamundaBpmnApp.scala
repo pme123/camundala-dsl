@@ -15,7 +15,7 @@ object InvoiceGenerateCamundaBpmnApp extends GenerateCamundaBpmn:
     Bpmn(withIdPath / "reviewInvoice.bpmn", ReviewInvoiceP))
 
 end InvoiceGenerateCamundaBpmnApp
-object InvoiceDomain extends PureDsl:
+object InvoiceDomain extends BpmnDsl:
 
   // invoice.v2.bpmn
   val InvoiceReceiptPIdent ="InvoiceReceiptP"

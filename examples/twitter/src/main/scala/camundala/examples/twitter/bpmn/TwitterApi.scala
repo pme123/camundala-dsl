@@ -8,7 +8,7 @@ import camundala.api.*
 import camundala.bpmn.*
 import camundala.domain.*
 
-object TwitterApi extends PureDsl:
+object TwitterApi extends BpmnDsl:
   implicit def tenantId: Option[String] = Some("{{tenantId}}")
 
   @description("""Every employee may create a Tweet.
@@ -29,19 +29,25 @@ object TwitterApi extends PureDsl:
   ) extends InOutObject
 
   val twitterDemoProcess =
-    val processId = "TwitterDemoProcess"
+    val processId = "TwitterDemoP"
     process(
       id = processId,
       descr = "This runs the Twitter Approvement Process.",
       in = CreateTweet()
     )
   val reviewTweetApprovedUT = userTask(
-    id = "ReviewTweet",
+    id = "ReviewTweetUT",
     in = NoInput(),
     out = ReviewTweet()
   )
   val reviewTweetNotApprovedUT = userTask(
-    id = "ReviewTweet",
+    id = "ReviewTweetUT",
     in = NoInput(),
     out = ReviewTweet(false)
+  )
+
+  val TweetHandledEEIdent ="TweetHandledEE"
+  lazy val TweetHandledEE = endEvent(
+    TweetHandledEEIdent,
+    descr = None
   )

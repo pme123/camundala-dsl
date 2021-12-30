@@ -1,14 +1,14 @@
 package camundala
 package camunda
 
-import bpmn.{Bpmn, PureDsl, Process}
+import bpmn.{Bpmn, BpmnDsl, Process}
 import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn as CBpmn}
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import java.io.File
 import scala.language.implicitConversions
 
-trait GenerateCamundaBpmn extends PureDsl, ProjectPaths, App:
+trait GenerateCamundaBpmn extends BpmnDsl, ProjectPaths, App:
 
   def run(generateBpmns: Bpmn*): Unit =
     for bpmn <- generateBpmns

@@ -125,6 +125,12 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
         )
         .flows(sequenceFlows: _*)
 
+    def createIdent(): ZIdent =
+      for {
+        ident <- identString(Option(camundaProcess.getName), camundaProcess)
+        _ = camundaProcess.setId(ident)
+      } yield ident
+
   def createElements[T <: CFlowElement, C](
       clazz: Class[T],
       constructor: String => C
@@ -141,13 +147,6 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
         .map(ident => constructor(ident))
     }
   }
-
-  extension (process: CProcess)
-    def createIdent(): ZIdent =
-      for {
-        ident <- identString(Option(process.getName), process)
-        _ = process.setId(ident)
-      } yield ident
 
   extension (element: CFlowElement)
     def generateIdent(): ZIdent =
@@ -176,7 +175,10 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
     }
 
   def identString(name: Option[String], camObj: CBaseElement): ZIdent =
-    val elemKey = camObj.getElementType.getTypeName
+    val elemKey: String =
+      camObj.getElementType.getTypeName.capitalize.filter(c =>
+        s"$c".matches("[A-Z]")
+      )
     zio
       .Task(
         name match
@@ -184,7 +186,7 @@ trait FromCamundaBpmn extends DSL with DSL.Givens:
             n.split(" ")
               .map(_.capitalize)
               .mkString
-              .replaceAll("[^a-zA-Z0-9]", "")
+              .replaceAll("[^a-zA-Z0-9]", "") + elemKey
           case None =>
             camObj.getId
       )

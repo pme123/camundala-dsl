@@ -8,7 +8,7 @@ import os.{Path, ResourcePath}
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 
-class DecisionResultTypeDmnTest extends DmnTestRunner, PureDsl:
+class DecisionResultTypeDmnTest extends DmnTestRunner, BpmnDsl:
 
   val dmnPath: ResourcePath = baseResource / "DecisionResultTypes.dmn"
 

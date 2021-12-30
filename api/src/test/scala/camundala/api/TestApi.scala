@@ -1,7 +1,7 @@
 package camundala
 package api
 
-import camundala.bpmn.PureDsl
+import camundala.bpmn.BpmnDsl
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto.*
 import sttp.model.StatusCode
@@ -20,7 +20,7 @@ object TestApi extends APICreator {
 
 }
 
-object Sample extends PureDsl:
+object Sample extends BpmnDsl:
   val name = "sample-process"
 
   @description("My Sample input object to make the point.")

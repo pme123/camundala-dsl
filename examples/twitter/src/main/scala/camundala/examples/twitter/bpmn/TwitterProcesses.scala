@@ -29,7 +29,7 @@ object TwitterProcesses extends ProjectDSL:
 
     object processes:
 
-      val TwitterDemoProcess = process("TwitterDemoProcess")
+      val TwitterDemoProcess = process("TwitterDemoP")
         .nodes(
           startEvents.TweetWritten,
           userTasks.ReviewTweet,
@@ -39,20 +39,15 @@ object TwitterProcesses extends ProjectDSL:
           endEvents.TweetHandled
         )
         .flows(
-          flows.SequenceFlow_4__SendRejectionNotification__Join,
           flows.No__Approved__SendRejectionNotification,
           flows.Yes__Approved__PublishOnTwitter,
-          flows.SequenceFlow_5__Join__TweetHandled,
-          flows.SequenceFlow_3__PublishOnTwitter__Join,
-          flows.SequenceFlow_9__TweetWritten__ReviewTweet,
-          flows.SequenceFlow_2__ReviewTweet__Approved
         )
         .input(CreateTweet())
         .output(ReviewTweet())
 
       object userTasks:
 
-        val ReviewTweetIdent = "ReviewTweet"
+        val ReviewTweetIdent = "ReviewTweetUT"
 
         lazy val ReviewTweet: UserTask =
           userTask(ReviewTweetIdent) //
@@ -65,7 +60,7 @@ object TwitterProcesses extends ProjectDSL:
 
       object endEvents:
 
-        val TweetHandledIdent = "TweetHandled"
+        val TweetHandledIdent = "TweetHandledEE"
 
         lazy val TweetHandled = endEvent(TweetHandledIdent)
 
@@ -73,14 +68,14 @@ object TwitterProcesses extends ProjectDSL:
 
       object serviceTasks:
 
-        val SendRejectionNotificationIdent = "SendRejectionNotification"
+        val SendRejectionNotificationIdent = "SendRejectionNotificationST"
 
         lazy val SendRejectionNotification =
           serviceTask(SendRejectionNotificationIdent) //
             .emailDelegate
             .kpiRatio("Tweet Rejected")
 
-        val PublishOnTwitterIdent = "PublishOnTwitter"
+        val PublishOnTwitterIdent = "PublishOnTwitterST"
 
         lazy val PublishOnTwitter =
           serviceTask(PublishOnTwitterIdent) //
@@ -91,7 +86,7 @@ object TwitterProcesses extends ProjectDSL:
 
       object startEvents:
 
-        val TweetWrittenIdent = "TweetWritten"
+        val TweetWrittenIdent = "TweetWrittenSE"
         case class TweetWrittenOut(content: String = "Hello there")
             extends InOutObject
 
@@ -105,7 +100,7 @@ object TwitterProcesses extends ProjectDSL:
 
       object exclusiveGateways:
 
-        val ApprovedIdent = "Approved"
+        val ApprovedIdent = "ApprovedEG"
 
         lazy val Approved =
           exclusiveGateway(ApprovedIdent)
@@ -115,15 +110,8 @@ object TwitterProcesses extends ProjectDSL:
 
       object flows:
 
-        val SequenceFlow_4__SendRejectionNotification__JoinIdent =
-          "SequenceFlow_4__SendRejectionNotification__Join"
-
-        lazy val SequenceFlow_4__SendRejectionNotification__Join = sequenceFlow(
-          SequenceFlow_4__SendRejectionNotification__JoinIdent
-        )
-
         val No__Approved__SendRejectionNotificationIdent =
-          "No__Approved__SendRejectionNotification"
+          "NoSF__ApprovedEG__SendRejectionNotificationST"
 
         lazy val No__Approved__SendRejectionNotification =
           sequenceFlow(No__Approved__SendRejectionNotificationIdent) //
@@ -131,40 +119,13 @@ object TwitterProcesses extends ProjectDSL:
             .probability(13)
 
         val Yes__Approved__PublishOnTwitterIdent =
-          "Yes__Approved__PublishOnTwitter"
+          "YesSF__ApprovedEG__PublishOnTwitterST"
 
         lazy val Yes__Approved__PublishOnTwitter =
           sequenceFlow(Yes__Approved__PublishOnTwitterIdent) //
             .expression("approved")
             .probability(87)
 
-        val SequenceFlow_5__Join__TweetHandledIdent =
-          "SequenceFlow_5__Join__TweetHandled"
-
-        lazy val SequenceFlow_5__Join__TweetHandled = sequenceFlow(
-          SequenceFlow_5__Join__TweetHandledIdent
-        )
-
-        val SequenceFlow_3__PublishOnTwitter__JoinIdent =
-          "SequenceFlow_3__PublishOnTwitter__Join"
-
-        lazy val SequenceFlow_3__PublishOnTwitter__Join = sequenceFlow(
-          SequenceFlow_3__PublishOnTwitter__JoinIdent
-        )
-
-        val SequenceFlow_9__TweetWritten__ReviewTweetIdent =
-          "SequenceFlow_9__TweetWritten__ReviewTweet"
-
-        lazy val SequenceFlow_9__TweetWritten__ReviewTweet = sequenceFlow(
-          SequenceFlow_9__TweetWritten__ReviewTweetIdent
-        )
-
-        val SequenceFlow_2__ReviewTweet__ApprovedIdent =
-          "SequenceFlow_2__ReviewTweet__Approved"
-
-        lazy val SequenceFlow_2__ReviewTweet__Approved = sequenceFlow(
-          SequenceFlow_2__ReviewTweet__ApprovedIdent
-        )
       end flows
     end processes
   end bpmns

@@ -10,7 +10,7 @@ import sttp.tapir.generic.auto.*
 import java.io.File
 import scala.language.implicitConversions
 
-trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
+trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
 
   def run(name: String): Unit =
     val bpmns: Seq[(String, Seq[Process[?, ?]])] =
@@ -53,88 +53,16 @@ trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
     )
     cProcesses.map(_.fromCamunda())
 
-  /*
-
-  private def fromCamunda(
-      bpmnFile: File,
-      outputPath: BpmnPath
-  ): IO[FromCamundaException, Bpmn] = {
-    (for {
-      modelInstance <- ZIO(
-        CBpmn.readModelFromFile(bpmnFile)
-      )
-      cProcesses <- ZIO(
-        modelInstance
-          .getModelElementsByType(classOf[CProcess])
-          .asScala
-          .toSeq
-      )
-      processes <- ZIO.collect(cProcesses) { p =>
-        p.fromCamunda()(using modelInstance)
-          .mapError(Some(_))
-      }
-      _ <- ZIO(
-        CBpmn.writeModelToFile(new File(outputPath), modelInstance)
-      )
-    } yield bpmn(bpmnFile).processes(processes: _*))
-      .mapError {
-        case Some(ex: FromCamundaException) => ex
-        case t: Throwable =>
-          t.printStackTrace
-          FromCamundaException(t.getMessage)
-      }
-  }
-   */
   extension (camundaProcess: CProcess)
     def fromCamunda(): FromCamundable[Process[?, ?]] =
       val ident = camundaProcess.createIdent()
       process(ident).copy(elements =
         createElements(classOf[CUserTask], UserTask.init) ++
           createElements(classOf[CServiceTask], ServiceTask.init) ++
-          createElements(classOf[CBusinessRuleTask], DecisionDmn.init)
+          createElements(classOf[CBusinessRuleTask], DecisionDmn.init) ++
+          createElements(classOf[CEndEvent], EndEvent.init)
       )
 
-  /*     for {
-          ident <- camundaProcess.createIdent()
-          startEvents <- createElements(classOf[CStartEvent], startEvent)
-          userTasks <- createElements(classOf[CUserTask], userTask)
-          serviceTasks <- createElements(
-            classOf[CServiceTask],
-            serviceTask
-          )
-          scriptTasks <- createElements(classOf[CScriptTask], scriptTask)
-          callActivities <- createElements(classOf[CCallActivity], callActivity)
-          businessRuleTasks <- createElements(
-            classOf[CBusinessRuleTask],
-            businessRuleTask
-          )
-          exclusiveGateways <- createElements(
-            classOf[CExclusiveGateway],
-            exclusiveGateway
-          )
-          parallelGateways <- createElements(
-            classOf[CParallelGateway],
-            parallelGateway
-          )
-          endEvents <- createElements(classOf[CEndEvent], endEvent)
-          sequenceFlows <- createElements(
-            classOf[CSequenceFlow],
-            sequenceFlow
-          )
-        } yield process(ident)
-          .nodes(
-            startEvents ++
-              userTasks ++
-              serviceTasks ++
-              scriptTasks ++
-              callActivities ++
-              businessRuleTasks ++
-              exclusiveGateways ++
-              parallelGateways ++
-              endEvents: _*
-          )
-          .flows(sequenceFlows: _*)
-   */
   private def createElements[
       T <: CFlowElement,
       C,
@@ -245,8 +173,10 @@ end ${name}Domain
     s"""  val ${inOut.id}Ident ="${inOut.id}"
        |  lazy val ${inOut.id} = ${inOut.label}(
        |    ${inOut.id}Ident,
-       |    in = NoInput(),
-       |    out = NoOutput(),
+       |    ${if (inOut.hasInOut)
+      """in = NoInput(),
+       |    out = NoOutput()"""
+    else ""}
        |    descr = None
        |  )
        |""".stripMargin
