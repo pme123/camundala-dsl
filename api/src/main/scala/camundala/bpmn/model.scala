@@ -5,6 +5,10 @@ import domain.*
 
 import scala.deriving.Mirror
 import scala.compiletime.{constValue, constValueTuple}
+import io.circe.generic.auto.*
+import sttp.tapir.generic.auto.*
+
+case class Bpmn(path: Path, processes: Process[?, ?]*)
 
 case class InOutDescr[
     In <: Product: Encoder: Decoder: Schema,
@@ -25,13 +29,13 @@ trait InOut[
     Out <: Product: Encoder: Decoder: Schema,
     T <: InOut[In, Out, T]
 ]:
-
   def inOutDescr: InOutDescr[In, Out]
-
+  def inOutClass: String = this.getClass.getName
   lazy val id: String = inOutDescr.id
   lazy val maybeDescr: Option[String] = inOutDescr.maybeDescr
   lazy val in: In = inOutDescr.in
   lazy val out: Out = inOutDescr.out
+  def label: String = getClass.getSimpleName.head.toString.toLowerCase + getClass.getSimpleName.tail
 
   def withInOutDescr(inOutDescr: InOutDescr[In, Out]): T
 
@@ -49,7 +53,7 @@ trait InOut[
       inOutDescr.copy(out = out)
     )
 
-trait Activity[
+trait ProcessElement[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema,
     T <: InOut[In, Out, T]
@@ -61,7 +65,8 @@ case class Process[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
-    inOutDescr: InOutDescr[In, Out]
+    inOutDescr: InOutDescr[In, Out],
+    elements: Seq[ProcessElement[?, ?, ?]] = Seq.empty
 ) extends InOut[In, Out, Process[In, Out]]:
 
   def withInOutDescr(descr: InOutDescr[In, Out]): Process[In, Out] =
@@ -72,17 +77,24 @@ case class UserTask[
     Out <: Product: Encoder: Decoder: Schema
 ](
     inOutDescr: InOutDescr[In, Out]
-) extends Activity[In, Out, UserTask[In, Out]]:
+) extends ProcessElement[In, Out, UserTask[In, Out]]:
 
   def withInOutDescr(descr: InOutDescr[In, Out]): UserTask[In, Out] =
     copy(inOutDescr = descr)
+
+object UserTask:
+
+  def init(id: String): UserTask[NoInput, NoOutput] =
+    UserTask(
+      InOutDescr(id, NoInput(), NoOutput())
+    )
 
 case class CallActivity[
     In <: Product: Encoder: Decoder: Schema,
     Out <: Product: Encoder: Decoder: Schema
 ](
     inOutDescr: InOutDescr[In, Out]
-) extends Activity[In, Out, CallActivity[In, Out]]:
+) extends ProcessElement[In, Out, CallActivity[In, Out]]:
 
   def withInOutDescr(descr: InOutDescr[In, Out]): CallActivity[In, Out] =
     copy(inOutDescr = descr)
@@ -99,8 +111,14 @@ case class ServiceTask[
     Out <: Product: Encoder: Decoder: Schema
 ](
     inOutDescr: InOutDescr[In, Out]
-) extends Activity[In, Out, ServiceTask[In, Out]]:
+) extends ProcessElement[In, Out, ServiceTask[In, Out]]:
 
   def withInOutDescr(descr: InOutDescr[In, Out]): ServiceTask[In, Out] =
     copy(inOutDescr = descr)
 
+object ServiceTask:
+
+  def init(id: String): ServiceTask[NoInput, NoOutput] =
+    ServiceTask(
+      InOutDescr(id, NoInput(), NoOutput())
+    )

@@ -3,7 +3,7 @@ package test
 
 import domain.*
 import bpmn.*
-import camundala.bpmn.{Activity, DecisionDmn, Process}
+import camundala.bpmn.{ProcessElement, DecisionDmn, Process}
 import org.camunda.bpm.dmn.engine.{DmnDecision, DmnDecisionResult, DmnEngine}
 import org.camunda.bpm.dmn.engine.test.DmnEngineRule
 import org.camunda.bpm.engine.runtime.ProcessInstance

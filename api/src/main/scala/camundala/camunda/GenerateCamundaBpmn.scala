@@ -1,58 +1,36 @@
 package camundala
 package camunda
 
-import bpmn.*
+import bpmn.{Bpmn, PureDsl, Process}
 import org.camunda.bpm.model.bpmn.{BpmnModelInstance, Bpmn as CBpmn}
-import os.RelPath
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
-
 import java.io.File
 import scala.language.implicitConversions
 
-trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
+trait GenerateCamundaBpmn extends PureDsl, ProjectPaths, App:
 
-  def run(name: String): Unit =
-    val bpmns: Seq[(String, Seq[Process[?, ?]])] =
-      for cawemoFile <- cawemoBpmns(cawemoPath.toIO)
-      yield
-        println(s"// CAWEMO: $cawemoFile")
-        Path(cawemoFile)
-        val processes = fromCamunda(
-          cawemoFile
-        )
-
-        cawemoFile.getName -> processes
-    printGenerator(name, bpmns)
-
-  private def cawemoBpmns(cawemoFolder: File): Seq[File] =
-    if (cawemoFolder.isDirectory)
-      cawemoFolder
-        .listFiles(new FilenameFilter {
-          def accept(dir: File, name: String): Boolean =
-            name.endsWith(".bpmn")
-        })
-        .toSeq
-    else
-      throw IllegalArgumentException(
-        s"The cawemoFolder must be a directory! -> $cawemoFolder"
+  def run(generateBpmns: Bpmn*): Unit =
+    for bpmn <- generateBpmns
+    yield
+      println(s"// WITH IDS: ${bpmn.path}")
+      val modelInstance = toCamunda(
+        bpmn
+      )
+      println(s"// Generated: ${(generatedPath / bpmn.path.toIO.getName).toIO}")
+      CBpmn.writeModelToFile(
+        (generatedPath / os.up / ("_experimental_" + bpmn.path.toIO.getName)).toIO,
+        modelInstance
       )
 
-  private def fromCamunda(
-      cawemoFile: File
-  ) =
+  private def toCamunda(
+      bpmn: Bpmn
+  ): BpmnModelInstance =
     implicit val modelInstance: BpmnModelInstance =
-      CBpmn.readModelFromFile(cawemoFile)
-    val cProcesses = modelInstance
-      .getModelElementsByType(classOf[CProcess])
-      .asScala
-      .toSeq
-    CBpmn.writeModelToFile(
-      (withIdPath / cawemoFile.getName).toIO,
-      modelInstance
-    )
-    cProcesses.map(_.fromCamunda())
+      CBpmn.readModelFromFile(bpmn.path.toIO)
 
+    bpmn.processes.foreach(_.toCamunda())
+    modelInstance
   /*
 
   private def fromCamunda(
@@ -85,14 +63,22 @@ trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
       }
   }
    */
-  extension (camundaProcess: CProcess)
-    def fromCamunda(): FromCamundable[Process[?, ?]] =
-      val ident = camundaProcess.createIdent()
-      process(ident).copy(elements =
-        createElements(classOf[CUserTask], UserTask.init) ++
-          createElements(classOf[CServiceTask], ServiceTask.init) ++
-          createElements(classOf[CBusinessRuleTask], DecisionDmn.init)
-      )
+  extension (process: Process[?,?])
+    def toCamunda(): FromCamundable[Unit] =
+      val cProc: CProcess = summon[CBpmnModelInstance]
+        .getModelElementById(process.id)
+      println(s"cProc: $cProc")
+
+  private def printInOut(ident: String): Unit =
+    println(s"""
+               |  val ${ident}Ident ="${ident}Ident"
+               |  lazy val $ident = process(
+               |    ${ident}Ident,
+               |    in = NoInput(),
+               |    out = NoOutput(),
+               |    descr = None
+               |  )
+               |""".stripMargin)
 
   /*     for {
           ident <- camundaProcess.createIdent()
@@ -135,21 +121,16 @@ trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
           )
           .flows(sequenceFlows: _*)
    */
-  private def createElements[
-      T <: CFlowElement,
-      C,
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
-  ](
+  private def createElements[T <: CFlowElement, C](
       clazz: Class[T],
-      constructor: String => ProcessElement[In, Out, ?]
-  ): FromCamundable[Seq[ProcessElement[In, Out, ?]]] = {
+      constructor: String
+  ): FromCamundable[Unit] = {
     val elems = summon[CBpmnModelInstance]
       .getModelElementsByType(clazz)
       .asScala
       .toSeq
-    elems.map { fe =>
-      constructor(fe.createIdent())
+    elems.foreach { fe =>
+      fe.createIdent()
     }
   }
 
@@ -163,7 +144,7 @@ trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
     def generateIdent(): String =
       identString(Option(element.getName), element)
 
-    def createIdent(): String =
+    def createIdent(): Unit =
       val ident: String =
         element match
           case flow: CSequenceFlow =>
@@ -171,7 +152,7 @@ trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
           case _ =>
             generateIdent()
       element.setId(ident)
-      ident
+      printInOut(ident)
 
   extension (element: CSequenceFlow)
     def createIdent() =
@@ -197,61 +178,7 @@ trait InitCamundaBpmn extends PureDsl, ProjectPaths, App:
       case None =>
         camObj.getId
 
-  private def printGenerator(
-      name: String,
-      bpmns: Seq[(String, Seq[Process[?, ?]])]
-  ): Unit =
-    println(s"""
-import bpmn.*
-import domain.*
-import camunda.GenerateCamundaBpmn
-import io.circe.generic.auto.*
-import sttp.tapir.generic.auto.*
-
-object ${name}GenerateCamundaBpmnApp extends GenerateCamundaBpmn:
-
-  val projectPath = pwd / ${projectPath
-      .relativeTo(pwd)
-      .segments
-      .map(s => s"\"$s\"")
-      .mkString(" / ")}
-  import ${name}Domain.*
-  run(${bpmns
-      .map { case (fileName, procs) =>
-        s"""Bpmn(withIdPath / "$fileName", ${procs
-          .map(_.id)
-          .mkString(", ")})"""
-      }
-      .mkString(",\n         ")})
-
-end ${name}GenerateCamundaBpmnApp
-object ${name}Domain extends PureDsl:
-
-${bpmns
-      .map(bpmn =>
-        s"  // ${bpmn._1}\n" +
-          bpmn._2
-            .map { p =>
-              print(p) +
-                p.elements.map(print).mkString("\n", "\n", "")
-            }
-            .mkString("\n")
-      )
-      .mkString("\n")}
-
-end ${name}Domain
-""")
-  private def print(inOut: InOut[?, ?, ?]): String =
-    s"""  val ${inOut.id}Ident ="${inOut.id}"
-       |  lazy val ${inOut.id} = ${inOut.label}(
-       |    ${inOut.id}Ident,
-       |    in = NoInput(),
-       |    out = NoOutput(),
-       |    descr = None
-       |  )
-       |""".stripMargin
-end InitCamundaBpmn
-
+end GenerateCamundaBpmn
 /*
 case class FromCamundaRunner(fromCamundaConfig: FromCamundaConfig)
     extends FromCamundaBpmn:

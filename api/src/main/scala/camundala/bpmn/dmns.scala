@@ -1,7 +1,9 @@
 package camundala
 package bpmn
 
-import os.Path
+import camundala.domain.{NoInput, NoOutput}
+import io.circe.generic.auto.*
+import sttp.tapir.generic.auto.*
 
 case class Dmns(dmns: Seq[Dmn]):
 
@@ -25,8 +27,11 @@ case class DecisionDmn[
     Out <: Product: Encoder: Decoder: Schema
 ](
     inOutDescr: InOutDescr[In, Out]
-) extends Activity[In, Out, DecisionDmn[In, Out]]:
+) extends ProcessElement[In, Out, DecisionDmn[In, Out]]:
 
+  override val label =
+    """// use singleEntry / collectEntries / singleResult / resultList
+      |  dmn""".stripMargin
   lazy val decisionDefinitionKey: String = inOutDescr.id
 
   def withInOutDescr(descr: InOutDescr[In, Out]): DecisionDmn[In, Out] =
@@ -43,6 +48,12 @@ case class DecisionDmn[
       case o: Product if o.isResultList =>
         DecisionResultType.resultList
   }
+object DecisionDmn:
+
+  def init(id: String): DecisionDmn[NoInput, NoOutput] =
+    DecisionDmn(
+      InOutDescr(id, NoInput(), NoOutput())
+    )
 
 extension (output: Product)
 
@@ -85,3 +96,4 @@ extension (output: Product)
   def hasManyOutputVars: Boolean =
     isSingleResult || isResultList
 end extension // Product
+

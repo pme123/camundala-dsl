@@ -53,7 +53,7 @@ trait TestRunner extends TestDsl:
       In <: Product,
       Out <: Product
   ](process: Process[In, Out])(
-      activities: (Activity[?, ?, ?] | CustomTests)*
+      activities: (ProcessElement[?, ?, ?] | CustomTests)*
   ): Unit =
     ProcessToTest(process, activities.toList).run()
 
@@ -62,7 +62,7 @@ trait TestRunner extends TestDsl:
   extension (processToTest: ProcessToTest[?, ?])
     def run(): Unit =
       val ProcessToTest(
-        Process(InOutDescr(id, in, out, descr)),
+        Process(InOutDescr(id, in, out, descr), _),
         activities
       ) = processToTest
       val processInstance = runtimeService.startProcessInstanceByKey(
