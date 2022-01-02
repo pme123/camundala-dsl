@@ -70,14 +70,25 @@ object InvoiceApi extends BpmnDsl:
   )
 
   case class AssignedReviewer(reviewer: String = "John")
-  case class InvoiceReviewed(clarified: Boolean = true)
+  case class InvoiceReviewed(
+      @description("Flag that is set by the Reviewer")
+      clarified: Boolean = true
+  )
+
+  case class InvoiceReceiptCheck(
+      @description("If true, the Boss accepted the Invoice")
+      approved: Boolean = true,
+      @description("Flag that is set by the Reviewer (only set if there was a review).")
+      clarified: Option[Boolean] = None
+  )
 
   lazy val invoiceReceiptProcess =
     val processId = "InvoiceReceipt"
     process(
       id = processId,
       descr = "This starts the Invoice Receipt Process.",
-      in = InvoiceReceipt()
+      in = InvoiceReceipt(),
+      out = InvoiceReceiptCheck() // just for testing
     )
 
   lazy val invoiceAssignApproverDMN
@@ -138,7 +149,7 @@ object InvoiceApi extends BpmnDsl:
 
   // CAWEMO: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/invoice.v2.bpmn
 
-  val InvoiceReceiptPIdent ="InvoiceReceiptPIdent"
+  val InvoiceReceiptPIdent = "InvoiceReceiptPIdent"
   lazy val InvoiceReceiptP = process(
     InvoiceReceiptPIdent,
     in = NoInput(),
@@ -146,8 +157,7 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
 
-
-  val ApproveInvoiceUTIdent ="ApproveInvoiceUTIdent"
+  val ApproveInvoiceUTIdent = "ApproveInvoiceUTIdent"
   lazy val ApproveInvoiceUT = process(
     ApproveInvoiceUTIdent,
     in = NoInput(),
@@ -155,8 +165,7 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
 
-
-  val PrepareBankTransferUTIdent ="PrepareBankTransferUTIdent"
+  val PrepareBankTransferUTIdent = "PrepareBankTransferUTIdent"
   lazy val PrepareBankTransferUT = process(
     PrepareBankTransferUTIdent,
     in = NoInput(),
@@ -164,8 +173,7 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
 
-
-  val ArchiveInvoiceSTIdent ="ArchiveInvoiceSTIdent"
+  val ArchiveInvoiceSTIdent = "ArchiveInvoiceSTIdent"
   lazy val ArchiveInvoiceST = process(
     ArchiveInvoiceSTIdent,
     in = NoInput(),
@@ -173,8 +181,7 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
 
-
-  val AssignApproverGroupBRTIdent ="AssignApproverGroupBRTIdent"
+  val AssignApproverGroupBRTIdent = "AssignApproverGroupBRTIdent"
   lazy val AssignApproverGroupBRT = process(
     AssignApproverGroupBRTIdent,
     in = NoInput(),
@@ -185,7 +192,7 @@ object InvoiceApi extends BpmnDsl:
   // WITH IDS: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/with-ids/invoice.v2.bpmn
   // CAWEMO: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/reviewInvoice.bpmn
 
-  val ReviewInvoicePIdent ="ReviewInvoicePIdent"
+  val ReviewInvoicePIdent = "ReviewInvoicePIdent"
   lazy val ReviewInvoiceP = process(
     ReviewInvoicePIdent,
     in = NoInput(),
@@ -193,8 +200,7 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
 
-
-  val AssignReviewerUTIdent ="AssignReviewerUTIdent"
+  val AssignReviewerUTIdent = "AssignReviewerUTIdent"
   lazy val AssignReviewerUT = process(
     AssignReviewerUTIdent,
     in = NoInput(),
@@ -202,8 +208,7 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
 
-
-  val ReviewInvoiceUTIdent ="ReviewInvoiceUTIdent"
+  val ReviewInvoiceUTIdent = "ReviewInvoiceUTIdent"
   lazy val ReviewInvoiceUT = process(
     ReviewInvoiceUTIdent,
     in = NoInput(),

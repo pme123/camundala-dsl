@@ -33,11 +33,20 @@ import scala.concurrent.duration.*
 
 trait SimulationRunner extends Simulation:
 
+  // define an implicit tenant if you have one
   implicit def tenantId: Option[String] = None
 
-  def serverPort = 8080
-  def maxCheckCount = 2
+  // the Camunda Port
+  def serverPort: Int = 8080
+  // there are Requests that wait until the process is ready - like getTask.
+  // the Simulation waits 1 second between the Requests.
+  // so with a timeout of 10 sec it will try 10 times (retryDuration = 1.second)
+  def timeoutInSec: Int = 10
   def retryDuration: FiniteDuration = 1.second
+  // the number of parallel execution of a simulation.
+  // for example run the process 3 times (userAtOnce = 3)
+  def userAtOnce: Int = 1
+  // REST endpoint of Camunda
   def endpoint = s"http://localhost:$serverPort/engine-rest"
 
   def httpProtocol: HttpProtocolBuilder =
@@ -54,7 +63,7 @@ trait SimulationRunner extends Simulation:
         println(s">>> Scenario '$scenarioName' is ignored!")
         session
       }
-      .inject(atOnceUsers(1))
+      .inject(atOnceUsers(userAtOnce))
 
   def processScenario(scenarioName: String)(
       requests: (ChainBuilder | Seq[ChainBuilder])*
@@ -65,11 +74,12 @@ trait SimulationRunner extends Simulation:
     }
     scenario(scenarioName)
       .exec(requestsFlatten)
-      .inject(atOnceUsers(1))
+      .inject(atOnceUsers(userAtOnce))
 
   def simulate(processScenarios: PopulationBuilder*): Unit =
     setUp(processScenarios: _*)
       .protocols(httpProtocol)
+      .assertions(global.failedRequests.count.is(0))
 
   extension [
       In <: Product: Encoder,
@@ -118,6 +128,32 @@ trait SimulationRunner extends Simulation:
           )
       )
 
+    def switchToCalledProcess(): ChainBuilder =
+      exec { session =>
+        //  val processInstanceId = session("processInstanceId").as[String]
+        //  println(s"yprocessInstanceIdBackup 1: ${session("processInstanceId").asOption[String]}")
+        session.set(
+          "processInstanceIdBackup",
+          session("processInstanceId").as[String]
+        )
+        //  println(s"yprocessInstanceIdBackup 1: ${session("processInstanceIdBackup").asOption[String]}")
+      }.exec(
+        http(s"Switch to Called Process of ${process.id}")
+          .get(s"/process-instance?superProcessInstance=#{processInstanceId}")
+          .check(extractJson("$[*].id", "processInstanceId"))
+      )
+
+    def switchToMainProcess(): ChainBuilder =
+      exec { session =>
+        println(
+          s"xprocessInstanceIdBackup 2: ${session("processInstanceIdBackup").asOption[String]}"
+        )
+
+        val processInstanceIdMain =
+          session("processInstanceIdBackup").as[String]
+        session.set("processInstanceId", processInstanceIdMain)
+      }
+
   end extension
 
   extension [
@@ -127,7 +163,7 @@ trait SimulationRunner extends Simulation:
 
     def getAndComplete(): Seq[ChainBuilder] = {
       Seq(
-        exec(session => session.set("taskId", null)),
+        exec(_.set("taskId", null)),
         retryOrFail(
           exec(task()).exitHereIfFailed,
           _.attributes.get("taskId").contains(null)
@@ -181,28 +217,27 @@ trait SimulationRunner extends Simulation:
       chainBuilder: ChainBuilder,
       condition: Session => Boolean = statusCondition(200)
   ) = {
-    exec { session =>
-      session
-        .set("lastStatus", -1)
+    exec {
+      _.set("lastStatus", -1)
         .set("retryCount", 0)
     }.doWhile(condition(_)) {
       exec()
         .pause(retryDuration)
         .exec(chainBuilder)
-        .exec(session => {
+        .exec { session =>
           if (session("lastStatus").asOption[Int].nonEmpty)
             session.set("lastStatus", session("lastStatus").as[Int])
           else
             session
-        })
+        }
         .exec(session =>
           session.set("retryCount", 1 + session("retryCount").as[Int])
         )
     }.exitHereIfFailed
   }
   private def statusCondition(status: Int*): Session => Boolean = session => {
-    println("lastStatus: " + session.apply("lastStatus").as[Int])
-    println("retryCount: " + session.apply("retryCount").as[Int])
+    println(">>> lastStatus: " + session("lastStatus").as[Int])
+    println(">>> retryCount: " + session("retryCount").as[Int])
     val lastStatus = session("lastStatus").as[Int]
     !status.contains(lastStatus)
   }
@@ -211,7 +246,7 @@ trait SimulationRunner extends Simulation:
     jsonPath(path)
       .ofType[String]
       .transform { v =>
-        println(s"Extracted $key: $v"); v
+        println(s">>> Extracted $key: $v"); v
       } // save the data
       .saveAs(key)
 
@@ -219,18 +254,18 @@ trait SimulationRunner extends Simulation:
     bodyString
       .transformWithSession { (_: String, session: Session) =>
         assert(
-          session("retryCount").as[Int] <= maxCheckCount,
-          s"The retryCount reached the maximun of $maxCheckCount"
+          session("retryCount").as[Int] <= timeoutInSec,
+          s"!!! The retryCount reached the maximun of $timeoutInSec"
         )
       }
   }
 
   private val printBody =
-    bodyString.transform { b => println(s"Response Body: $b") }
+    bodyString.transform { b => println(s">>> Response Body: $b") }
 
   val printSession: ChainBuilder =
     exec { session =>
-      println(s"Session: " + session)
+      println(s">>> Session: " + session)
       session
     }
 
@@ -244,7 +279,11 @@ trait SimulationRunner extends Simulation:
         case None => false
         case _ => true
       )
-      .map { case (key, value) =>
+      .map {
+        case key -> Some(v) => key -> v
+        case key -> v => key -> v
+      }
+      .map { case key -> value =>
         result
           .find(_.key == key)
           .map { obj =>
