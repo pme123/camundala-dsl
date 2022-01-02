@@ -20,8 +20,7 @@ def projectSettings(projName: String): Seq[Def.Setting[_]] = Seq(
   name := s"camundala-$projName",
   organization := org,
   scalaVersion := scala3Version,
-  version := projectVersion,
-  crossScalaVersions := Seq(scala3Version) //, scala2Version)
+  version := projectVersion
 )
 
 lazy val dsl = project
@@ -56,7 +55,10 @@ lazy val api = project
   .settings(projectSettings("api"))
   .settings(
     publishArtifact := true,
-    libraryDependencies ++= tapirDependencies ++ camundaTestDependencies,
+    libraryDependencies ++=
+      tapirDependencies ++
+        camundaTestDependencies ++
+        gatlingDependencies,
     // To cross compile with Dotty and Scala 2
     scalacOptions ++= Seq(
       "-Xmax-inlines",
@@ -83,7 +85,7 @@ val camundaDependencies = Seq(
 val camundaTestDependencies = Seq(
   // provide Camunda interaction
   "org.camunda.bpm" % "camunda-engine" % camundaVersion % Provided,
- //
+  //
   //"org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % Provided,
   // provide test helper
   "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
@@ -91,13 +93,18 @@ val camundaTestDependencies = Seq(
   "org.camunda.bpm.extension" % "camunda-bpm-assert-scenario" % "1.1.1",
 
   // dmn testing
- //("org.camunda.bpm.extension.dmn.scala" % "dmn-engine" % "1.7.2-SNAPSHOT").cross(CrossVersion.for3Use2_13),
+  //("org.camunda.bpm.extension.dmn.scala" % "dmn-engine" % "1.7.2-SNAPSHOT").cross(CrossVersion.for3Use2_13),
   "de.odysseus.juel" % "juel" % "2.1.3",
   //     "org.scalactic" %% "scalactic" % "3.2.9",
   //     "org.scalatest" %% "scalatest" % "3.2.9",
   //     "org.mockito" % "mockito-scala-scalatest_2.13" % "1.16.37",
   "org.mockito" % "mockito-core" % "3.1.0",
   "com.novocode" % "junit-interface" % "0.11"
+)
+
+val gatlingDependencies = Seq(
+ "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.7.2",
+ "io.gatling" % "gatling-test-framework" % "3.7.2"
 )
 
 lazy val exampleTwitter = project
