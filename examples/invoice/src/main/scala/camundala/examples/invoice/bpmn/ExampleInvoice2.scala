@@ -48,7 +48,7 @@ object ExampleInvoice2 extends DSL:
 
     object processes:
 
-      val InvoiceReceipt = process("InvoiceReceipt")
+      val InvoiceReceipt = process("InvoiceReceiptP")
         .starterGroups(
         )
         .starterUsers(
@@ -66,21 +66,15 @@ object ExampleInvoice2 extends DSL:
           endEvents.Invoiceprocessed
         )
         .flows(
-          flows.SequenceFlow_3__ArchiveInvoice__Invoiceprocessed,
-          flows.SequenceFlow_1__Invoicereceived__AssignApproverGroup,
-          flows.SequenceFlow_2__PrepareBankTransfer__ArchiveInvoice,
-          flows.sequenceFlow_178__AssignApproverGroup__ApproveInvoice,
           flows.Yes__Reviewsuccessful__ApproveInvoice,
           flows.No__Reviewsuccessful__InvoiceNotprocessed,
           flows.Yes__Invoiceapproved__PrepareBankTransfer,
-          flows.sequenceFlow_183__ReviewInvoice__Reviewsuccessful,
-          flows.sequenceFlow_180__ApproveInvoice__Invoiceapproved,
           flows.No__Invoiceapproved__ReviewInvoice
         )
 
       object userTasks:
 
-        val ApproveInvoiceIdent = "ApproveInvoice"
+        val ApproveInvoiceIdent = "ApproveInvoiceUT"
 
         lazy val ApproveInvoice = userTask(ApproveInvoiceIdent)
           .candidateGroup("${approverGroups}")
@@ -97,7 +91,7 @@ object ExampleInvoice2 extends DSL:
               )
           )
 
-        val PrepareBankTransferIdent = "PrepareBankTransfer"
+        val PrepareBankTransferIdent = "PrepareBankTransferUT"
 
         lazy val PrepareBankTransfer = userTask(PrepareBankTransferIdent)
           .staticForm("forms/prepare-bank-transfer.html")
@@ -105,7 +99,7 @@ object ExampleInvoice2 extends DSL:
 
       object callActivities:
 
-        val ReviewInvoiceIdent = "ReviewInvoice"
+        val ReviewInvoiceIdent = "ReviewInvoiceCA"
 
         lazy val ReviewInvoice =
           callActivity(ReviewInvoiceIdent)
@@ -122,7 +116,7 @@ object ExampleInvoice2 extends DSL:
 
       object businessRuleTasks:
 
-        val AssignApproverGroupIdent = "AssignApproverGroup"
+        val AssignApproverGroupIdent = "AssignApproverGroupBRT"
 
         lazy val AssignApproverGroup = businessRuleTask(
           AssignApproverGroupIdent
@@ -134,18 +128,18 @@ object ExampleInvoice2 extends DSL:
 
       object endEvents:
 
-        val InvoiceNotprocessedIdent = "InvoiceNotprocessed"
+        val InvoiceNotprocessedIdent = "InvoiceNotprocessedEE"
 
         lazy val InvoiceNotprocessed = endEvent(InvoiceNotprocessedIdent)
 
-        val InvoiceprocessedIdent = "Invoiceprocessed"
+        val InvoiceprocessedIdent = "InvoiceprocessedEE"
 
         lazy val Invoiceprocessed = endEvent(InvoiceprocessedIdent)
       end endEvents
 
       object serviceTasks:
 
-        val ArchiveInvoiceIdent = "ArchiveInvoice"
+        val ArchiveInvoiceIdent = "ArchiveInvoiceST"
 
         lazy val ArchiveInvoice = serviceTask(ArchiveInvoiceIdent)
           .javaClass(ArchiveInvoiceService.className)
@@ -155,7 +149,7 @@ object ExampleInvoice2 extends DSL:
 
       object startEvents:
 
-        val InvoicereceivedIdent = "Invoicereceived"
+        val InvoicereceivedIdent = "InvoicereceivedSE"
 
         lazy val Invoicereceived =
           startEvent(InvoicereceivedIdent)
@@ -164,80 +158,40 @@ object ExampleInvoice2 extends DSL:
 
       object exclusiveGateways:
 
-        val InvoiceapprovedIdent = "Invoiceapproved"
+        val InvoiceapprovedIdent = "InvoiceapprovedEG"
 
         lazy val Invoiceapproved = exclusiveGateway(InvoiceapprovedIdent)
 
-        val ReviewsuccessfulIdent = "Reviewsuccessful"
+        val ReviewsuccessfulIdent = "ReviewsuccessfulEG"
 
         lazy val Reviewsuccessful = exclusiveGateway(ReviewsuccessfulIdent)
       end exclusiveGateways
 
       object flows:
 
-        val SequenceFlow_3__ArchiveInvoice__InvoiceprocessedIdent =
-          "SequenceFlow_3__ArchiveInvoice__Invoiceprocessed"
-
-        lazy val SequenceFlow_3__ArchiveInvoice__Invoiceprocessed =
-          sequenceFlow(SequenceFlow_3__ArchiveInvoice__InvoiceprocessedIdent)
-
-        val SequenceFlow_1__Invoicereceived__AssignApproverGroupIdent =
-          "SequenceFlow_1__Invoicereceived__AssignApproverGroup"
-
-        lazy val SequenceFlow_1__Invoicereceived__AssignApproverGroup =
-          sequenceFlow(
-            SequenceFlow_1__Invoicereceived__AssignApproverGroupIdent
-          )
-
-        val SequenceFlow_2__PrepareBankTransfer__ArchiveInvoiceIdent =
-          "SequenceFlow_2__PrepareBankTransfer__ArchiveInvoice"
-
-        lazy val SequenceFlow_2__PrepareBankTransfer__ArchiveInvoice =
-          sequenceFlow(SequenceFlow_2__PrepareBankTransfer__ArchiveInvoiceIdent)
-
-        val sequenceFlow_178__AssignApproverGroup__ApproveInvoiceIdent =
-          "sequenceFlow_178__AssignApproverGroup__ApproveInvoice"
-
-        lazy val sequenceFlow_178__AssignApproverGroup__ApproveInvoice =
-          sequenceFlow(
-            sequenceFlow_178__AssignApproverGroup__ApproveInvoiceIdent
-          )
-
         val Yes__Reviewsuccessful__ApproveInvoiceIdent =
-          "Yes__Reviewsuccessful__ApproveInvoice"
+          "YesSF__ReviewsuccessfulEG__ApproveInvoiceUT"
 
         lazy val Yes__Reviewsuccessful__ApproveInvoice = sequenceFlow(
           Yes__Reviewsuccessful__ApproveInvoiceIdent
         ).expression("clarified")
 
         val No__Reviewsuccessful__InvoiceNotprocessedIdent =
-          "No__Reviewsuccessful__InvoiceNotprocessed"
+          "NoSF__ReviewsuccessfulEG__InvoiceNotprocessedEE"
 
         lazy val No__Reviewsuccessful__InvoiceNotprocessed = sequenceFlow(
           No__Reviewsuccessful__InvoiceNotprocessedIdent
         ).expression("!clarified")
 
         val Yes__Invoiceapproved__PrepareBankTransferIdent =
-          "Yes__Invoiceapproved__PrepareBankTransfer"
+          "YesSF__InvoiceapprovedEG__PrepareBankTransferUT"
 
         lazy val Yes__Invoiceapproved__PrepareBankTransfer = sequenceFlow(
           Yes__Invoiceapproved__PrepareBankTransferIdent
         ).expression("approved")
 
-        val sequenceFlow_183__ReviewInvoice__ReviewsuccessfulIdent =
-          "sequenceFlow_183__ReviewInvoice__Reviewsuccessful"
-
-        lazy val sequenceFlow_183__ReviewInvoice__Reviewsuccessful =
-          sequenceFlow(sequenceFlow_183__ReviewInvoice__ReviewsuccessfulIdent)
-
-        val sequenceFlow_180__ApproveInvoice__InvoiceapprovedIdent =
-          "sequenceFlow_180__ApproveInvoice__Invoiceapproved"
-
-        lazy val sequenceFlow_180__ApproveInvoice__Invoiceapproved =
-          sequenceFlow(sequenceFlow_180__ApproveInvoice__InvoiceapprovedIdent)
-
         val No__Invoiceapproved__ReviewInvoiceIdent =
-          "No__Invoiceapproved__ReviewInvoice"
+          "NoSF__InvoiceapprovedEG__ReviewInvoiceCA"
 
         lazy val No__Invoiceapproved__ReviewInvoice = sequenceFlow(
           No__Invoiceapproved__ReviewInvoiceIdent
@@ -253,7 +207,7 @@ object ExampleInvoice2 extends DSL:
       )
 
     object processes:
-      val ReviewInvoiceProcessIdent = "ReviewInvoiceProcess"
+      val ReviewInvoiceProcessIdent = "ReviewInvoiceP"
       val ReviewInvoiceProcess = process(ReviewInvoiceProcessIdent)
     /*    .tasks(
           userTasks.AssignReviewer,
@@ -261,14 +215,14 @@ object ExampleInvoice2 extends DSL:
         ) */
       object userTasks:
 
-        val AssignReviewerIdent = "AssignReviewer"
+        val AssignReviewerIdent = "AssignReviewerUT"
 
         lazy val AssignReviewer =
           userTask(AssignReviewerIdent)
             .assignee(users.demo.ref)
             .staticForm("forms/assign-reviewer.html")
 
-        val ReviewInvoiceIdent = "ReviewInvoice"
+        val ReviewInvoiceIdent = "ReviewInvoiceUT"
 
         lazy val ReviewInvoice =
           userTask(ReviewInvoiceIdent)

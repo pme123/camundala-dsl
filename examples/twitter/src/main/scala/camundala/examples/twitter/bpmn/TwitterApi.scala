@@ -33,7 +33,8 @@ object TwitterApi extends BpmnDsl:
     process(
       id = processId,
       descr = "This runs the Twitter Approvement Process.",
-      in = CreateTweet()
+      in = CreateTweet(),
+      out = ReviewTweet() // just for Testing
     )
   val reviewTweetApprovedUT = userTask(
     id = "ReviewTweetUT",

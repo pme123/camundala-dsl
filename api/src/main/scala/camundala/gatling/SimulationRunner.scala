@@ -104,7 +104,7 @@ trait SimulationRunner extends Simulation:
             )
           ) //.check(printBody)
           .check(extractJson("$.id", "processInstanceId"))
-      )
+      ).exitHereIfFailed
 
     def check()(implicit
         tenantId: Option[String]
@@ -121,38 +121,32 @@ trait SimulationRunner extends Simulation:
                   .flatMap(_.as[Seq[CamundaProperty]]) match {
                   case Right(value) => checkProps(process.out, value)
                   case Left(exc) =>
-                    s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
+                    s"\n!!! Problem parsing Result Body to a List of CamundaProperty.\n$exc\n$body"
                 }
               }
               .is(true)
           )
-      )
+      ).exitHereIfFailed
 
     def switchToCalledProcess(): ChainBuilder =
-      exec { session =>
-        //  val processInstanceId = session("processInstanceId").as[String]
-        //  println(s"yprocessInstanceIdBackup 1: ${session("processInstanceId").asOption[String]}")
+      exec(session =>
         session.set(
           "processInstanceIdBackup",
           session("processInstanceId").as[String]
         )
-        //  println(s"yprocessInstanceIdBackup 1: ${session("processInstanceIdBackup").asOption[String]}")
-      }.exec(
+      ).exec(
         http(s"Switch to Called Process of ${process.id}")
           .get(s"/process-instance?superProcessInstance=#{processInstanceId}")
           .check(extractJson("$[*].id", "processInstanceId"))
       )
 
     def switchToMainProcess(): ChainBuilder =
-      exec { session =>
-        println(
-          s"xprocessInstanceIdBackup 2: ${session("processInstanceIdBackup").asOption[String]}"
-        )
-
-        val processInstanceIdMain =
+      exec(session =>
+        session.set(
+          "processInstanceId",
           session("processInstanceIdBackup").as[String]
-        session.set("processInstanceId", processInstanceIdMain)
-      }
+        )
+      )
 
   end extension
 
@@ -166,10 +160,10 @@ trait SimulationRunner extends Simulation:
         exec(_.set("taskId", null)),
         retryOrFail(
           exec(task()).exitHereIfFailed,
-          _.attributes.get("taskId").contains(null)
+          taskCondition()
         ),
-        exec(checkForm()),
-        exec(completeTask())
+        exec(checkForm()).exitHereIfFailed,
+        exec(completeTask()).exitHereIfFailed
       )
     }
 
@@ -193,7 +187,7 @@ trait SimulationRunner extends Simulation:
                 case Right(value) =>
                   checkProps(userTask.in, CamundaProperty.from(value))
                 case Left(exc) =>
-                  s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
+                  s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc\n$body"
               }
             }
             .is(true)
@@ -242,6 +236,11 @@ trait SimulationRunner extends Simulation:
     !status.contains(lastStatus)
   }
 
+  private def taskCondition(): Session => Boolean = session => {
+    println(">>> retryCount: " + session("retryCount").as[Int])
+    session.attributes.get("taskId").contains(null)
+  }
+
   private def extractJson(path: String, key: String) =
     jsonPath(path)
       .ofType[String]
@@ -275,14 +274,6 @@ trait SimulationRunner extends Simulation:
   ): Boolean = {
     out
       .asVarsWithoutEnums()
-      .filter(_._2 match
-        case None => false
-        case _ => true
-      )
-      .map {
-        case key -> Some(v) => key -> v
-        case key -> v => key -> v
-      }
       .map { case key -> value =>
         result
           .find(_.key == key)

@@ -83,7 +83,7 @@ object InvoiceApi extends BpmnDsl:
   )
 
   lazy val invoiceReceiptProcess =
-    val processId = "InvoiceReceipt"
+    val processId = "InvoiceReceiptP"
     process(
       id = processId,
       descr = "This starts the Invoice Receipt Process.",
@@ -108,26 +108,26 @@ object InvoiceApi extends BpmnDsl:
 
   lazy val approveInvoiceUT =
     userTask(
-      id = "ApproveInvoice",
+      id = "ApproveInvoiceUT",
       descr = "Approve the invoice (or not).",
       in = InvoiceReceipt(),
       out = ApproveInvoice()
     )
 
   lazy val prepareBankTransferUT = userTask(
-    id = "PrepareBankTransfer",
+    id = "PrepareBankTransferUT",
     descr = "Prepare the bank transfer in the Financial Accounting System.",
     in = InvoiceReceipt(),
     out = PrepareBankTransfer()
   )
 
   lazy val archiveInvoiceST = serviceTask(
-    id = "ArchiveInvoice",
+    id = "ArchiveInvoiceST",
     descr = "Archive the Invoice."
   )
 
   lazy val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =
-    val processId = "ReviewInvoiceProcess"
+    val processId = "ReviewInvoiceP"
     process(
       id = processId,
       descr = "This starts the Review Invoice Process.",
@@ -135,13 +135,13 @@ object InvoiceApi extends BpmnDsl:
       out = InvoiceReviewed()
     )
   lazy val assignReviewerUT = userTask(
-    id = "AssignReviewer",
+    id = "AssignReviewerUT",
     descr = "Select the Reviewer.",
     in = InvoiceReceipt(),
     out = AssignedReviewer()
   )
   lazy val reviewInvoiceUT = userTask(
-    id = "ReviewInvoice",
+    id = "ReviewInvoiceUT",
     descr = "Review Invoice and approve.",
     in = InvoiceReceipt(),
     out = InvoiceReviewed()

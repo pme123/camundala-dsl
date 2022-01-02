@@ -153,6 +153,11 @@ object CamundaVariable:
       case v: scala.reflect.Enum =>
         CEnum(v.toString)
 
+  case object CNull
+    extends CamundaVariable:
+    val value: Null = null
+
+    private val `type`: String = "String"
   case class CString(value: String, private val `type`: String = "String")
       extends CamundaVariable
   case class CInteger(value: Int, private val `type`: String = "Integer")
@@ -197,6 +202,7 @@ object CamundaVariable:
       valueInfo: ACursor
   ): Either[DecodingFailure, CamundaVariable] =
     valueType match
+      case "Null" => Right(CNull)
       case "Boolean" => anyValue.as[Boolean].map(CBoolean(_))
       case "Integer" => anyValue.as[Int].map(CInteger(_))
       case "Long" => anyValue.as[Long].map(CLong(_))

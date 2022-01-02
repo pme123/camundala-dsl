@@ -116,6 +116,7 @@ lazy val exampleTwitter = project
       "org.twitter4j" % "twitter4j-core" % twitter4jVersion
   )
   .dependsOn(dsl, api)
+  .enablePlugins(GatlingPlugin)
 
 lazy val exampleInvoice = project
   .in(file("./examples/invoice"))

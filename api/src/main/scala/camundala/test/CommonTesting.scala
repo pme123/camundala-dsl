@@ -68,8 +68,9 @@ trait CommonTesting extends TestDsl:
     val assertion = assertThat(summon[CProcessInstance])
     val variables = assertion.variables()
     for
-      (k, v) <- out.asJavaVars().asScala
+      (k, v) <- out.asVarsWithoutEnums()
       _ = assertion.hasVariables(k)
-    yield variables.containsEntry(k, v)
+    yield
+      variables.containsEntry(k, v)
 
 end CommonTesting

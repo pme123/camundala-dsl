@@ -12,6 +12,7 @@ import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.{assertThat, m
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.junit.Assert.{assertEquals, assertNotNull, fail}
 import org.junit.{Before, Rule}
+import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 
 import java.io.FileNotFoundException
@@ -45,6 +46,7 @@ trait TestRunner extends CommonTesting:
         case ut: UserTask[?, ?] => ut.run()
         case st: ServiceTask[?, ?] => st.run()
         case dd: DecisionDmn[?, ?] => dd.run()
+        case ee: EndEvent => ee.run()
         //(a: Activity[?,?,?]) => a.run(processInstance)
         case ct: CustomTests => ct.tests()
         case other =>
@@ -106,6 +108,12 @@ trait TestRunner extends CommonTesting:
       val DecisionDmn(InOutDescr(id, in, out, descr)) =
         decisionDmn
       checkOutput(out)
+  end extension
+
+  extension (endEvent: EndEvent)
+    def run(): FromProcessInstance[Unit] =
+      assertThat(summon[CProcessInstance])
+        .hasPassed(endEvent.id)
   end extension
 
 end TestRunner

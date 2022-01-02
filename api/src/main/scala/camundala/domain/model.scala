@@ -24,7 +24,16 @@ extension (product: Product)
       .toMap
 
   def asVarsWithoutEnums(): Map[String, Any] =
-      asVars().map {
+      asVars()
+        .filter(_._2 match
+          case None => false
+          case _ => true
+        )
+        .map {
+          case key -> Some(v) => key -> v
+          case key -> v => key -> v
+        }
+        .map {
         case (k, FileInOut(fileName, content, mimeType)) =>
           k -> fileValue(fileName).file(content).mimeType(mimeType.orNull).create
         case (k, e: scala.reflect.Enum) =>

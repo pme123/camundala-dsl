@@ -1,11 +1,26 @@
 package camundala
 package examples.twitter.bpmn
 
-import camundala.examples.twitter.bpmn.TwitterApi.{TweetHandledEE, reviewTweetApprovedUT, reviewTweetNotApprovedUT, twitterDemoProcess}
+import camundala.examples.twitter.bpmn.TwitterApi.{
+  ReviewTweet,
+  TweetHandledEE,
+  reviewTweetApprovedUT,
+  reviewTweetNotApprovedUT,
+  twitterDemoProcess
+}
 import camundala.examples.twitter.bpmn.TwitterProcesses.bpmns.example__twitter
 import camundala.examples.twitter.dsl
-import camundala.examples.twitter.services.{RejectionNotificationDelegate, TweetContentOfflineDelegate}
-import camundala.test.{CommonTesting, ScenarioRunner, TestConfig, TestDsl, TestRunner}
+import camundala.examples.twitter.services.{
+  RejectionNotificationDelegate,
+  TweetContentOfflineDelegate
+}
+import camundala.test.{
+  CommonTesting,
+  ScenarioRunner,
+  TestConfig,
+  TestDsl,
+  TestRunner
+}
 import org.junit.Test
 import org.mockito.Mockito.mock
 
@@ -37,7 +52,10 @@ trait TwitterUnitTests extends CommonTesting:
 
   @Test
   def testRejectedPath(): Unit =
-    test(twitterDemoProcess)(
+    test(
+      twitterDemoProcess
+        .withOut(ReviewTweet(false))
+    )(
       reviewTweetNotApprovedUT,
       TweetHandledEE
     )
