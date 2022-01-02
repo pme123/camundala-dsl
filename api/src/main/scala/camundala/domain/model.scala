@@ -23,21 +23,24 @@ extension (product: Product)
       .zip(product.productIterator)
       .toMap
 
+  def asVarsWithoutEnums(): Map[String, Any] =
+      asVars().map {
+        case (k, FileInOut(fileName, content, mimeType)) =>
+          k -> fileValue(fileName).file(content).mimeType(mimeType.orNull).create
+        case (k, e: scala.reflect.Enum) =>
+          k -> e.toString
+        case (k, it: Seq[?]) =>
+          k -> it.map {
+            case e: scala.reflect.Enum => e.toString
+            case e: AnyVal => e
+            case o => o.toString
+          }.asJava
+        case other =>
+          other
+      }
+
   def asJavaVars(): java.util.Map[String, Any] =
-    asVars().map {
-      case (k, FileInOut(fileName, content, mimeType)) =>
-        k -> fileValue(fileName).file(content).mimeType(mimeType.orNull).create
-      case (k, e: scala.reflect.Enum) =>
-        k -> e.toString
-      case (k, it: Seq[?]) =>
-        k -> it.map {
-          case e: scala.reflect.Enum => e.toString
-          case e: AnyVal => e
-          case o => o.toString
-        }.asJava
-      case other =>
-        other
-    }.asJava
+    asVarsWithoutEnums().asJava
 
   def asDmnVars(): Map[String, Any] =
     asVars()

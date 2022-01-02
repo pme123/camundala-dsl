@@ -1,15 +1,19 @@
-package camundala.gatling
+package camundala
+package gatling
 
 import camundala.api.*
+import camundala.api.CamundaVariable.CFile
 import camundala.bpmn
 import camundala.bpmn.{DecisionDmn, InOut, Process, UserTask, *}
-import camundala.domain.{NoInput, NoOutput}
+import camundala.domain.*
 import io.circe.generic.auto.*
+import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.{Decoder, Encoder, Json}
 import io.gatling.core.Predef.*
 import io.gatling.core.structure.{ChainBuilder, ScenarioBuilder}
 import io.gatling.http.Predef.*
+import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.HttpRequestBuilder
 import laika.api.*
 import laika.ast.MessageFilter
@@ -20,8 +24,6 @@ import sttp.tapir.generic.auto.*
 import sttp.tapir.openapi.circe.yaml.*
 import sttp.tapir.openapi.{Contact, Info, OpenAPI, Server}
 import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput, Schema}
-import io.circe.parser.*
-import io.gatling.http.protocol.HttpProtocolBuilder
 
 import scala.concurrent.duration.*
 
@@ -82,27 +84,17 @@ trait SimulationRunner extends Simulation:
       exec(
         http(s"Check Process ${process.id}") // 8
           .get("/history/variable-instance?processInstanceIdIn=#{processInstanceId}&deserializeValues=false")
-          .check(printBody)
           .check(
-            bodyString
-              .transform { body =>
-                parse(body)
-                  .flatMap(_.as[Seq[GetHistoryVariablesOut]])
-                  .map { result =>
-                    process.out.productElementNames.zip(process.out.productIterator)
-                      .map {
-                        case (key, value) =>
-                          result.find(_.name == key)
-                            .find(obj => obj.value == value)
-                            .map(_ => true)
-                            .getOrElse{
-                              println(s"!!! $key does not exist - or its value '$value' does not match in the result variables.")
-                              false
-                            }
-                      }.forall(_ == true)
-                  }.getOrElse("Problem parsing Result Body to a List of GetHistoryVariablesOut.")
-              }.is(true)
-          )
+          bodyString
+            .transform { body =>
+              parse(body)
+                .flatMap(_.as[Seq[CamundaProperty]]) match {
+                case Right(value) => checkProps(process.out, value)
+                case Left(exc) =>
+                  s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
+              }
+            }.is(true)
+        )
       )
 
   end extension
@@ -119,6 +111,7 @@ trait SimulationRunner extends Simulation:
           exec(task()).exitHereIfFailed,
           _.attributes.get("taskId").contains(null)
         ),
+        exec(checkForm()),
         exec(completeTask())
       )
     }
@@ -134,11 +127,19 @@ trait SimulationRunner extends Simulation:
 
     private def checkForm(): HttpRequestBuilder =
       http(s"Check Form ${userTask.id}")
-        .get("/task/#{taskId}/variables?deserializeValues=false")
+        .get("/task/#{taskId}/form-variables?deserializeValues=false")
         .check(
-          jsonPath("$[*].id").optional
-            .saveAs("taskId")
+          bodyString
+            .transform { body =>
+              parse(body)
+                .flatMap(_.as[FormVariables]) match {
+                case Right(value) => checkProps(userTask.in, CamundaProperty.from(value))
+                case Left(exc) =>
+                  s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
+              }
+            }.is(true)
         )
+
     private def completeTask(): HttpRequestBuilder =
       http(s"Complete Task ${userTask.id}")
         .post(s"/task/$${taskId}/complete")
@@ -209,4 +210,32 @@ trait SimulationRunner extends Simulation:
       println(s"Session: " + session)
       session
     }
+
+  def checkProps[T <: Product](out: T, result: Seq[CamundaProperty]): Boolean = {
+    out.asVarsWithoutEnums()
+      .filter(_._2 match
+        case None => false
+        case _ => true
+      )
+      .map {
+        case (key, value) =>
+          result.find(_.key == key)
+            .map { obj =>
+              obj.value match
+                case _: CFile =>
+                  println(s">>> Files cannot be tested as its content is _null_ ('$key').")
+                  true
+                case other =>
+                  val matches = obj.value.value == value
+                  if (!matches)
+                    println(s"!!! The value ' ${obj.value.value}' of $key does not match the result variable '$value'.\n $result")
+                  matches
+            }
+            .getOrElse {
+              println(s"!!! $key does not exist in the result variables.\n $result")
+              false
+            }
+      }.forall(_ == true)
+  }
+
 end SimulationRunner

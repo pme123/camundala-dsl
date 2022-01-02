@@ -1,15 +1,16 @@
 package camundala
 package api
 
-import io.circe.{Decoder, Encoder, HCursor, Json}
 import io.circe.generic.auto.*
 import io.circe.syntax.*
+import io.circe.*
 import sttp.model.StatusCode
 import sttp.tapir.Schema
 import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 
 import java.util.Base64
+import scala.collection.immutable
 
 type ExampleName = String
 
@@ -32,7 +33,60 @@ case class CamundaAuthError(
     resourceId: String = "Mary"
 )
 
-sealed trait CamundaVariable
+@description(
+  """Output for /history/variable-instance?processInstanceIdIn=#{processInstanceId}
+    |```
+    |  {
+    |    "type": "Boolean",
+    |    "value": true,
+    |    "valueInfo": {},
+    |    "id": "0f99b629-6b9a-11ec-8318-6a9c8e2a273d",
+    |    "name": "clarified",
+    |    "processDefinitionKey": "ReviewInvoiceProcess",
+    |    "processDefinitionId": "ReviewInvoiceProcess:6:88718f1d-6297-11ec-8d87-6a9c8e2a273d",
+    |    "processInstanceId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d",
+    |    "executionId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d",
+    |    "activityInstanceId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d",
+    |    "caseDefinitionKey": null,
+    |    "caseDefinitionId": null,
+    |    "caseInstanceId": null,
+    |    "caseExecutionId": null,
+    |    "taskId": null,
+    |    "errorMessage": null,
+    |    "tenantId": null,
+    |    "state": "CREATED",
+    |    "createTime": "2022-01-02T08:03:17.251+0100",
+    |    "removalTime": null,
+    |    "rootProcessInstanceId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d"
+    |  }
+    |```
+    |""".stripMargin
+)
+case class CamundaProperty(
+    key: String,
+    value: CamundaVariable
+)
+
+object CamundaProperty:
+
+  implicit val decodeGetHistoryVariablesOut: Decoder[CamundaProperty] =
+    (c: HCursor) =>
+      for
+        name <- c.downField("name").as[String]
+        valueType <- c.downField("type").as[String]
+        anyValue = c.downField("value")
+        value <- CamundaVariable.decodeValue(valueType, anyValue, c.downField("valueInfo"))
+      yield new CamundaProperty(name, value)
+
+  def from(vars: FormVariables): Seq[CamundaProperty] =
+    vars.map{
+      case k -> c => CamundaProperty(k, c)
+    }.toSeq
+
+end CamundaProperty
+
+sealed trait CamundaVariable:
+  def value: Any
 
 object CamundaVariable:
 
@@ -128,6 +182,29 @@ object CamundaVariable:
 
   case class CJson(value: String, private val `type`: String = "Json")
       extends CamundaVariable
+
+  implicit val decodeCamundaVariable: Decoder[CamundaVariable] =
+    (c: HCursor) =>
+      for
+        valueType <- c.downField("type").as[String]
+        anyValue = c.downField("value")
+        value <- decodeValue(valueType, anyValue, c.downField("valueInfo"))
+      yield value
+
+  def decodeValue(
+      valueType: String,
+      anyValue: ACursor,
+      valueInfo: ACursor
+  ): Either[DecodingFailure, CamundaVariable] =
+    valueType match
+      case "Boolean" => anyValue.as[Boolean].map(CBoolean(_))
+      case "Integer" => anyValue.as[Int].map(CInteger(_))
+      case "Long" => anyValue.as[Long].map(CLong(_))
+      case "Double" => anyValue.as[Double].map(CDouble(_))
+      case "Json" => anyValue.as[Json].map(json => CJson(json.toString))
+      case "File" =>
+        valueInfo.as[CFileValueInfo].map(vi => CFile("not_set", vi))
+      case _ => anyValue.as[String].map(CString(_))
 
 end CamundaVariable
 
@@ -309,56 +386,18 @@ case class GetActiveTaskOut(
 )
 
 @description(
-  """Output for /history/variable-instance?processInstanceIdIn=#{processInstanceId}
+  """A JSON object containing a property for each variable returned. The key is the variable name,
+    |the value is a JSON object with the following properties:
     |```
-    |[
-    |  {
-    |    "type": "Boolean",
-    |    "value": true,
-    |    "valueInfo": {},
-    |    "id": "0f99b629-6b9a-11ec-8318-6a9c8e2a273d",
-    |    "name": "clarified",
-    |    "processDefinitionKey": "ReviewInvoiceProcess",
-    |    "processDefinitionId": "ReviewInvoiceProcess:6:88718f1d-6297-11ec-8d87-6a9c8e2a273d",
-    |    "processInstanceId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d",
-    |    "executionId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d",
-    |    "activityInstanceId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d",
-    |    "caseDefinitionKey": null,
-    |    "caseDefinitionId": null,
-    |    "caseInstanceId": null,
-    |    "caseExecutionId": null,
-    |    "taskId": null,
-    |    "errorMessage": null,
-    |    "tenantId": null,
-    |    "state": "CREATED",
-    |    "createTime": "2022-01-02T08:03:17.251+0100",
-    |    "removalTime": null,
-    |    "rootProcessInstanceId": "0e4ff801-6b9a-11ec-8318-6a9c8e2a273d"
+    |{
+    |  "amount": {
+    |    "type": "Double",
+    |    "value": 300.0,
+    |    "valueInfo": {}
     |  }
-    |]
+    |}
     |```
     |""".stripMargin
 )
-case class GetHistoryVariablesOut(
-    `type`: String,
-    name: String,
-    value: Any
-)
+type FormVariables = Map[String, CamundaVariable]
 
-object GetHistoryVariablesOut:
-
-  implicit val decodeGetHistoryVariablesOut: Decoder[GetHistoryVariablesOut] =
-    (c: HCursor) => for
-      name <- c.downField("name").as[String]
-      valueType <- c.downField("type").as[String]
-      anyValue = c.downField("value")
-      value <- valueType match
-        case "Boolean" => anyValue.as[Boolean]
-        case "Integer" => anyValue.as[Int]
-        case "Long" => anyValue.as[Long]
-        case "Double" => anyValue.as[Double]
-        case "Json" => anyValue.as[Json]
-        case "File" => Right("not_set")
-        case _ => anyValue.as[String]
-    yield
-      new GetHistoryVariablesOut(valueType, name, value)
