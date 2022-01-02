@@ -11,7 +11,11 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.{Decoder, Encoder, Json}
 import io.gatling.core.Predef.*
-import io.gatling.core.structure.{ChainBuilder, ScenarioBuilder}
+import io.gatling.core.structure.{
+  ChainBuilder,
+  PopulationBuilder,
+  ScenarioBuilder
+}
 import io.gatling.http.Predef.*
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.HttpRequestBuilder
@@ -37,21 +41,35 @@ trait SimulationRunner extends Simulation:
   def endpoint = s"http://localhost:$serverPort/engine-rest"
 
   def httpProtocol: HttpProtocolBuilder =
-    http // 4
-      .baseUrl(endpoint) // 5
+    http
+      .baseUrl(endpoint)
       .basicAuth("demo", "demo")
       .headers(Map("Content-Type" -> "application/json"))
 
-  def simulate(requests: (ChainBuilder | Seq[ChainBuilder])*): Unit =
+  def ignore(scenarioName: String)(
+      requests: (ChainBuilder | Seq[ChainBuilder])*
+  ): PopulationBuilder =
+    scenario(scenarioName)
+      .exec { session =>
+        println(s">>> Scenario '$scenarioName' is ignored!")
+        session
+      }
+      .inject(atOnceUsers(1))
+
+  def processScenario(scenarioName: String)(
+      requests: (ChainBuilder | Seq[ChainBuilder])*
+  ): PopulationBuilder =
     val requestsFlatten: Seq[ChainBuilder] = requests.flatMap {
       case seq: Seq[ChainBuilder] => seq
       case o: ChainBuilder => Seq(o)
     }
-    setUp(
-      scenario("BasicSimulation") // 7
-        .exec(requestsFlatten)
-        .inject(atOnceUsers(1)) // 12
-    ).protocols(httpProtocol) // 13
+    scenario(scenarioName)
+      .exec(requestsFlatten)
+      .inject(atOnceUsers(1))
+
+  def simulate(processScenarios: PopulationBuilder*): Unit =
+    setUp(processScenarios: _*)
+      .protocols(httpProtocol)
 
   extension [
       In <: Product: Encoder,
@@ -74,7 +92,7 @@ trait SimulationRunner extends Simulation:
                 CamundaVariable.toCamunda(process.in)
               ).asJson.toString
             )
-          )//.check(printBody)
+          ) //.check(printBody)
           .check(extractJson("$.id", "processInstanceId"))
       )
 
@@ -83,18 +101,21 @@ trait SimulationRunner extends Simulation:
     ): ChainBuilder =
       exec(
         http(s"Check Process ${process.id}") // 8
-          .get("/history/variable-instance?processInstanceIdIn=#{processInstanceId}&deserializeValues=false")
+          .get(
+            "/history/variable-instance?processInstanceIdIn=#{processInstanceId}&deserializeValues=false"
+          )
           .check(
-          bodyString
-            .transform { body =>
-              parse(body)
-                .flatMap(_.as[Seq[CamundaProperty]]) match {
-                case Right(value) => checkProps(process.out, value)
-                case Left(exc) =>
-                  s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
+            bodyString
+              .transform { body =>
+                parse(body)
+                  .flatMap(_.as[Seq[CamundaProperty]]) match {
+                  case Right(value) => checkProps(process.out, value)
+                  case Left(exc) =>
+                    s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
+                }
               }
-            }.is(true)
-        )
+              .is(true)
+          )
       )
 
   end extension
@@ -133,11 +154,13 @@ trait SimulationRunner extends Simulation:
             .transform { body =>
               parse(body)
                 .flatMap(_.as[FormVariables]) match {
-                case Right(value) => checkProps(userTask.in, CamundaProperty.from(value))
+                case Right(value) =>
+                  checkProps(userTask.in, CamundaProperty.from(value))
                 case Left(exc) =>
                   s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc"
               }
-            }.is(true)
+            }
+            .is(true)
         )
 
     private def completeTask(): HttpRequestBuilder =
@@ -211,31 +234,42 @@ trait SimulationRunner extends Simulation:
       session
     }
 
-  def checkProps[T <: Product](out: T, result: Seq[CamundaProperty]): Boolean = {
-    out.asVarsWithoutEnums()
+  def checkProps[T <: Product](
+      out: T,
+      result: Seq[CamundaProperty]
+  ): Boolean = {
+    out
+      .asVarsWithoutEnums()
       .filter(_._2 match
         case None => false
         case _ => true
       )
-      .map {
-        case (key, value) =>
-          result.find(_.key == key)
-            .map { obj =>
-              obj.value match
-                case _: CFile =>
-                  println(s">>> Files cannot be tested as its content is _null_ ('$key').")
-                  true
-                case other =>
-                  val matches = obj.value.value == value
-                  if (!matches)
-                    println(s"!!! The value ' ${obj.value.value}' of $key does not match the result variable '$value'.\n $result")
-                  matches
-            }
-            .getOrElse {
-              println(s"!!! $key does not exist in the result variables.\n $result")
-              false
-            }
-      }.forall(_ == true)
+      .map { case (key, value) =>
+        result
+          .find(_.key == key)
+          .map { obj =>
+            obj.value match
+              case _: CFile =>
+                println(
+                  s">>> Files cannot be tested as its content is _null_ ('$key')."
+                )
+                true
+              case other =>
+                val matches = obj.value.value == value
+                if (!matches)
+                  println(
+                    s"!!! The value ' ${obj.value.value}' of $key does not match the result variable '$value'.\n $result"
+                  )
+                matches
+          }
+          .getOrElse {
+            println(
+              s"!!! $key does not exist in the result variables.\n $result"
+            )
+            false
+          }
+      }
+      .forall(_ == true)
   }
 
 end SimulationRunner

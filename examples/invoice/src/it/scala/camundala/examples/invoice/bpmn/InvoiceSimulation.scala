@@ -2,7 +2,7 @@ package camundala.examples.invoice.bpmn
 
 import camundala.api.{CamundaVariable, StartProcessIn}
 import camundala.bpmn.*
-import camundala.examples.invoice.bpmn.InvoiceApi.{InvoiceReviewed, assignReviewerUT, reviewInvoiceProcess, reviewInvoiceUT}
+import camundala.examples.invoice.bpmn.InvoiceApi.*
 import camundala.gatling.SimulationRunner
 import camundala.test.CustomTests
 import io.circe.Json
@@ -21,9 +21,17 @@ class InvoiceSimulation extends SimulationRunner {
   override val serverPort = 8034
 
   simulate(
-    reviewInvoiceProcess.start(),
-    assignReviewerUT.getAndComplete(),
-    reviewInvoiceUT.getAndComplete(),
-    reviewInvoiceProcess.check()
+    processScenario("Review Invoice")(
+      reviewInvoiceProcess.start(),
+      assignReviewerUT.getAndComplete(),
+      reviewInvoiceUT.getAndComplete(),
+      reviewInvoiceProcess.check()
+    ),
+    ignore("Invoice Receipt")(
+      invoiceReceiptProcess.start(),
+      approveInvoiceUT.getAndComplete(),
+      prepareBankTransferUT.getAndComplete(),
+      invoiceReceiptProcess.check()
+    )
   )
 }
