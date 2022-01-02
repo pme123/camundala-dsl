@@ -18,8 +18,6 @@ case class BpmnTestCases(
 
 case class BpmnTestCase(processes: List[ProcessToTest[?, ?]] = List.empty)
 
-sealed trait BpmnTestStep
-
 case class ProcessToTest[
     In <: Product,
     Out <: Product

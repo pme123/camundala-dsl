@@ -62,7 +62,7 @@ trait ScenarioRunner extends CommonTesting:
         case st: ServiceTask[?, ?] => st.exec()
         case dd: DecisionDmn[?, ?] => dd.exec()
         case ee: EndEvent => ee.exec()
-        case ct: CustomTests => ct.tests()
+        case ct: CustomTests => // not supported
         case other =>
           throw IllegalArgumentException(
             s"This TestStep is not supported: $other"

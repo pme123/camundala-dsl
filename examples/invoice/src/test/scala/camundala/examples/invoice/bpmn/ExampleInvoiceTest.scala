@@ -20,7 +20,7 @@ import org.mockito.Mockito.mock
 import java.util
 import java.util.{HashSet, List, Set}
 
-class ExampleInvoiceTest extends TestRunner, ProjectDSL:
+class ExampleInvoiceTest extends ScenarioRunner, ProjectDSL:
 
   lazy val config: TestConfig =
     testConfig
