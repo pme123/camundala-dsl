@@ -75,10 +75,10 @@ public class InvoiceTestCase extends ProcessEngineTestCase {
                         .mimeType("application/pdf")
                         .create());
 
-        ProcessInstance pi = runtimeService.startProcessInstanceByKey("InvoiceReceipt", variables);
+        ProcessInstance pi = runtimeService.startProcessInstanceByKey("InvoiceReceiptP", variables);
 
         Task task = taskService.createTaskQuery().processInstanceId(pi.getId()).singleResult();
-        assertEquals("ApproveInvoice", task.getTaskDefinitionKey());
+        assertEquals("ApproveInvoiceUT", task.getTaskDefinitionKey());
 
         List<IdentityLink> links = taskService.getIdentityLinksForTask(task.getId());
         Set<String> approverGroups = new HashSet<String>();
@@ -95,7 +95,7 @@ public class InvoiceTestCase extends ProcessEngineTestCase {
 
         task = taskService.createTaskQuery().processInstanceId(pi.getId()).singleResult();
 
-        assertEquals("PrepareBankTransfer", task.getTaskDefinitionKey());
+        assertEquals("PrepareBankTransferUT", task.getTaskDefinitionKey());
         taskService.complete(task.getId());
 
         Job archiveInvoiceJob = managementService.createJobQuery().singleResult();
@@ -120,14 +120,14 @@ public class InvoiceTestCase extends ProcessEngineTestCase {
                         .create())
                 .putValue("approverGroups", Arrays.asList("sales", "accounting"));
 
-        ProcessInstance pi = runtimeService.createProcessInstanceByKey("InvoiceReceipt")
+        ProcessInstance pi = runtimeService.createProcessInstanceByKey("InvoiceReceiptP")
                 .setVariables(variables)
-                .startBeforeActivity("ApproveInvoice")
+                .startBeforeActivity("ApproveInvoiceUT")
                 .execute();
 
         // given that the process instance is waiting at task "approveInvoice"
         Task task = taskService.createTaskQuery().processInstanceId(pi.getId()).singleResult();
-        assertEquals("ApproveInvoice", task.getTaskDefinitionKey());
+        assertEquals("ApproveInvoiceUT", task.getTaskDefinitionKey());
 
         // and task has candidate groups
         List<IdentityLink> links = taskService.getIdentityLinksForTask(task.getId());
@@ -162,10 +162,10 @@ public class InvoiceTestCase extends ProcessEngineTestCase {
                         .mimeType("application/pdf")
                         .create());
 
-        ProcessInstance pi = runtimeService.startProcessInstanceByKey("InvoiceReceipt", variables);
+        ProcessInstance pi = runtimeService.startProcessInstanceByKey("InvoiceReceiptP", variables);
 
         Task task = taskService.createTaskQuery().processInstanceId(pi.getId()).singleResult();
-        assertEquals("ApproveInvoice", task.getTaskDefinitionKey());
+        assertEquals("ApproveInvoiceUT", task.getTaskDefinitionKey());
 
         List<IdentityLink> links = taskService.getIdentityLinksForTask(task.getId());
         Set<String> approverGroups = new HashSet<String>();
@@ -182,14 +182,14 @@ public class InvoiceTestCase extends ProcessEngineTestCase {
 
         task = taskService.createTaskQuery().singleResult();
 
-        assertEquals("AssignReviewer", task.getTaskDefinitionKey());
+        assertEquals("AssignReviewerUT", task.getTaskDefinitionKey());
         variables.clear();
         variables.put("reviewer", "peter");
         taskService.complete(task.getId(), variables);
 
         task = taskService.createTaskQuery().singleResult();
 
-        assertEquals("ReviewInvoice", task.getTaskDefinitionKey());
+        assertEquals("ReviewInvoiceUT", task.getTaskDefinitionKey());
         variables.clear();
         variables.put("clarified", Boolean.FALSE);
         taskService.complete(task.getId(), variables);

@@ -128,11 +128,11 @@ object ExampleInvoice2 extends DSL:
 
       object endEvents:
 
-        val InvoiceNotprocessedIdent = "InvoiceNotprocessedEE"
+        val InvoiceNotprocessedIdent = "InvoiceNotProcessedEE"
 
         lazy val InvoiceNotprocessed = endEvent(InvoiceNotprocessedIdent)
 
-        val InvoiceprocessedIdent = "InvoiceprocessedEE"
+        val InvoiceprocessedIdent = "InvoiceProcessedEE"
 
         lazy val Invoiceprocessed = endEvent(InvoiceprocessedIdent)
       end endEvents
@@ -149,7 +149,7 @@ object ExampleInvoice2 extends DSL:
 
       object startEvents:
 
-        val InvoicereceivedIdent = "InvoicereceivedSE"
+        val InvoicereceivedIdent = "InvoiceReceivedSE"
 
         lazy val Invoicereceived =
           startEvent(InvoicereceivedIdent)
@@ -158,11 +158,11 @@ object ExampleInvoice2 extends DSL:
 
       object exclusiveGateways:
 
-        val InvoiceapprovedIdent = "InvoiceapprovedEG"
+        val InvoiceapprovedIdent = "InvoiceApprovedEG"
 
         lazy val Invoiceapproved = exclusiveGateway(InvoiceapprovedIdent)
 
-        val ReviewsuccessfulIdent = "ReviewsuccessfulEG"
+        val ReviewsuccessfulIdent = "ReviewSuccessfulEG"
 
         lazy val Reviewsuccessful = exclusiveGateway(ReviewsuccessfulIdent)
       end exclusiveGateways
@@ -170,28 +170,28 @@ object ExampleInvoice2 extends DSL:
       object flows:
 
         val Yes__Reviewsuccessful__ApproveInvoiceIdent =
-          "YesSF__ReviewsuccessfulEG__ApproveInvoiceUT"
+          "YesSF__ReviewSuccessfulEG__ApproveInvoiceUT"
 
         lazy val Yes__Reviewsuccessful__ApproveInvoice = sequenceFlow(
           Yes__Reviewsuccessful__ApproveInvoiceIdent
         ).expression("clarified")
 
         val No__Reviewsuccessful__InvoiceNotprocessedIdent =
-          "NoSF__ReviewsuccessfulEG__InvoiceNotprocessedEE"
+          "NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE"
 
         lazy val No__Reviewsuccessful__InvoiceNotprocessed = sequenceFlow(
           No__Reviewsuccessful__InvoiceNotprocessedIdent
         ).expression("!clarified")
 
         val Yes__Invoiceapproved__PrepareBankTransferIdent =
-          "YesSF__InvoiceapprovedEG__PrepareBankTransferUT"
+          "YesSF__InvoiceApprovedEG__PrepareBankTransferUT"
 
         lazy val Yes__Invoiceapproved__PrepareBankTransfer = sequenceFlow(
           Yes__Invoiceapproved__PrepareBankTransferIdent
         ).expression("approved")
 
         val No__Invoiceapproved__ReviewInvoiceIdent =
-          "NoSF__InvoiceapprovedEG__ReviewInvoiceCA"
+          "NoSF__InvoiceApprovedEG__ReviewInvoiceCA"
 
         lazy val No__Invoiceapproved__ReviewInvoice = sequenceFlow(
           No__Invoiceapproved__ReviewInvoiceIdent

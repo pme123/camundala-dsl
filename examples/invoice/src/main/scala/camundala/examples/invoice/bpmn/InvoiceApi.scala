@@ -180,7 +180,16 @@ object InvoiceApi extends BpmnDsl:
     out = NoOutput(),
     descr = None
   )
-
+  val InvoiceNotprocessedIdent = "InvoiceNotProcessedEE"
+  lazy val InvoiceNotprocessedEE = endEvent(
+    InvoiceNotprocessedIdent,
+    descr = None
+  )
+  val InvoiceprocessedIdent = "InvoiceProcessedEE"
+  lazy val InvoiceprocessedEE = endEvent(
+    InvoiceprocessedIdent,
+    descr = None
+  )
   val AssignApproverGroupBRTIdent = "AssignApproverGroupBRTIdent"
   lazy val AssignApproverGroupBRT = process(
     AssignApproverGroupBRTIdent,

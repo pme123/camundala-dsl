@@ -171,10 +171,9 @@ trait GenerateCamundaBpmn extends BpmnDsl, ProjectPaths, App:
 
     name match
       case Some(n) =>
-        n.split(" ")
+        n.split("[^a-zA-Z0-9]")
           .map(_.capitalize)
-          .mkString
-          .replaceAll("[^a-zA-Z0-9]", "") + elemKey
+          .mkString + elemKey
       case None =>
         camObj.getId
 
