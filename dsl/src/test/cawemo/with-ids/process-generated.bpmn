@@ -5,31 +5,31 @@
         
     <bpmn2:documentation textFormat="text/plain">This is just a test for Camundala</bpmn2:documentation>
         
-    <bpmn2:participant id="Participant_006et1b" name="Test DSL Process" processRef="TestDSLProcess"/>
+    <bpmn2:participant id="Participant_006et1b" name="Test DSL Process" processRef="TestDSLProcessP"/>
       
   </bpmn2:collaboration>
     
-  <bpmn2:process camunda:candidateStarterGroups="admin" camunda:candidateStarterUsers="admin" id="TestDSLProcess" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
+  <bpmn2:process camunda:candidateStarterGroups="admin" camunda:candidateStarterUsers="admin" id="TestDSLProcessP" isClosed="false" isExecutable="true" name="Test DSL Process" processType="None">
         
-    <bpmn2:exclusiveGateway camunda:asyncAfter="true" camunda:exclusive="false" gatewayDirection="Unspecified" id="Fork" name="Fork">
+    <bpmn2:exclusiveGateway camunda:asyncAfter="true" camunda:exclusive="false" gatewayDirection="Unspecified" id="ForkEG" name="Fork">
             
-      <bpmn2:incoming>flow2_ServiceTask-Fork__ServiceTask__Fork</bpmn2:incoming>
+      <bpmn2:incoming>flow2_ServiceTask-Fork__ServiceTaskST__ForkEG</bpmn2:incoming>
             
-      <bpmn2:outgoing>IsNOTBar__Fork__UserTaskA</bpmn2:outgoing>
+      <bpmn2:outgoing>IsNOTBarSF__ForkEG__UserTaskAUT</bpmn2:outgoing>
             
-      <bpmn2:outgoing>IsBar__Fork__UserTaskB</bpmn2:outgoing>
+      <bpmn2:outgoing>IsBarSF__ForkEG__UserTaskBUT</bpmn2:outgoing>
           
     </bpmn2:exclusiveGateway>
         
-    <bpmn2:userTask camunda:exclusive="false" camunda:formKey="my-form-key" completionQuantity="1" id="UserTaskA" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
+    <bpmn2:userTask camunda:exclusive="false" camunda:formKey="my-form-key" completionQuantity="1" id="UserTaskAUT" implementation="##unspecified" isForCompensation="false" name="User Task A" startQuantity="1">
             
-      <bpmn2:incoming>IsNOTBar__Fork__UserTaskA</bpmn2:incoming>
+      <bpmn2:incoming>IsNOTBarSF__ForkEG__UserTaskAUT</bpmn2:incoming>
             
-      <bpmn2:outgoing>flow5_UserTaskA-gatewayJoin__UserTaskA__gatewayJoin</bpmn2:outgoing>
+      <bpmn2:outgoing>flow5_UserTaskA-gatewayJoin__UserTaskAUT__gatewayJoin</bpmn2:outgoing>
           
     </bpmn2:userTask>
         
-    <bpmn2:userTask camunda:exclusive="false" completionQuantity="1" id="UserTaskB" implementation="##unspecified" isForCompensation="false" name="User Task B" startQuantity="1">
+    <bpmn2:userTask camunda:exclusive="false" completionQuantity="1" id="UserTaskBUT" implementation="##unspecified" isForCompensation="false" name="User Task B" startQuantity="1">
             
       <extensionElements xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
                 
@@ -61,23 +61,23 @@
               
       </extensionElements>
             
-      <bpmn2:incoming>IsBar__Fork__UserTaskB</bpmn2:incoming>
+      <bpmn2:incoming>IsBarSF__ForkEG__UserTaskBUT</bpmn2:incoming>
             
-      <bpmn2:outgoing>flow6_UserTaskB-Asdfdsf__UserTaskB__Asdfdsf</bpmn2:outgoing>
+      <bpmn2:outgoing>flow6_UserTaskB-Asdfdsf__UserTaskBUT__AsdfdsfITE</bpmn2:outgoing>
           
     </bpmn2:userTask>
         
     <bpmn2:exclusiveGateway camunda:exclusive="false" gatewayDirection="Unspecified" id="gatewayJoin">
             
-      <bpmn2:incoming>flow5_UserTaskA-gatewayJoin__UserTaskA__gatewayJoin</bpmn2:incoming>
+      <bpmn2:incoming>flow5_UserTaskA-gatewayJoin__UserTaskAUT__gatewayJoin</bpmn2:incoming>
             
-      <bpmn2:incoming>Flow_1i69u7d_Asdfdsf-gatewayJoin__Asdfdsf__gatewayJoin</bpmn2:incoming>
+      <bpmn2:incoming>Flow_1i69u7d_Asdfdsf-gatewayJoin__AsdfdsfITE__gatewayJoin</bpmn2:incoming>
             
-      <bpmn2:outgoing>flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTask</bpmn2:outgoing>
+      <bpmn2:outgoing>flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTaskST</bpmn2:outgoing>
           
     </bpmn2:exclusiveGateway>
         
-    <bpmn2:endEvent camunda:exclusive="false" id="EndProcess" name="End Process">
+    <bpmn2:endEvent camunda:exclusive="false" id="EndProcessEE" name="End Process">
             
       <bpmn2:extensionElements>
                 
@@ -89,65 +89,65 @@
               
       </bpmn2:extensionElements>
             
-      <bpmn2:incoming>SequenceFlow_9_ScriptTask-EndProcess__ScriptTask__EndProcess</bpmn2:incoming>
+      <bpmn2:incoming>SequenceFlow_9_ScriptTask-EndProcess__ScriptTaskST__EndProcessEE</bpmn2:incoming>
           
     </bpmn2:endEvent>
         
-    <bpmn2:serviceTask camunda:exclusive="false" camunda:expression="${execution.setVariable('isBar', true)}" completionQuantity="1" id="ServiceTask" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
+    <bpmn2:serviceTask camunda:exclusive="false" camunda:expression="${execution.setVariable('isBar', true)}" completionQuantity="1" id="ServiceTaskST" implementation="##WebService" isForCompensation="false" name="Service Task" startQuantity="1">
             
-      <bpmn2:incoming>flow1_StartProcess-ServiceTask__StartProcess__ServiceTask</bpmn2:incoming>
+      <bpmn2:incoming>flow1_StartProcess-ServiceTask__StartProcessSE__ServiceTaskST</bpmn2:incoming>
             
-      <bpmn2:outgoing>flow2_ServiceTask-Fork__ServiceTask__Fork</bpmn2:outgoing>
+      <bpmn2:outgoing>flow2_ServiceTask-Fork__ServiceTaskST__ForkEG</bpmn2:outgoing>
           
     </bpmn2:serviceTask>
         
-    <bpmn2:startEvent camunda:exclusive="false" id="StartProcess" isInterrupting="true" name="Start Process" parallelMultiple="false">
+    <bpmn2:startEvent camunda:exclusive="false" id="StartProcessSE" isInterrupting="true" name="Start Process" parallelMultiple="false">
             
-      <bpmn2:outgoing>flow1_StartProcess-ServiceTask__StartProcess__ServiceTask</bpmn2:outgoing>
+      <bpmn2:outgoing>flow1_StartProcess-ServiceTask__StartProcessSE__ServiceTaskST</bpmn2:outgoing>
           
     </bpmn2:startEvent>
         
-    <bpmn2:scriptTask camunda:exclusive="false" completionQuantity="1" id="ScriptTask" isForCompensation="false" name="Script Task" scriptFormat="Groovy" startQuantity="1">
+    <bpmn2:scriptTask camunda:exclusive="false" completionQuantity="1" id="ScriptTaskST" isForCompensation="false" name="Script Task" scriptFormat="Groovy" startQuantity="1">
             
-      <bpmn2:incoming>flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTask</bpmn2:incoming>
+      <bpmn2:incoming>flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTaskST</bpmn2:incoming>
             
-      <bpmn2:outgoing>SequenceFlow_9_ScriptTask-EndProcess__ScriptTask__EndProcess</bpmn2:outgoing>
+      <bpmn2:outgoing>SequenceFlow_9_ScriptTask-EndProcess__ScriptTaskST__EndProcessEE</bpmn2:outgoing>
             
       <bpmn2:script>println "hello there" </bpmn2:script>
           
     </bpmn2:scriptTask>
         
-    <bpmn2:sequenceFlow id="flow1_StartProcess-ServiceTask__StartProcess__ServiceTask" name="" sourceRef="StartProcess" targetRef="ServiceTask"/>
+    <bpmn2:sequenceFlow id="flow1_StartProcess-ServiceTask__StartProcessSE__ServiceTaskST" name="" sourceRef="StartProcessSE" targetRef="ServiceTaskST"/>
         
-    <bpmn2:sequenceFlow id="flow2_ServiceTask-Fork__ServiceTask__Fork" name="" sourceRef="ServiceTask" targetRef="Fork"/>
+    <bpmn2:sequenceFlow id="flow2_ServiceTask-Fork__ServiceTaskST__ForkEG" name="" sourceRef="ServiceTaskST" targetRef="ForkEG"/>
         
-    <bpmn2:sequenceFlow id="IsNOTBar__Fork__UserTaskA" name="is NOT bar" sourceRef="Fork" targetRef="UserTaskA">
+    <bpmn2:sequenceFlow id="IsNOTBarSF__ForkEG__UserTaskAUT" name="is NOT bar" sourceRef="ForkEG" targetRef="UserTaskAUT">
             
       <conditionExpression xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" id="conditionExpression_caaf56cc-56ce-4ec9-bbe6-41ccb2a5c7c9">${!isBar}</conditionExpression>
           
     </bpmn2:sequenceFlow>
         
-    <bpmn2:sequenceFlow id="IsBar__Fork__UserTaskB" name="is Bar" sourceRef="Fork" targetRef="UserTaskB">
+    <bpmn2:sequenceFlow id="IsBarSF__ForkEG__UserTaskBUT" name="is Bar" sourceRef="ForkEG" targetRef="UserTaskBUT">
             
       <conditionExpression xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" id="conditionExpression_c8bdb02e-ca5f-44fd-aaa7-17bb572ed735" language="Groovy" xsi:type="tFormalExpression">isBar</conditionExpression>
           
     </bpmn2:sequenceFlow>
         
-    <bpmn2:sequenceFlow id="flow6_UserTaskB-Asdfdsf__UserTaskB__Asdfdsf" name="" sourceRef="UserTaskB" targetRef="Event_12wc9ij"/>
+    <bpmn2:sequenceFlow id="flow6_UserTaskB-Asdfdsf__UserTaskBUT__AsdfdsfITE" name="" sourceRef="UserTaskBUT" targetRef="Event_12wc9ij"/>
         
-    <bpmn2:sequenceFlow id="flow5_UserTaskA-gatewayJoin__UserTaskA__gatewayJoin" name="" sourceRef="UserTaskA" targetRef="gatewayJoin"/>
+    <bpmn2:sequenceFlow id="flow5_UserTaskA-gatewayJoin__UserTaskAUT__gatewayJoin" name="" sourceRef="UserTaskAUT" targetRef="gatewayJoin"/>
         
-    <bpmn2:sequenceFlow id="flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTask" name="" sourceRef="gatewayJoin" targetRef="ScriptTask"/>
+    <bpmn2:sequenceFlow id="flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTaskST" name="" sourceRef="gatewayJoin" targetRef="ScriptTaskST"/>
         
-    <bpmn2:sequenceFlow id="SequenceFlow_9_ScriptTask-EndProcess__ScriptTask__EndProcess" name="" sourceRef="ScriptTask" targetRef="EndProcess"/>
+    <bpmn2:sequenceFlow id="SequenceFlow_9_ScriptTask-EndProcess__ScriptTaskST__EndProcessEE" name="" sourceRef="ScriptTaskST" targetRef="EndProcessEE"/>
         
-    <bpmn2:sequenceFlow id="Flow_1i69u7d_Asdfdsf-gatewayJoin__Asdfdsf__gatewayJoin" sourceRef="Event_12wc9ij" targetRef="gatewayJoin"/>
+    <bpmn2:sequenceFlow id="Flow_1i69u7d_Asdfdsf-gatewayJoin__AsdfdsfITE__gatewayJoin" sourceRef="Event_12wc9ij" targetRef="gatewayJoin"/>
         
     <bpmn2:intermediateThrowEvent id="Event_12wc9ij" name="asdfdsf">
             
-      <bpmn2:incoming>flow6_UserTaskB-Asdfdsf__UserTaskB__Asdfdsf</bpmn2:incoming>
+      <bpmn2:incoming>flow6_UserTaskB-Asdfdsf__UserTaskBUT__AsdfdsfITE</bpmn2:incoming>
             
-      <bpmn2:outgoing>Flow_1i69u7d_Asdfdsf-gatewayJoin__Asdfdsf__gatewayJoin</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_1i69u7d_Asdfdsf-gatewayJoin__AsdfdsfITE__gatewayJoin</bpmn2:outgoing>
             
       <bpmn2:messageEventDefinition id="MessageEventDefinition_18fah7s"/>
           
@@ -165,7 +165,7 @@
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNEdge bpmnElement="Flow_1i69u7d_Asdfdsf-gatewayJoin__Asdfdsf__gatewayJoin" id="Flow_1i69u7d_di">
+      <bpmndi:BPMNEdge bpmnElement="Flow_1i69u7d_Asdfdsf-gatewayJoin__AsdfdsfITE__gatewayJoin" id="Flow_1i69u7d_di">
                 
         <di:waypoint x="721" y="296"/>
                 
@@ -173,7 +173,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9_ScriptTask-EndProcess__ScriptTask__EndProcess" id="BPMNEdge_SequenceFlow_9" sourceElement="Activity_16o34d6_di" targetElement="_BPMNShape_EndEvent_3">
+      <bpmndi:BPMNEdge bpmnElement="SequenceFlow_9_ScriptTask-EndProcess__ScriptTaskST__EndProcessEE" id="BPMNEdge_SequenceFlow_9" sourceElement="Activity_16o34d6_di" targetElement="_BPMNShape_EndEvent_3">
                 
         <di:waypoint x="896" y="218"/>
                 
@@ -181,7 +181,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTask" id="BPMNEdge_SequenceFlow_8" sourceElement="_BPMNShape_ExclusiveGateway_3" targetElement="Activity_16o34d6_di">
+      <bpmndi:BPMNEdge bpmnElement="flow7_gatewayJoin-ScriptTask__gatewayJoin__ScriptTaskST" id="BPMNEdge_SequenceFlow_8" sourceElement="_BPMNShape_ExclusiveGateway_3" targetElement="Activity_16o34d6_di">
                 
         <di:waypoint x="746" y="218"/>
                 
@@ -189,7 +189,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="flow5_UserTaskA-gatewayJoin__UserTaskA__gatewayJoin" id="BPMNEdge_SequenceFlow_6" sourceElement="_BPMNShape_UserTask_2" targetElement="_BPMNShape_ExclusiveGateway_3">
+      <bpmndi:BPMNEdge bpmnElement="flow5_UserTaskA-gatewayJoin__UserTaskAUT__gatewayJoin" id="BPMNEdge_SequenceFlow_6" sourceElement="_BPMNShape_UserTask_2" targetElement="_BPMNShape_ExclusiveGateway_3">
                 
         <di:waypoint x="646" y="122"/>
                 
@@ -207,7 +207,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="flow6_UserTaskB-Asdfdsf__UserTaskB__Asdfdsf" id="BPMNEdge_SequenceFlow_5" sourceElement="_BPMNShape_UserTask_3" targetElement="Event_01nq4gy_di">
+      <bpmndi:BPMNEdge bpmnElement="flow6_UserTaskB-Asdfdsf__UserTaskBUT__AsdfdsfITE" id="BPMNEdge_SequenceFlow_5" sourceElement="_BPMNShape_UserTask_3" targetElement="Event_01nq4gy_di">
                 
         <di:waypoint x="646" y="314"/>
                 
@@ -221,7 +221,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="IsBar__Fork__UserTaskB" id="BPMNEdge_SequenceFlow_4" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_3">
+      <bpmndi:BPMNEdge bpmnElement="IsBarSF__ForkEG__UserTaskBUT" id="BPMNEdge_SequenceFlow_4" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_3">
                 
         <di:waypoint x="467" y="244"/>
                 
@@ -237,7 +237,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="IsNOTBar__Fork__UserTaskA" id="BPMNEdge_SequenceFlow_3" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_2">
+      <bpmndi:BPMNEdge bpmnElement="IsNOTBarSF__ForkEG__UserTaskAUT" id="BPMNEdge_SequenceFlow_3" sourceElement="_BPMNShape_ExclusiveGateway_2" targetElement="_BPMNShape_UserTask_2">
                 
         <di:waypoint x="467" y="194"/>
                 
@@ -253,7 +253,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="flow2_ServiceTask-Fork__ServiceTask__Fork" id="BPMNEdge_SequenceFlow_2" sourceElement="_BPMNShape_ServiceTask_2" targetElement="_BPMNShape_ExclusiveGateway_2">
+      <bpmndi:BPMNEdge bpmnElement="flow2_ServiceTask-Fork__ServiceTaskST__ForkEG" id="BPMNEdge_SequenceFlow_2" sourceElement="_BPMNShape_ServiceTask_2" targetElement="_BPMNShape_ExclusiveGateway_2">
                 
         <di:waypoint x="392" y="219"/>
                 
@@ -261,7 +261,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNEdge bpmnElement="flow1_StartProcess-ServiceTask__StartProcess__ServiceTask" id="BPMNEdge_SequenceFlow_1" sourceElement="_BPMNShape_StartEvent_2" targetElement="_BPMNShape_ServiceTask_2">
+      <bpmndi:BPMNEdge bpmnElement="flow1_StartProcess-ServiceTask__StartProcessSE__ServiceTaskST" id="BPMNEdge_SequenceFlow_1" sourceElement="_BPMNShape_StartEvent_2" targetElement="_BPMNShape_ServiceTask_2">
                 
         <di:waypoint x="242" y="219"/>
                 
@@ -269,7 +269,7 @@
               
       </bpmndi:BPMNEdge>
             
-      <bpmndi:BPMNShape bpmnElement="Fork" id="_BPMNShape_ExclusiveGateway_2" isMarkerVisible="true">
+      <bpmndi:BPMNShape bpmnElement="ForkEG" id="_BPMNShape_ExclusiveGateway_2" isMarkerVisible="true">
                 
         <dc:Bounds height="50" width="50" x="442" y="194"/>
                 
@@ -281,13 +281,13 @@
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="UserTaskA" id="_BPMNShape_UserTask_2">
+      <bpmndi:BPMNShape bpmnElement="UserTaskAUT" id="_BPMNShape_UserTask_2">
                 
         <dc:Bounds height="80" width="100" x="546" y="82"/>
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="UserTaskB" id="_BPMNShape_UserTask_3">
+      <bpmndi:BPMNShape bpmnElement="UserTaskBUT" id="_BPMNShape_UserTask_3">
                 
         <dc:Bounds height="80" width="100" x="546" y="274"/>
               
@@ -305,7 +305,7 @@
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="EndProcess" id="_BPMNShape_EndEvent_3">
+      <bpmndi:BPMNShape bpmnElement="EndProcessEE" id="_BPMNShape_EndEvent_3">
                 
         <dc:Bounds height="36" width="36" x="946" y="200"/>
                 
@@ -317,13 +317,13 @@
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="ServiceTask" id="_BPMNShape_ServiceTask_2">
+      <bpmndi:BPMNShape bpmnElement="ServiceTaskST" id="_BPMNShape_ServiceTask_2">
                 
         <dc:Bounds height="80" width="100" x="292" y="179"/>
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="StartProcess" id="_BPMNShape_StartEvent_2">
+      <bpmndi:BPMNShape bpmnElement="StartProcessSE" id="_BPMNShape_StartEvent_2">
                 
         <dc:Bounds height="36" width="36" x="206" y="201"/>
                 
@@ -335,7 +335,7 @@
               
       </bpmndi:BPMNShape>
             
-      <bpmndi:BPMNShape bpmnElement="ScriptTask" id="Activity_16o34d6_di">
+      <bpmndi:BPMNShape bpmnElement="ScriptTaskST" id="Activity_16o34d6_di">
                 
         <dc:Bounds height="80" width="100" x="796" y="178"/>
               
