@@ -91,7 +91,7 @@ val camundaTestDependencies = Seq(
   "org.camunda.bpm.assert" % "camunda-bpm-assert" % "10.0.0",
   "org.assertj" % "assertj-core" % "3.19.0",
   "org.camunda.bpm.extension" % "camunda-bpm-assert-scenario" % "1.1.1",
-
+  "org.camunda.bpm.extension.mockito" % "camunda-bpm-mockito" % "5.14.0",
   // dmn testing
   //("org.camunda.bpm.extension.dmn.scala" % "dmn-engine" % "1.7.2-SNAPSHOT").cross(CrossVersion.for3Use2_13),
   "de.odysseus.juel" % "juel" % "2.1.3",

@@ -1,9 +1,11 @@
 package camundala.examples.invoice.bpmn
 
+import camundala.domain.*
 import camundala.dsl.DSL.Givens.*
 import camundala.examples.invoice.bpmn.ExampleInvoice2
 import camundala.examples.invoice.bpmn.ExampleInvoice2.*
 import camundala.examples.invoice.bpmn.InvoiceApi.*
+import camundala.examples.invoice.bpmn.InvoiceDomain.ReviewInvoiceP
 import camundala.examples.invoice.dsl.ProjectDSL
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*
@@ -14,8 +16,12 @@ import org.mockito.{Mock, MockitoAnnotations}
 import camundala.test.*
 import camundala.test.{TestConfig, TestDsl, TestRunner}
 import org.camunda.bpm.engine.task.IdentityLink
+import org.camunda.bpm.engine.test.assertions.bpmn.AbstractAssertions.processEngine
+import org.camunda.bpm.engine.variable.VariableMap
+import org.camunda.bpm.engine.variable.impl.VariableMapImpl
 import org.junit.Assert.{assertEquals, assertTrue}
 import org.mockito.Mockito.mock
+import org.camunda.bpm.extension.mockito.ProcessExpressions.registerCallActivityMock
 
 import java.util
 import java.util.{HashSet, List, Set}
@@ -47,15 +53,34 @@ class ExampleInvoiceTest extends TestRunner, ProjectDSL:
   def testInvoiceReceipt(): Unit =
     test(invoiceReceiptProcess)(
       invoiceAssignApproverDMN2,
-      checkGroupIds,
+      // checkGroupIds,
       approveInvoiceUT,
       prepareBankTransferUT,
       archiveInvoiceST,
+      InvoiceProcessedEE
     )
+  import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*
+/*
+  @Test
+  def testInvoiceReceiptWithReview(): Unit =
+    processEngineRule.manageDeployment(registerCallActivityMock(ReviewInvoiceP.id)
+      .onExecutionAddVariables(new VariableMapImpl(ReviewInvoiceP.out.asJavaVars()))
+      .deploy(processEngine()));
+    test(
+      invoiceReceiptProcess
+        .withOut(InvoiceReceiptCheck(false))
+    )(
+      approveInvoiceUT
+        .withOut(ApproveInvoice(false)),
+      reviewInvoiceCA,
+      approveInvoiceUT, // now we approve it
+      prepareBankTransferUT
+    )
+*/
   import scala.jdk.CollectionConverters.IterableHasAsScala
 
   def checkGroupIds =
-    custom{
+    custom {
       val links = taskService.getIdentityLinksForTask(task.getId).asScala
       val approverGroups = new util.HashSet[String]
       for (link <- links) {

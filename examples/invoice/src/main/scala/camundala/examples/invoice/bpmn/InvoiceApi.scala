@@ -126,6 +126,14 @@ object InvoiceApi extends BpmnDsl:
     descr = "Archive the Invoice."
   )
 
+  lazy val reviewInvoiceCA: CallActivity[InvoiceReceipt, InvoiceReviewed] =
+    callActivity(
+      id = "ReviewInvoiceCA",
+      descr = "Calles the Review Invoice Process.",
+      in = InvoiceReceipt(),
+      out = InvoiceReviewed()
+    )
+
   lazy val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =
     val processId = "ReviewInvoiceP"
     process(
@@ -181,48 +189,12 @@ object InvoiceApi extends BpmnDsl:
     descr = None
   )
   val InvoiceNotprocessedIdent = "InvoiceNotProcessedEE"
-  lazy val InvoiceNotprocessedEE = endEvent(
+  lazy val InvoiceNotProcessedEE = endEvent(
     InvoiceNotprocessedIdent,
     descr = None
   )
   val InvoiceprocessedIdent = "InvoiceProcessedEE"
-  lazy val InvoiceprocessedEE = endEvent(
+  lazy val InvoiceProcessedEE = endEvent(
     InvoiceprocessedIdent,
     descr = None
   )
-  val AssignApproverGroupBRTIdent = "AssignApproverGroupBRTIdent"
-  lazy val AssignApproverGroupBRT = process(
-    AssignApproverGroupBRTIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-  // WITH IDS: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/with-ids/invoice.v2.bpmn
-  // CAWEMO: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/reviewInvoice.bpmn
-
-  val ReviewInvoicePIdent = "ReviewInvoicePIdent"
-  lazy val ReviewInvoiceP = process(
-    ReviewInvoicePIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-  val AssignReviewerUTIdent = "AssignReviewerUTIdent"
-  lazy val AssignReviewerUT = process(
-    AssignReviewerUTIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-  val ReviewInvoiceUTIdent = "ReviewInvoiceUTIdent"
-  lazy val ReviewInvoiceUT = process(
-    ReviewInvoiceUTIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-// WITH IDS: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/with-ids/reviewInvoice.bpmn

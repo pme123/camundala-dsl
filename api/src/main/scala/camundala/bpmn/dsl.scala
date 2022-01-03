@@ -36,6 +36,19 @@ trait BpmnDsl:
       InOutDescr(id, in, out, descr)
     )
 
+  def callActivity[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
+  ](
+     id: String,
+     in: In = NoInput(),
+     out: Out = NoOutput(),
+     descr: Option[String] | String = None
+   ): CallActivity[In, Out] =
+    CallActivity(
+      InOutDescr(id, in, out, descr)
+    )
+
   def dmn[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema

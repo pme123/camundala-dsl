@@ -46,6 +46,7 @@ trait TestRunner extends CommonTesting:
         case ut: UserTask[?, ?] => ut.run()
         case st: ServiceTask[?, ?] => st.run()
         case dd: DecisionDmn[?, ?] => dd.run()
+        case ca: CallActivity[?, ?] => ca.run()
         case ee: EndEvent => ee.run()
         //(a: Activity[?,?,?]) => a.run(processInstance)
         case ct: CustomTests => ct.tests()
@@ -101,6 +102,13 @@ trait TestRunner extends CommonTesting:
       managementService.executeJob(archiveInvoiceJob.getId)
       assertThat(summon[CProcessInstance])
         .hasPassed(id)
+  end extension
+
+  extension (callActivity: CallActivity[?, ?])
+    def run(): FromProcessInstance[Unit] =
+      val CallActivity(InOutDescr(id, in, out, descr)) =
+        callActivity
+      //checkOutput(out)
   end extension
 
   extension (decisionDmn: DecisionDmn[?, ?])

@@ -37,8 +37,8 @@ trait CommonTesting extends TestDsl:
     Out <: Product
   ](process: Process[In, Out])(
     activities: (ProcessNode | CustomTests)*
-  ): Unit 
-    
+  ): Unit
+
   @Before
   def init(): Unit =
     deployment()
