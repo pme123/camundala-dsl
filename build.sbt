@@ -46,7 +46,7 @@ val tapirDependencies = Seq(
   "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
  // "com.softwaremill.quicklens" %% "quicklens" % "1.7.5", // simple modifying case classes
   "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
-  "com.lihaoyi" %% "os-lib" % "0.7.8",
+  "com.lihaoyi" %% "os-lib" % "0.8.0",
   "org.planet42" %% "laika-core" % "0.18.0"
 )
 lazy val api = project

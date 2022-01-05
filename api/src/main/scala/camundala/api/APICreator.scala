@@ -41,8 +41,10 @@ trait APICreator extends App:
     s"""
        |
        |Generated Open API:
-       |* **openApi.yml**: Documentation of the Processes.
-       |  With small adjustments this can be imported to Postman!
+       |
+       |- **openApi.yml**: Documentation of the Processes (this Documentation😊).
+       |- **postmanOpenApi.yml**: Open Api that you can import to Postman!
+       |  Be aware that this needs some adjustments.
        |
        |>WARNING: This is an experimental way and not approved.
        |
@@ -96,12 +98,6 @@ trait APICreator extends App:
       .build
     transformer.transform(changeLog) match
       case Right(value) => s"""
-                              |.some **CHANGELOG**
-                              |[%collapsible]
-                              |====
-                              |$value
-                              |====
-                              |
                               |<details>
                               |<summary><b>CHANGELOG</b></summary>
                               |<p>
