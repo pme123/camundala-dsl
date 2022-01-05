@@ -52,8 +52,7 @@ trait SimulationRunner extends Simulation:
   def httpProtocol: HttpProtocolBuilder =
     http
       .baseUrl(endpoint)
-      .basicAuth("demo", "demo")
-      .headers(Map("Content-Type" -> "application/json"))
+      .header("Content-Type", "application/json")
 
   def ignore(scenarioName: String)(
       requests: (ChainBuilder | Seq[ChainBuilder])*
@@ -65,10 +64,12 @@ trait SimulationRunner extends Simulation:
       }
       .inject(atOnceUsers(userAtOnce))
 
+  def preRequests: Seq[ChainBuilder] = Nil
+
   def processScenario(scenarioName: String)(
       requests: (ChainBuilder | Seq[ChainBuilder])*
   ): PopulationBuilder =
-    val requestsFlatten: Seq[ChainBuilder] = requests.flatMap {
+    val requestsFlatten: Seq[ChainBuilder] = (preRequests ++ requests).flatMap {
       case seq: Seq[ChainBuilder] => seq
       case o: ChainBuilder => Seq(o)
     }
@@ -96,6 +97,7 @@ trait SimulationRunner extends Simulation:
           .post(s"/process-definition/key/${process.id}${tenantId
             .map(id => s"/tenant-id/$id")
             .getOrElse("")}/start")
+          .auth()
           .body(
             StringBody(
               StartProcessIn(
@@ -106,7 +108,18 @@ trait SimulationRunner extends Simulation:
           .check(extractJson("$.id", "processInstanceId"))
       ).exitHereIfFailed
 
-    def check()(implicit
+    def check(): Seq[ChainBuilder] = {
+        Seq(
+          exec(_.set("processState", null)),
+          retryOrFail(
+            exec(checkFinished()).exitHereIfFailed,
+            processCondition()
+          ),
+          exec(checkVars()).exitHereIfFailed,
+        )
+      }
+
+    def checkVars()(implicit
         tenantId: Option[String]
     ): ChainBuilder =
       exec(
@@ -114,6 +127,7 @@ trait SimulationRunner extends Simulation:
           .get(
             "/history/variable-instance?processInstanceIdIn=#{processInstanceId}&deserializeValues=false"
           )
+          .auth()
           .check(
             bodyString
               .transform { body =>
@@ -128,6 +142,15 @@ trait SimulationRunner extends Simulation:
           )
       ).exitHereIfFailed
 
+    def checkFinished()(implicit
+                tenantId: Option[String]
+    ) =
+        http(s"Check finished Process ${process.id}")
+          .get(s"/history/process-instance/#{processInstanceId}")
+          .auth()
+          .check(checkMaxCount)
+          .check(extractJson("$.state", "processState"))
+
     def switchToCalledProcess(): ChainBuilder =
       exec(session =>
         session.set(
@@ -137,6 +160,7 @@ trait SimulationRunner extends Simulation:
       ).exec(
         http(s"Switch to Called Process of ${process.id}")
           .get(s"/process-instance?superProcessInstance=#{processInstanceId}")
+          .auth()
           .check(extractJson("$[*].id", "processInstanceId"))
       )
 
@@ -170,6 +194,7 @@ trait SimulationRunner extends Simulation:
     private def task(): HttpRequestBuilder =
       http(s"Get Tasks ${userTask.id}")
         .get("/task?processInstanceId=#{processInstanceId}")
+        .auth()
         .check(checkMaxCount)
         .check(
           jsonPath("$[*].id").optional
@@ -179,6 +204,7 @@ trait SimulationRunner extends Simulation:
     private def checkForm(): HttpRequestBuilder =
       http(s"Check Form ${userTask.id}")
         .get("/task/#{taskId}/form-variables?deserializeValues=false")
+        .auth()
         .check(
           bodyString
             .transform { body =>
@@ -196,6 +222,7 @@ trait SimulationRunner extends Simulation:
     private def completeTask(): HttpRequestBuilder =
       http(s"Complete Task ${userTask.id}")
         .post(s"/task/$${taskId}/complete")
+        .auth()
         .queryParam("deserializeValues", false)
         .body(
           StringBody(
@@ -229,25 +256,6 @@ trait SimulationRunner extends Simulation:
         )
     }.exitHereIfFailed
   }
-  private def statusCondition(status: Int*): Session => Boolean = session => {
-    println(">>> lastStatus: " + session("lastStatus").as[Int])
-    println(">>> retryCount: " + session("retryCount").as[Int])
-    val lastStatus = session("lastStatus").as[Int]
-    !status.contains(lastStatus)
-  }
-
-  private def taskCondition(): Session => Boolean = session => {
-    println(">>> retryCount: " + session("retryCount").as[Int])
-    session.attributes.get("taskId").contains(null)
-  }
-
-  private def extractJson(path: String, key: String) =
-    jsonPath(path)
-      .ofType[String]
-      .transform { v =>
-        println(s">>> Extracted $key: $v"); v
-      } // save the data
-      .saveAs(key)
 
   private val checkMaxCount = {
     bodyString
@@ -258,48 +266,11 @@ trait SimulationRunner extends Simulation:
         )
       }
   }
+  def authHeader: HttpRequestBuilder => HttpRequestBuilder = b => b
 
-  private val printBody =
-    bodyString.transform { b => println(s">>> Response Body: $b") }
+  extension(builder: HttpRequestBuilder)
 
-  val printSession: ChainBuilder =
-    exec { session =>
-      println(s">>> Session: " + session)
-      session
-    }
-
-  def checkProps[T <: Product](
-      out: T,
-      result: Seq[CamundaProperty]
-  ): Boolean = {
-    out
-      .asVarsWithoutEnums()
-      .map { case key -> value =>
-        result
-          .find(_.key == key)
-          .map { obj =>
-            obj.value match
-              case _: CFile =>
-                println(
-                  s">>> Files cannot be tested as its content is _null_ ('$key')."
-                )
-                true
-              case other =>
-                val matches = obj.value.value == value
-                if (!matches)
-                  println(
-                    s"!!! The value ' ${obj.value.value}' of $key does not match the result variable '$value'.\n $result"
-                  )
-                matches
-          }
-          .getOrElse {
-            println(
-              s"!!! $key does not exist in the result variables.\n $result"
-            )
-            false
-          }
-      }
-      .forall(_ == true)
-  }
+    def auth(): HttpRequestBuilder = authHeader(builder)
 
 end SimulationRunner
+

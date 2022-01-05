@@ -10,6 +10,7 @@ import sttp.tapir.Schema.annotations.description
 import sttp.tapir.generic.auto.*
 
 import java.util.Base64
+import scala.annotation.tailrec
 import scala.collection.immutable
 
 type ExampleName = String
@@ -75,12 +76,16 @@ object CamundaProperty:
         name <- c.downField("name").as[String]
         valueType <- c.downField("type").as[String]
         anyValue = c.downField("value")
-        value <- CamundaVariable.decodeValue(valueType, anyValue, c.downField("valueInfo"))
+        value <- CamundaVariable.decodeValue(
+          valueType,
+          anyValue,
+          c.downField("valueInfo")
+        )
       yield new CamundaProperty(name, value)
 
   def from(vars: FormVariables): Seq[CamundaProperty] =
-    vars.map{
-      case k -> c => CamundaProperty(k, c)
+    vars.map { case k -> c =>
+      CamundaProperty(k, c)
     }.toSeq
 
 end CamundaProperty
@@ -100,6 +105,7 @@ object CamundaVariable:
       case v: CFile => v.asJson
       case v: CJson => v.asJson
       case v: CEnum => v.asJson
+      case CNull => Json.Null
     }
 
   import reflect.Selectable.reflectiveSelectable
@@ -109,32 +115,38 @@ object CamundaVariable:
   ): Map[ExampleName, CamundaVariable] =
     product.productElementNames
       .zip(product.productIterator)
-      .flatMap {
-        case (k, f @ FileInOut(fileName, _, mimeType)) =>
-          Some(
-            k -> CFile(
-              f.contentAsBase64,
-              CFileValueInfo(
-                fileName,
-                mimeType
-              )
-            )
-          )
-        case (k, v: Product) if !v.isInstanceOf[scala.reflect.Enum] =>
-          Some(
-            k -> CJson(
-              product.asJson.hcursor
-                .downField(k)
-                .as[Json]
-                .toOption
-                .map(_.toString)
-                .getOrElse(s"$k -> v could NOT be Parsed to a JSON!")
-            )
-          )
-        case (k, v: Any) =>
-          Some(k -> valueToCamunda(v))
-      }
+      .filterNot { case k -> v => v.isInstanceOf[None.type] } // don't send null
+      .map { case (k, v) => k -> objectToCamunda(product, k, v) }
       .toMap
+
+  @tailrec
+  def objectToCamunda[T <: Product: Encoder](
+      product: T,
+      key: String,
+      value: Any
+  ): CamundaVariable =
+    value match
+      case None => CNull
+      case Some(v) => objectToCamunda(product, key, v)
+      case f @ FileInOut(fileName, _, mimeType) =>
+        CFile(
+          f.contentAsBase64,
+          CFileValueInfo(
+            fileName,
+            mimeType
+          )
+        )
+      case v: Product if !v.isInstanceOf[scala.reflect.Enum] =>
+        CJson(
+          product.asJson.hcursor
+            .downField(key)
+            .as[Json]
+            .toOption
+            .map(_.toString)
+            .getOrElse(s"$v could NOT be Parsed to a JSON!")
+        )
+      case v =>
+        valueToCamunda(v)
 
   def valueToCamunda(value: Any): CamundaVariable =
     value match
@@ -153,8 +165,7 @@ object CamundaVariable:
       case v: scala.reflect.Enum =>
         CEnum(v.toString)
 
-  case object CNull
-    extends CamundaVariable:
+  case object CNull extends CamundaVariable:
     val value: Null = null
 
     private val `type`: String = "String"
@@ -406,4 +417,3 @@ case class GetActiveTaskOut(
     |""".stripMargin
 )
 type FormVariables = Map[String, CamundaVariable]
-

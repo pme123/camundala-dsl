@@ -82,15 +82,16 @@ paths:
   /process-definition/key/{key}/start:
     post:
       tags:
-      - InvoiceReceipt
-      summary: 'InvoiceReceipt: StartProcessInstance'
+      - InvoiceReceiptP
+      summary: 'InvoiceReceiptP: StartProcessInstance'
       description: "This starts the Invoice Receipt Process.\n\nUsage as _CallActivity_:\n\
-        ```\nlazy val InvoiceReceiptProcess =\n          callActivity(\"InvoiceReceipt\"\
-        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"InvoiceReceipt\"\
+        ```\nlazy val InvoiceReceiptPProcess =\n          callActivity(\"InvoiceReceiptP\"\
+        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"InvoiceReceiptP\"\
         )\n            .inSource(\"creditor\")\n            .inSource(\"amount\")\n\
         \            .inSource(\"invoiceCategory\")\n            .inSource(\"invoiceNumber\"\
-        )\n            .inSource(\"invoiceDocument\")\n            \n```\n"
-      operationId: 'InvoiceReceipt: StartProcessInstance'
+        )\n            .inSource(\"invoiceDocument\")\n            .outSource(\"approved\"\
+        )\n            .outSource(\"clarified\")\n```\n"
+      operationId: 'InvoiceReceiptP: StartProcessInstance'
       parameters:
       - name: key
         in: path
@@ -98,7 +99,7 @@ paths:
         required: true
         schema:
           type: string
-          default: InvoiceReceipt
+          default: InvoiceReceiptP
       requestBody:
         content:
           application/json:
@@ -124,8 +125,8 @@ paths:
                         mimetype: application/pdf
                       type: File
                     invoiceCategory:
-                      value: '"Travel Expenses"'
-                      type: Json
+                      value: Travel Expenses
+                      type: String
                   businessKey: example-businesskey
                   withVariablesInReturn: true
         required: true
@@ -135,7 +136,7 @@ paths:
   /decision-definition/key/{key}/evaluate/--REMOVE%3Ainvoice-assign-approver--:
     post:
       tags:
-      - InvoiceReceipt
+      - InvoiceReceiptP
       summary: 'invoice-assign-approver: EvaluateDecision'
       description: '
 
@@ -167,34 +168,34 @@ paths:
                       value: 1050.0
                       type: Double
                     invoiceCategory:
-                      value: '"Travel Expenses"'
-                      type: Json
+                      value: Travel Expenses
+                      type: String
         required: true
       responses:
         '200':
           description: ''
-  /task/--REMOVE%3AApproveInvoice--:
+  /task/--REMOVE%3AApproveInvoiceUT--:
     post:
       tags:
-      - InvoiceReceipt
-      summary: 'ApproveInvoice: GetActiveTask'
+      - InvoiceReceiptP
+      summary: 'ApproveInvoiceUT: GetActiveTask'
       description: Approve the invoice (or not).
-      operationId: 'ApproveInvoice: GetActiveTask'
+      operationId: 'ApproveInvoiceUT: GetActiveTask'
       responses:
         '200':
           description: ''
-  /task/{taskId}/form-variables/--REMOVE%3AApproveInvoice--:
+  /task/{taskId}/form-variables/--REMOVE%3AApproveInvoiceUT--:
     get:
       tags:
-      - InvoiceReceipt
-      summary: 'ApproveInvoice: GetTaskFormVariables'
+      - InvoiceReceiptP
+      summary: 'ApproveInvoiceUT: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
         The form variables take form data specified on the task into account.
 
         If form fields are defined, the variable types and default values of the form
         fields are taken into account.
-      operationId: 'ApproveInvoice: GetTaskFormVariables'
+      operationId: 'ApproveInvoiceUT: GetTaskFormVariables'
       parameters:
       - name: taskId
         in: path
@@ -231,13 +232,13 @@ paths:
       responses:
         '200':
           description: ''
-  /task/{taskId}/complete/--REMOVE%3AApproveInvoice--:
+  /task/{taskId}/complete/--REMOVE%3AApproveInvoiceUT--:
     post:
       tags:
-      - InvoiceReceipt
-      summary: 'ApproveInvoice: CompleteTask'
+      - InvoiceReceiptP
+      summary: 'ApproveInvoiceUT: CompleteTask'
       description: Approve the invoice (or not).
-      operationId: 'ApproveInvoice: CompleteTask'
+      operationId: 'ApproveInvoiceUT: CompleteTask'
       parameters:
       - name: taskId
         in: path
@@ -281,28 +282,28 @@ paths:
       responses:
         '200':
           description: ''
-  /task/--REMOVE%3APrepareBankTransfer--:
+  /task/--REMOVE%3APrepareBankTransferUT--:
     post:
       tags:
-      - InvoiceReceipt
-      summary: 'PrepareBankTransfer: GetActiveTask'
+      - InvoiceReceiptP
+      summary: 'PrepareBankTransferUT: GetActiveTask'
       description: Prepare the bank transfer in the Financial Accounting System.
-      operationId: 'PrepareBankTransfer: GetActiveTask'
+      operationId: 'PrepareBankTransferUT: GetActiveTask'
       responses:
         '200':
           description: ''
-  /task/{taskId}/form-variables/--REMOVE%3APrepareBankTransfer--:
+  /task/{taskId}/form-variables/--REMOVE%3APrepareBankTransferUT--:
     get:
       tags:
-      - InvoiceReceipt
-      summary: 'PrepareBankTransfer: GetTaskFormVariables'
+      - InvoiceReceiptP
+      summary: 'PrepareBankTransferUT: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
         The form variables take form data specified on the task into account.
 
         If form fields are defined, the variable types and default values of the form
         fields are taken into account.
-      operationId: 'PrepareBankTransfer: GetTaskFormVariables'
+      operationId: 'PrepareBankTransferUT: GetTaskFormVariables'
       parameters:
       - name: taskId
         in: path
@@ -339,13 +340,13 @@ paths:
       responses:
         '200':
           description: ''
-  /task/{taskId}/complete/--REMOVE%3APrepareBankTransfer--:
+  /task/{taskId}/complete/--REMOVE%3APrepareBankTransferUT--:
     post:
       tags:
-      - InvoiceReceipt
-      summary: 'PrepareBankTransfer: CompleteTask'
+      - InvoiceReceiptP
+      summary: 'PrepareBankTransferUT: CompleteTask'
       description: Prepare the bank transfer in the Financial Accounting System.
-      operationId: 'PrepareBankTransfer: CompleteTask'
+      operationId: 'PrepareBankTransferUT: CompleteTask'
       parameters:
       - name: taskId
         in: path
@@ -372,28 +373,28 @@ paths:
       responses:
         '200':
           description: ''
-  /task/--REMOVE%3AAssignReviewer--:
+  /task/--REMOVE%3AAssignReviewerUT--:
     post:
       tags:
-      - ReviewInvoiceProcess
-      summary: 'AssignReviewer: GetActiveTask'
+      - ReviewInvoiceP
+      summary: 'AssignReviewerUT: GetActiveTask'
       description: Select the Reviewer.
-      operationId: 'AssignReviewer: GetActiveTask'
+      operationId: 'AssignReviewerUT: GetActiveTask'
       responses:
         '200':
           description: ''
-  /task/{taskId}/form-variables/--REMOVE%3AAssignReviewer--:
+  /task/{taskId}/form-variables/--REMOVE%3AAssignReviewerUT--:
     get:
       tags:
-      - ReviewInvoiceProcess
-      summary: 'AssignReviewer: GetTaskFormVariables'
+      - ReviewInvoiceP
+      summary: 'AssignReviewerUT: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
         The form variables take form data specified on the task into account.
 
         If form fields are defined, the variable types and default values of the form
         fields are taken into account.
-      operationId: 'AssignReviewer: GetTaskFormVariables'
+      operationId: 'AssignReviewerUT: GetTaskFormVariables'
       parameters:
       - name: taskId
         in: path
@@ -430,13 +431,13 @@ paths:
       responses:
         '200':
           description: ''
-  /task/{taskId}/complete/--REMOVE%3AAssignReviewer--:
+  /task/{taskId}/complete/--REMOVE%3AAssignReviewerUT--:
     post:
       tags:
-      - ReviewInvoiceProcess
-      summary: 'AssignReviewer: CompleteTask'
+      - ReviewInvoiceP
+      summary: 'AssignReviewerUT: CompleteTask'
       description: Select the Reviewer.
-      operationId: 'AssignReviewer: CompleteTask'
+      operationId: 'AssignReviewerUT: CompleteTask'
       parameters:
       - name: taskId
         in: path
@@ -466,28 +467,28 @@ paths:
       responses:
         '200':
           description: ''
-  /task/--REMOVE%3AReviewInvoice--:
+  /task/--REMOVE%3AReviewInvoiceUT--:
     post:
       tags:
-      - ReviewInvoiceProcess
-      summary: 'ReviewInvoice: GetActiveTask'
+      - ReviewInvoiceP
+      summary: 'ReviewInvoiceUT: GetActiveTask'
       description: Review Invoice and approve.
-      operationId: 'ReviewInvoice: GetActiveTask'
+      operationId: 'ReviewInvoiceUT: GetActiveTask'
       responses:
         '200':
           description: ''
-  /task/{taskId}/form-variables/--REMOVE%3AReviewInvoice--:
+  /task/{taskId}/form-variables/--REMOVE%3AReviewInvoiceUT--:
     get:
       tags:
-      - ReviewInvoiceProcess
-      summary: 'ReviewInvoice: GetTaskFormVariables'
+      - ReviewInvoiceP
+      summary: 'ReviewInvoiceUT: GetTaskFormVariables'
       description: Retrieves the form variables for a task.
 
         The form variables take form data specified on the task into account.
 
         If form fields are defined, the variable types and default values of the form
         fields are taken into account.
-      operationId: 'ReviewInvoice: GetTaskFormVariables'
+      operationId: 'ReviewInvoiceUT: GetTaskFormVariables'
       parameters:
       - name: taskId
         in: path
@@ -524,13 +525,13 @@ paths:
       responses:
         '200':
           description: ''
-  /task/{taskId}/complete/--REMOVE%3AReviewInvoice--:
+  /task/{taskId}/complete/--REMOVE%3AReviewInvoiceUT--:
     post:
       tags:
-      - ReviewInvoiceProcess
-      summary: 'ReviewInvoice: CompleteTask'
+      - ReviewInvoiceP
+      summary: 'ReviewInvoiceUT: CompleteTask'
       description: Review Invoice and approve.
-      operationId: 'ReviewInvoice: CompleteTask'
+      operationId: 'ReviewInvoiceUT: CompleteTask'
       parameters:
       - name: taskId
         in: path
@@ -661,6 +662,8 @@ components:
           format: int64
         type:
           type: string
+    CNull:
+      type: object
     CString:
       required:
       - value
@@ -680,6 +683,7 @@ components:
       - $ref: '#/components/schemas/CInteger'
       - $ref: '#/components/schemas/CJson'
       - $ref: '#/components/schemas/CLong'
+      - $ref: '#/components/schemas/CNull'
       - $ref: '#/components/schemas/CString'
     CompleteTaskIn:
       required:
