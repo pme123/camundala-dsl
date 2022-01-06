@@ -44,7 +44,7 @@ val tapirDependencies = Seq(
   "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
   "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,
   "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % tapirVersion,
- // "com.softwaremill.quicklens" %% "quicklens" % "1.7.5", // simple modifying case classes
+  "com.softwaremill.quicklens" %% "quicklens" % "1.7.5", // simple modifying case classes
   "org.latestbit" %% "circe-tagged-adt-codec" % "0.10.0", // to encode enums
   "com.lihaoyi" %% "os-lib" % "0.8.0",
   "org.planet42" %% "laika-core" % "0.18.0"
@@ -105,7 +105,8 @@ val camundaTestDependencies = Seq(
 val gatlingDependencies = Seq(
  "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.7.2",
  "io.gatling" % "gatling-test-framework" % "3.7.2"
-)
+).map(_.excludeAll(ExclusionRule("com.softwaremill.quicklens")))
+
 
 lazy val exampleTwitter = project
   .in(file("./examples/twitter"))

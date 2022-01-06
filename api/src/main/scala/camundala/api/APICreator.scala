@@ -77,7 +77,6 @@ trait APICreator extends App:
     OpenAPIDocsOptions.default.copy(defaultDecodeFailureOutput = _ => None)
   )
 
-
   def writeOpenApi(path: Path, api: OpenAPI): Unit =
     if (os.exists(path))
       os.remove(path)
@@ -128,6 +127,35 @@ trait APICreator extends App:
            |
            |$value""".stripMargin
 
+  extension [
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema,
+      T <: InOut[In, Out, T]
+  ](processes: Seq[(String, Process[In, Out])])
+    def endpoints(activities: ApiEndpoint[_, _, _]*) =
+      val (name, process) = processes.headOption.getOrElse(
+        throwErr("processes must have at least one entry.")
+      )
+      val inputExamples = processes.map{
+        case (k, v) => k -> v.in
+      }.toMap
+      val outputExamples = processes.map{
+        case (k, v) => k -> v.out
+      }.toMap
+      ApiEndpoints(
+        process.id,
+        StartProcessInstance(
+          process.id,
+          CamundaRestApi(
+            process.id,
+            process.id,
+            process.descr,
+            RequestInput(inputExamples),
+            RequestOutput.ok(outputExamples),
+            startProcessInstanceErrors
+          )
+        ) +: activities
+      )
   extension [
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
@@ -199,5 +227,6 @@ trait APICreator extends App:
         )
       )
   end extension
-
+  private def throwErr(err: String) =
+    throw new IllegalArgumentException(err)
 end APICreator

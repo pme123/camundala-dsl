@@ -66,6 +66,17 @@ trait SimulationRunner extends Simulation:
 
   def preRequests: Seq[ChainBuilder] = Nil
 
+  def processScenario[
+      In <: Product: Encoder,
+      Out <: Product: Encoder
+  ](scenarioName: String)(
+      process: Process[In, Out]
+  ): PopulationBuilder =
+    processScenario(scenarioName)(
+      process.start() +:
+        process.check(): _*
+    )
+
   def processScenario(scenarioName: String)(
       requests: (ChainBuilder | Seq[ChainBuilder])*
   ): PopulationBuilder =
@@ -109,15 +120,15 @@ trait SimulationRunner extends Simulation:
       ).exitHereIfFailed
 
     def check(): Seq[ChainBuilder] = {
-        Seq(
-          exec(_.set("processState", null)),
-          retryOrFail(
-            exec(checkFinished()).exitHereIfFailed,
-            processCondition()
-          ),
-          exec(checkVars()).exitHereIfFailed,
-        )
-      }
+      Seq(
+        exec(_.set("processState", null)),
+        retryOrFail(
+          exec(checkFinished()).exitHereIfFailed,
+          processCondition()
+        ),
+        exec(checkVars()).exitHereIfFailed
+      )
+    }
 
     def checkVars()(implicit
         tenantId: Option[String]
@@ -143,13 +154,13 @@ trait SimulationRunner extends Simulation:
       ).exitHereIfFailed
 
     def checkFinished()(implicit
-                tenantId: Option[String]
+        tenantId: Option[String]
     ) =
-        http(s"Check finished Process ${process.id}")
-          .get(s"/history/process-instance/#{processInstanceId}")
-          .auth()
-          .check(checkMaxCount)
-          .check(extractJson("$.state", "processState"))
+      http(s"Check finished Process ${process.id}")
+        .get(s"/history/process-instance/#{processInstanceId}")
+        .auth()
+        .check(checkMaxCount)
+        .check(extractJson("$.state", "processState"))
 
     def switchToCalledProcess(): ChainBuilder =
       exec(session =>
@@ -268,9 +279,7 @@ trait SimulationRunner extends Simulation:
   }
   def authHeader: HttpRequestBuilder => HttpRequestBuilder = b => b
 
-  extension(builder: HttpRequestBuilder)
-
+  extension (builder: HttpRequestBuilder)
     def auth(): HttpRequestBuilder = authHeader(builder)
 
 end SimulationRunner
-
