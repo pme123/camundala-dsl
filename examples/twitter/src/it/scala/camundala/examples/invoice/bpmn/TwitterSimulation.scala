@@ -16,19 +16,18 @@ import io.gatling.http.request.builder.HttpRequestBuilder
 import scala.concurrent.duration.*
 
 // exampleTwitter/GatlingIt/testOnly *TwitterSimulation
-class TwitterSimulation extends BasicSimulationRunner :
+class TwitterSimulation extends BasicSimulationRunner:
 
   override val serverPort = 8887
   simulate(
     processScenario("Twitter - Approved")(
-      twitterDemoProcess.start(),
-      reviewTweetApprovedUT.getAndComplete(),
-      twitterDemoProcess.check()
+      twitterDemoProcess,
+      reviewTweetApprovedUT.getAndComplete()
     ),
     processScenario("Twitter - Not Approved")(
-      twitterDemoProcess.start(),
-      reviewTweetApprovedUT.withOut(ReviewTweet(false)).getAndComplete(),
-      twitterDemoProcess.withOut(ReviewTweet(false)).check()
+      twitterDemoProcess
+        .withOut(ReviewTweet(false)),
+      reviewTweetApprovedUT
+        .withOut(ReviewTweet(false)).getAndComplete()
     )
   )
-

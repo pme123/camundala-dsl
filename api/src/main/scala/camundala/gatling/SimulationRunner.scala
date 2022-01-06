@@ -11,14 +11,10 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.{Decoder, Encoder, Json}
 import io.gatling.core.Predef.*
-import io.gatling.core.structure.{
-  ChainBuilder,
-  PopulationBuilder,
-  ScenarioBuilder
-}
+import io.gatling.core.structure.{ChainBuilder, PopulationBuilder, ScenarioBuilder}
 import io.gatling.http.Predef.*
 import io.gatling.http.protocol.HttpProtocolBuilder
-import io.gatling.http.request.builder.HttpRequestBuilder
+import io.gatling.http.request.builder.{HttpRequestBuilder, resolveParamJList}
 import laika.api.*
 import laika.ast.MessageFilter
 import laika.format.*
@@ -70,22 +66,27 @@ trait SimulationRunner extends Simulation:
       In <: Product: Encoder,
       Out <: Product: Encoder
   ](scenarioName: String)(
-      process: Process[In, Out]
+      process: Process[In, Out],
+      requests: (ChainBuilder | Seq[ChainBuilder])*
   ): PopulationBuilder =
     processScenario(scenarioName)(
-      process.start() +:
+      (process.start() +:
+        flatten(requests)) ++
         process.check(): _*
     )
+
+  def flatten(requests: Seq[ChainBuilder | Seq[ChainBuilder]]): Seq[ChainBuilder] =
+    requests.flatMap {
+      case seq: Seq[ChainBuilder] => seq
+      case o: ChainBuilder => Seq(o)
+    }
 
   def processScenario(scenarioName: String)(
       requests: (ChainBuilder | Seq[ChainBuilder])*
   ): PopulationBuilder =
-    val requestsFlatten: Seq[ChainBuilder] = (preRequests ++ requests).flatMap {
-      case seq: Seq[ChainBuilder] => seq
-      case o: ChainBuilder => Seq(o)
-    }
+
     scenario(scenarioName)
-      .exec(requestsFlatten)
+      .exec(preRequests ++ flatten(requests))
       .inject(atOnceUsers(userAtOnce))
 
   def simulate(processScenarios: PopulationBuilder*): Unit =

@@ -5,58 +5,12 @@ info:
   description: "\n\nGenerated Open API:\n\n- **openApi.yml**: Documentation of the\
     \ Processes (this Documentation\U0001f60a).\n- **postmanOpenApi.yml**: Open Api\
     \ that you can import to Postman!\n  Be aware that this needs some adjustments.\n\
-    \n>WARNING: This is an experimental way and not approved.\n\n\nThe Invoice example\
-    \ is provided in all of the pre-packaged distros that Camunda provides.\nThis\
-    \ Camunda example provides the Invoice application inside a Spring Boot application\
-    \ together with all\nthe necessary adjustments needed to run it out of the box.\
-    \ This includes:\n\n* The Camunda EE Webapps\n* The Camunda Rest API\n\nYou will\
-    \ need:\n\n* credentials to access the enterprise repo in your `settings.xml`\n\
-    * a valid camunda-license key file in your classpath in the file `camunda-license.txt`\n\
-    \n## How is it done\n\n1. To embed the Camunda Engine with the Enterprise webapps\
-    \ and Rest API you must add the following maven coordinates \nto your `pom.xml`:\n\
-    \n```xml\n...\n  <properties>\n    <camunda.version>7.15.0-ee</camunda.version>\n\
-    \  </properties>\n\n  <dependencyManagement>\n    <dependencies>\n      ...\n\
-    \      <dependency>\n        <groupId>org.camunda.bpm</groupId>\n        <artifactId>camunda-bom</artifactId>\n\
-    \        <version>${camunda.version}</version>\n        <type>pom</type>\n   \
-    \     <scope>import</scope>\n      </dependency>\n    </dependencies>\n  </dependencyManagement>\n\
-    \n  <dependencies>\n    <dependency>\n      <groupId>org.camunda.bpm.springboot</groupId>\n\
-    \      <artifactId>camunda-bpm-spring-boot-starter-webapp-ee</artifactId>\n  \
-    \  </dependency>\n    <dependency>\n      <groupId>org.camunda.bpm.springboot</groupId>\n\
-    \      <artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>\n    </dependency>\n\
-    \    ...\n  </dependencies>\n...\n```\n\n2. For the example Invoice application,\
-    \ the following dependency needs to be added in your `pom.xml` file:\n\n```xml\n\
-    <dependency>\n  <groupId>org.camunda.bpm.example</groupId>\n  <artifactId>camunda-example-invoice</artifactId>\n\
-    \  <version>${camunda.version}</version>\n  <classifier>classes</classifier>\n\
-    \  <scope>compile</scope>\n</dependency>\n```\n\n3. An \"application\" class annotated\
-    \ with `@SpringBootApplication` needs to be created. In order to have the Invoice\
-    \ \nprocess application registered, add the annotation `@EnableProcessApplication`\
-    \ to the same class, as well as include \nan empty `processes.xml` file to your\
-    \ `META-INF` folder. To ensure that all of necessary BPMN and DMN files are deployed,\
-    \ \nadd the following code in your \"application\" class:\n\n```java\n@SpringBootApplication\n\
-    @EnableProcessApplication\npublic class Application {\n\n  public static void\
-    \ main(String... args) {\n    SpringApplication.run(Application.class, args);\n\
-    \  }\n\n  @Autowired\n  protected ProcessEngine processEngine;\n\n  protected\
-    \ InvoiceProcessApplication invoicePa = new InvoiceProcessApplication();\n\n \
-    \ @PostConstruct\n  public void deployInvoice() {\n    ClassLoader classLoader\
-    \ = invoicePa.getClass().getClassLoader();\n\n    if(processEngine.getIdentityService().createUserQuery().list().isEmpty())\
-    \ {\n      processEngine.getRepositoryService()\n          .createDeployment()\n\
-    \          .addInputStream(\"invoice.v1.bpmn\", classLoader.getResourceAsStream(\"\
-    invoice.v1.bpmn\"))\n          .addInputStream(\"reviewInvoice.bpmn\", classLoader.getResourceAsStream(\"\
-    reviewInvoice.bpmn\"))\n          .deploy();\n    }\n  }\n\n  @EventListener\n\
-    \  public void onPostDeploy(PostDeployEvent event) {\n    invoicePa.startFirstProcess(event.getProcessEngine());\n\
-    \  }\n\n}\n```\n\n4. You can also put additional BPMN, CMMN and DMN files in your\
-    \ classpath, they will be automatically deployed and \nregistered within the process\
-    \ application. Forms HTML needs to be added in the `/resources/static/forms` directory.\n\
-    \n5. If you want your Camunda license automatically used on Engine startup, just\
-    \ put the file with the name \n`camunda-license.txt` on your classpath. \n\n6.\
-    \ Adjust the `src/main/resorces/application.yaml` file according to your preferences.\
-    \ The default setup will use an\n embedded H2 instance.\n\n## Run the application\
-    \ and use Camunda Platform\n\nYou can build the application with `mvn clean install`\
-    \ and then run it with the `java -jar` command.\nYou can also execute the application\
-    \ with `mvn spring-boot:run`.\n\nThen you can access the Camunda Webapps in your\
-    \ browser: `http://localhost:8080/` (provide login/password \nfrom `application.yaml`,\
-    \ default: demo/demo). The Rest API can be available through `http://localhost:8080/engine-rest`.\n\
-    \ \n\n\n<details>\n<summary><b>CHANGELOG</b></summary>\n<p>\n\n\n<h1 id=\"changelog\"\
+    \n>WARNING: This is an experimental way and not approved.\n\n> This is the invoice\
+    \ demo application which is shipped with the full distributions.\n\nSee the original\
+    \ [README](https://github.com/camunda/camunda-bpm-platform/tree/master/examples/invoice).\n\
+    \nI bundled it here! Just run `InvoiceServletProcessApplication`.\n\nThis based\
+    \ on this Project: https://github.com/pme123/spring-boot-datakurre-plugins\n\n\
+    \n<details>\n<summary><b>CHANGELOG</b></summary>\n<p>\n\n\n<h1 id=\"changelog\"\
     \ class=\"section\">Changelog</h1>\n<p>All notable changes to this project will\
     \ be documented in this file.</p>\n<ul>\n  <li>Types of Changes (L3):</li>\n</ul>\n\
     <ul>\n  <li>Added: new features</li>\n</ul>\n<ul>\n  <li>Changed: changes in existing\
