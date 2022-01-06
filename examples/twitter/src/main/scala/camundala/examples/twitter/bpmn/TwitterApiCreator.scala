@@ -4,7 +4,7 @@ package bpmn
 
 import camundala.api.*
 import camundala.bpmn.*
-import TwitterApi.*
+import camundala.examples.twitter.bpmn.TwitterApi.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 

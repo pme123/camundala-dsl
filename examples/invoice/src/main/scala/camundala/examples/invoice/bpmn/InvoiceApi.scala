@@ -7,9 +7,6 @@ import domain.*
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 
-// One import for this ADT/JSON codec
-import org.latestbit.circe.adt.codec.*
-
 object InvoiceApi extends BpmnDsl:
 
   val invoiceCategoryDescr: String =

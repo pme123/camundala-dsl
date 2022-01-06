@@ -12,6 +12,8 @@ export sttp.model.StatusCode
 
 // circe
 export io.circe.{Decoder, Encoder, Json}
+// One import for this ADT/JSON codec
+export org.latestbit.circe.adt.codec.JsonTaggedAdt
 
 // tapir
 export sttp.tapir.EndpointIO.Example

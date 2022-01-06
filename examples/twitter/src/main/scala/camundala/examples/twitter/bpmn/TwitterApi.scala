@@ -2,11 +2,11 @@ package camundala
 package examples.twitter
 package bpmn
 
-import io.circe.generic.auto.*
-import sttp.tapir.generic.auto.*
 import camundala.api.*
 import camundala.bpmn.*
 import camundala.domain.*
+import io.circe.generic.auto.*
+import sttp.tapir.generic.auto.*
 
 object TwitterApi extends BpmnDsl:
   implicit def tenantId: Option[String] = Some("{{tenantId}}")
