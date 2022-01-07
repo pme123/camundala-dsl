@@ -1,6 +1,8 @@
 package camundala
 package bpmn
 
+import io.circe.{Json, parser}
+
 val camundaVersion = "7.15"
 
 
@@ -32,3 +34,8 @@ export sttp.tapir.Schema.annotations.description
 
 def throwErr(err: String) =
   throw new IllegalArgumentException(err)
+
+def toJson(json:String): Json =
+  parser.parse(json) match
+    case Right(v) => v
+    case Left(exc) => throwErr("Could not create Json from your String ->")

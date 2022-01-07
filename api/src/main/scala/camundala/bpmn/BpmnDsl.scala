@@ -152,8 +152,3 @@ trait BpmnDsl:
     descr
       .map(_ + s"\n\n$enumDescription")
       .getOrElse(enumDescription)
-
-  def toJson(json:String): Json =
-    parser.parse(json) match
-      case Right(v) => v
-      case Left(exc) => throwErr("Could not create Json from your String ->")
