@@ -139,10 +139,21 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: InOut[In, Out, T]
   ](processes: Seq[(String, Process[In, Out])])
+
+    // override the processName
     def endpoint: ApiEndpoints =
       endpoints()
 
+    def endpoint(processName: String): ApiEndpoints =
+      endpoints(Nil, Some(processName))
+
     def endpoints(activities: ApiEndpoint[_, _, _]*): ApiEndpoints =
+      endpoints(activities, None)
+
+    def endpoints(
+        activities: Seq[ApiEndpoint[_, _, _]],
+        tag: Option[String] = None
+    ): ApiEndpoints =
       val (name, process) = processes.headOption.getOrElse(
         throwErr("processes must have at least one entry.")
       )
@@ -153,12 +164,12 @@ trait APICreator extends App:
         k -> v.out
       }.toMap
       ApiEndpoints(
-        process.id,
+        tag.getOrElse(process.id),
         StartProcessInstance(
           process.id,
           CamundaRestApi(
             process.id,
-            process.id,
+            tag.getOrElse(process.id),
             process.descr,
             RequestInput(inputExamples),
             RequestOutput.ok(outputExamples),
@@ -171,18 +182,27 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: InOut[In, Out, T]
   ](process: Process[In, Out])
+    // override the processName
+    def endpoint(processName: String): ApiEndpoints =
+      endpoints(Nil, processName)
 
     def endpoint: ApiEndpoints =
       endpoints()
 
-    def endpoints(activities: ApiEndpoint[_, _, _]*) =
+    def endpoints(activities: ApiEndpoint[_, _, _]*): ApiEndpoints =
+      endpoints(activities, process.id)
+
+    def endpoints(
+        activities: Seq[ApiEndpoint[_, _, _]],
+        tag: String
+    ): ApiEndpoints =
       ApiEndpoints(
-        process.id,
+        tag,
         StartProcessInstance(
           process.id,
           CamundaRestApi(
             process.inOutDescr,
-            process.id,
+            tag,
             requestErrorOutputs = startProcessInstanceErrors
           )
         ) +: activities

@@ -225,7 +225,7 @@ trait ApiEndpoint[
       endpoint
         .name(docName)
         .tag(tag)
-        .in("api-docs" / valueName)
+        .in("api-docs" / tag)
         .summary(docName)
         .description(descr)
         .head
@@ -283,7 +283,7 @@ case class StartProcessInstance[
       )
     }
 
-  override lazy val descr: String = restApi.maybeDescr.getOrElse("") +
+  override lazy val descr: String = restApi.maybeDescr.getOrElse("") /*+
     s"""
        |
        |Usage as _CallActivity_:
@@ -294,7 +294,7 @@ case class StartProcessInstance[
        |            ${inSources}
        |            ${outSources}
        |```
-       |""".stripMargin
+       |""".stripMargin */
 
   private lazy val inSources =
     inExample match
