@@ -1,17 +1,13 @@
-package camundala.examples.invoice.bpmn
+package camundala
+package examples.invoice.bpmn
 
-import camundala.api.{CamundaVariable, StartProcessIn}
-import camundala.bpmn.*
 import camundala.examples.invoice.bpmn.InvoiceApi.*
-import camundala.gatling.SimulationRunner
-import camundala.test.CustomTests
-import io.circe.Json
+import api.*
+import bpmn.*
+import domain.*
+import gatling.*
 import io.circe.generic.auto.*
-import io.circe.syntax.*
-import io.gatling.core.Predef.*
-import io.gatling.core.structure.{ChainBuilder, ScenarioBuilder}
-import io.gatling.http.Predef.*
-import io.gatling.http.request.builder.HttpRequestBuilder
+import sttp.tapir.generic.auto.*
 
 import scala.concurrent.duration.*
 

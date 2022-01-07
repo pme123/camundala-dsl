@@ -2,67 +2,35 @@ openapi: 3.0.3
 info:
   title: Twitter Process API
   version: '1.0'
-  description: "\n\nGenerated Open API:\n* **openApi.yml**: Documentation of the Processes.\n\
-    \  With small adjustments this can be imported to Postman!\n\n>WARNING: This is\
-    \ an experimental way and not approved.\n\nI did the following Adjustments:\n\
-    * Changed it to _Scala_ to simplify my example.\n* Added extensions to the Camundala\
-    \ DSL.\n* Added the BPMN implementation in Camundala DSL.\n\nThere are 2 application\
-    \ here:\n1. **TwitterProcessRunnerApp**\n   \n   Runs the _Camundala_ Dev Process\
-    \ (from specification BPMN to implementation BPMN).\n\n2. **TwitterServletProcessApplication**\n\
-    \n   Runs the Camunda Engine (Spring Boot) with the generated BPMN. \n\n## How\
-    \ to run it\n> **this needs [sbt](https://www.scala-sbt.org)**\n\n`sbt exampleTwitter/run`\n\
-    \nNow you can select 1 or 2:\n```\nMultiple main classes detected. Select one\
-    \ to run:\n [1] camundala.examples.twitter.TwitterServletProcessApplication\n\
+  description: "\n\nGenerated Open API:\n\n- **openApi.yml**: Documentation of the\
+    \ Processes (this Documentation\U0001f60a).\n- **postmanOpenApi.yml**: Open Api\
+    \ that you can import to Postman!\n  Be aware that this needs some adjustments.\n\
+    \n>WARNING: This is an experimental way and not approved.\n\nI did the following\
+    \ Adjustments:\n* Changed it to _Scala_ to simplify my example.\n* Added extensions\
+    \ to the Camundala DSL.\n* Added the BPMN implementation in Camundala DSL.\n\n\
+    There are 2 application here:\n1. **TwitterProcessRunnerApp**\n   \n   Runs the\
+    \ _Camundala_ Dev Process (from specification BPMN to implementation BPMN).\n\n\
+    2. **TwitterServletProcessApplication**\n\n   Runs the Camunda Engine (Spring\
+    \ Boot) with the generated BPMN. \n\n## How to run it\n> **this needs [sbt](https://www.scala-sbt.org)**\n\
+    \n`sbt exampleTwitter/run`\n\nNow you can select 1 or 2:\n```\nMultiple main classes\
+    \ detected. Select one to run:\n [1] camundala.examples.twitter.TwitterServletProcessApplication\n\
     \ [2] camundala.examples.twitter.bpmn.TwitterProcessRunnerApp\n ```\nThis is the\
     \ [original README](https://github.com/camunda/camunda-bpm-examples/tree/master/spring-boot-starter/example-twitter)\n\
-    \nThis example demonstrates how you can use a BPMN process and the Tweeter API\
-    \ to build a simple Twitter client. \nIt uses `camunda-bpm-spring-boot-starter-webapp`\
-    \ and thus embed Tomcat as a web container.\n\nThe example contains:\n- a process\
-    \ application with one process deployed on the Camunda engine\n- custom forms\
-    \ to create and review the Tweet\n- creates on startup an admin user \"demo\"\
-    \ (password: demo)\n\nIt also demonstrates the usage of the `application.yaml`\
-    \ configuration file.\n\n## How is it done\n\n1. To embed the Camunda Engine you\
-    \ must add following dependency to your `pom.xml`:\n   \n```xml\n...\n<dependency>\n\
-    \ <groupId>org.camunda.bpm.springboot</groupId>\n <artifactId>camunda-bpm-spring-boot-starter-webapp</artifactId>\n\
-    \ <version>7.15.0</version>\n</dependency>\n...\n```\n\n2. With Spring Boot you\
-    \ usually create an \"application\" class annotated with `@SpringBootApplication`.\
-    \ In order to have a Camunda process application\nregistered, you can simply add\
-    \ the annotation `@EnableProcessApplication` to the same class and also include\
-    \ the `processes.xml` file in your `META-INF` folder:\n\n```java\n@SpringBootApplication\n\
-    @EnableProcessApplication\npublic class TwitterServletProcessApplication {\n\n\
-    \  public static void main(String... args) {\n    SpringApplication.run(TwitterServletProcessApplication.class,\
-    \ args);\n  }\n}\n```\n\n3. You can also put BPMN, CMMN and DMN files in your\
-    \ classpath, they will be automatically deployed and registered within the process\
-    \ application.\n\n4. You can configure your Spring Boot application using `application.yaml`\
-    \ file. All possible Camunda-specific configuration parameters are listed [here](https://docs.camunda.org/manual/7.15/user-guide/spring-boot-integration/configuration/)\n\
-    \n5. This example provides two implementations for posting a Tweet:\n* `TweetContentOfflineDelegate`\
-    \ (default) - will just print the tweet content on console\n* `TweetContentDelegate`\
-    \ - can post a tweet when providing credentials for your twitter account\n\nYou\
-    \ can switch between two implementations by changing the name of a Spring bean\
-    \ to `tweetAdapter`. This `tweetAdapter` bean is further referenced in \nthe BPMN\
-    \ diagram via \"Delegate expression\" in a service task:\n\n```xml\n...\n<serviceTask\
-    \ id=\"service_task_publish_on_twitter\" name=\"Publish on Twitter\" camunda:delegateExpression=\"\
-    #{tweetAdapter}\">\n  ...\n</serviceTask>\n...\n```\n\n## Run the application\
-    \ and check the result\n\nYou can build the application by `mvn clean install`\
-    \ and then run it with `java -jar` command.\n\nGo to `http://localhost:8080` (provide\
-    \ login/password from `application.yaml`, default: demo/demo) then go to Tasklist\
-    \ and try to start the process and complete the tasks, observe log entries or\
-    \ the real tweet when `TweetContentDelegate` is used.\n\nThere is no CHANGELOG.md\
-    \ in the Package.\n"
-servers:
-- url: http://localhost:8887/engine-rest
+    \nI bundled it here! Just run `InvoiceServletProcessApplication`.\n\nThis based\
+    \ on this Project: https://github.com/pme123/spring-boot-datakurre-plugins\n\n\
+    \nThere is no CHANGELOG.md in the Package.\n"
 paths:
-  /api-docs/TwitterDemoProcessProcess:
-    get:
+  /api-docs/TwitterDemoPProcess:
+    head:
       tags:
-      - TwitterDemoProcess
-      summary: 'TwitterDemoProcess: Process'
+      - TwitterDemoP
+      summary: 'TwitterDemoP: Process'
       description: "This runs the Twitter Approvement Process.\n\nUsage as _CallActivity_:\n\
-        ```\nlazy val TwitterDemoProcessProcess =\n          callActivity(\"TwitterDemoProcess\"\
-        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"TwitterDemoProcess\"\
+        ```\nlazy val TwitterDemoPProcess =\n          callActivity(\"TwitterDemoP\"\
+        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"TwitterDemoP\"\
         )\n            .inSource(\"email\")\n            .inSource(\"content\")\n\
-        \            \n```\n"
-      operationId: 'TwitterDemoProcess: Process'
+        \            .outSource(\"approved\")\n```\n"
+      operationId: 'TwitterDemoP: Process'
       requestBody:
         content:
           application/json:
@@ -80,17 +48,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NoOutput'
+                $ref: '#/components/schemas/ReviewTweet'
               examples:
                 standard:
-                  value: {}
-  /api-docs/ReviewTweetUserTask:
-    get:
+                  value:
+                    approved: true
+  /api-docs/ReviewTweetUTUserTask:
+    head:
       tags:
-      - TwitterDemoProcess
-      summary: 'ReviewTweet: UserTask'
+      - TwitterDemoP
+      summary: 'ReviewTweetUT: UserTask'
       description: ''
-      operationId: 'ReviewTweet: UserTask'
+      operationId: 'ReviewTweetUT: UserTask'
       requestBody:
         content:
           application/json:
@@ -138,8 +107,6 @@ components:
 
         '
     NoInput:
-      type: object
-    NoOutput:
       type: object
     ReviewTweet:
       required:

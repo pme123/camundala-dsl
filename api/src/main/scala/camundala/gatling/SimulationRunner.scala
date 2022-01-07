@@ -19,10 +19,7 @@ import io.gatling.core.structure.{
 import io.gatling.http.Predef.*
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.{HttpRequestBuilder, resolveParamJList}
-import laika.api.*
-import laika.ast.MessageFilter
-import laika.format.*
-import laika.markdown.github.GitHubFlavor
+
 import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.generic.auto.*
 import sttp.tapir.openapi.circe.yaml.*
@@ -67,8 +64,8 @@ trait SimulationRunner extends Simulation:
   def preRequests: Seq[ChainBuilder] = Nil
 
   def processScenario[
-      In <: Product: Encoder,
-      Out <: Product: Encoder
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
   ](scenarioName: String)(
       process: Process[In, Out],
       requests: (ChainBuilder | Seq[ChainBuilder])*
@@ -94,7 +91,10 @@ trait SimulationRunner extends Simulation:
       .exec(preRequests ++ flatten(requests))
       .inject(atOnceUsers(userAtOnce))
 
-  def simulate[In <: Product: Encoder, Out <: Product: Encoder](
+  def simulate[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
       examples: Seq[(String, Process[In, Out])]
   ): Unit =
     simulate(
@@ -105,7 +105,10 @@ trait SimulationRunner extends Simulation:
       }: _*
     )
 
-  def simulate[In <: Product: Encoder, Out <: Product: Encoder](
+  def simulate[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
       example: Process[In, Out]
   ): Unit =
     simulate(
@@ -120,8 +123,8 @@ trait SimulationRunner extends Simulation:
       .assertions(global.failedRequests.count.is(0))
 
   extension [
-      In <: Product: Encoder,
-      Out <: Product: Encoder
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
   ](
       process: Process[In, Out]
   )
@@ -144,6 +147,46 @@ trait SimulationRunner extends Simulation:
           ) //.check(printBody)
           .check(extractJson("$.id", "processInstanceId"))
       ).exitHereIfFailed
+
+    def exists(
+        key: String
+    ): Process[In, TestOverrides] =
+      testOverride(key, TestOverrideType.Exists)
+
+    def notExists(
+        key: String
+    ): Process[In, TestOverrides] =
+      testOverride(key, TestOverrideType.NotExists)
+
+    def isEqual(
+        key: String,
+        value: String
+    ): Process[In, TestOverrides] =
+      testOverride(key, TestOverrideType.NotExists, Some(value))
+
+    def testOverride(
+        key: String,
+        overrideType: TestOverrideType,
+        value: Option[String] = None
+    ): Process[In, TestOverrides] =
+      testOverrides(TestOverride(key, overrideType, value))
+
+    def testOverrides(
+        testOverrides: TestOverride*
+    ): Process[In, TestOverrides] =
+      val newOverrides: Seq[TestOverride] = process.out match
+        case TestOverrides(overrides) =>
+          overrides ++ testOverrides
+        case other =>
+          testOverrides
+      Process(
+        InOutDescr(
+          process.id,
+          process.in,
+          TestOverrides(newOverrides),
+          process.descr
+        )
+      )
 
     def check(): Seq[ChainBuilder] = {
       Seq(
