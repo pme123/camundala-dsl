@@ -11,7 +11,11 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.{Decoder, Encoder, Json}
 import io.gatling.core.Predef.*
-import io.gatling.core.structure.{ChainBuilder, PopulationBuilder, ScenarioBuilder}
+import io.gatling.core.structure.{
+  ChainBuilder,
+  PopulationBuilder,
+  ScenarioBuilder
+}
 import io.gatling.http.Predef.*
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.{HttpRequestBuilder, resolveParamJList}
@@ -75,7 +79,9 @@ trait SimulationRunner extends Simulation:
         process.check(): _*
     )
 
-  def flatten(requests: Seq[ChainBuilder | Seq[ChainBuilder]]): Seq[ChainBuilder] =
+  def flatten(
+      requests: Seq[ChainBuilder | Seq[ChainBuilder]]
+  ): Seq[ChainBuilder] =
     requests.flatMap {
       case seq: Seq[ChainBuilder] => seq
       case o: ChainBuilder => Seq(o)
@@ -84,10 +90,29 @@ trait SimulationRunner extends Simulation:
   def processScenario(scenarioName: String)(
       requests: (ChainBuilder | Seq[ChainBuilder])*
   ): PopulationBuilder =
-
     scenario(scenarioName)
       .exec(preRequests ++ flatten(requests))
       .inject(atOnceUsers(userAtOnce))
+
+  def simulate[In <: Product: Encoder, Out <: Product: Encoder](
+      examples: Seq[(String, Process[In, Out])]
+  ): Unit =
+    simulate(
+      examples.map { case (k, v) =>
+        processScenario(k)(
+          v
+        )
+      }: _*
+    )
+
+  def simulate[In <: Product: Encoder, Out <: Product: Encoder](
+      example: Process[In, Out]
+  ): Unit =
+    simulate(
+      processScenario("example")(
+        example
+      )
+    )
 
   def simulate(processScenarios: PopulationBuilder*): Unit =
     setUp(processScenarios: _*)
