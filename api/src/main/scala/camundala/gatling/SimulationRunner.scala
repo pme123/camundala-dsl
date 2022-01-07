@@ -1,7 +1,7 @@
 package camundala
 package gatling
 
-import camundala.api.*
+import camundala.api.{CamundaVariable, *}
 import camundala.api.CamundaVariable.CFile
 import camundala.bpmn
 import camundala.bpmn.{DecisionDmn, InOut, Process, UserTask, *}
@@ -11,15 +11,10 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.{Decoder, Encoder, Json}
 import io.gatling.core.Predef.*
-import io.gatling.core.structure.{
-  ChainBuilder,
-  PopulationBuilder,
-  ScenarioBuilder
-}
+import io.gatling.core.structure.{ChainBuilder, PopulationBuilder, ScenarioBuilder}
 import io.gatling.http.Predef.*
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.{HttpRequestBuilder, resolveParamJList}
-
 import sttp.tapir.docs.openapi.{OpenAPIDocsInterpreter, OpenAPIDocsOptions}
 import sttp.tapir.generic.auto.*
 import sttp.tapir.openapi.circe.yaml.*
@@ -158,16 +153,16 @@ trait SimulationRunner extends Simulation:
     ): Process[In, TestOverrides] =
       testOverride(key, TestOverrideType.NotExists)
 
-    def isEqual(
+    def isEquals(
         key: String,
-        value: String
+        value: Any
     ): Process[In, TestOverrides] =
-      testOverride(key, TestOverrideType.NotExists, Some(value))
+      testOverride(key, TestOverrideType.IsEquals, Some(CamundaVariable.valueToCamunda(value)))
 
     def testOverride(
         key: String,
         overrideType: TestOverrideType,
-        value: Option[String] = None
+        value: Option[CamundaVariable] = None
     ): Process[In, TestOverrides] =
       testOverrides(TestOverride(key, overrideType, value))
 

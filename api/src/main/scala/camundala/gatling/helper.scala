@@ -1,7 +1,7 @@
 package camundala
 package gatling
 
-import camundala.api.CamundaProperty
+import camundala.api.{CamundaProperty, CamundaVariable}
 import camundala.api.CamundaVariable.*
 import io.gatling.core.Predef.*
 import io.gatling.core.structure.ChainBuilder
@@ -13,13 +13,13 @@ import io.circe.Encoder
 case class TestOverride(
     key: String,
     overrideType: TestOverrideType, // problem with encoding?! derives JsonTaggedAdt.PureEncoder
-    value: Option[String] = None
+    value: Option[CamundaVariable] = None
 )
 
 case class TestOverrides(overrides: Seq[TestOverride]) //Seq[TestOverride])
 
 enum TestOverrideType:
-  case Exists, NotExists
+  case Exists, NotExists, IsEquals
 
 def statusCondition(status: Int*): Session => Boolean = session => {
   println(">>> lastStatus: " + session("lastStatus").as[Int])
@@ -65,14 +65,26 @@ def checkProps[T <: Product](
       overrides
         .map {
           case TestOverride(k, Exists, _) =>
-            println(s"$k EXISTS! $result")
-            result.exists(_.key == k)
+            val matches = result.exists(_.key == k)
+            if(!matches)
+              println(s"!!! $k did NOT exist in $result")
+            matches
           case TestOverride(k, NotExists, _) =>
-            !result.exists(_.key == k)
+            val matches = !result.exists(_.key == k)
+            if(!matches)
+              println(s"!!! $k did EXIST in $result")
+            matches
+          case TestOverride(k, IsEquals, Some(v)) =>
+            val r = result.find(_.key == k)
+            val matches =   r.nonEmpty && r.exists(_.value == v)
+            if(!matches)
+              println(s"!!! $v ($k) is NOT equal in $r")
+            matches
           case other =>
-            throwErr(
+            println(
               s"Sorry only ${TestOverrideType.values.mkString(", ")} for TestOverrides supported"
             )
+            false
         }
         .forall(_ == true)
     case product =>
