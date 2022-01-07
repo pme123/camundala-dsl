@@ -2,7 +2,7 @@ package camundala
 package gatling
 
 import camundala.api.CamundaProperty
-import camundala.api.CamundaVariable.CFile
+import camundala.api.CamundaVariable.*
 import io.gatling.core.Predef.*
 import io.gatling.core.structure.ChainBuilder
 import camundala.bpmn.*
@@ -88,6 +88,13 @@ def checkProps[T <: Product](
                     s">>> Files cannot be tested as its content is _null_ ('$key')."
                   )
                   true
+                case CJson(v, _) =>
+                  val matches = toJson(v) == value
+                  if (!matches)
+                    println(
+                      s"!!! The Json value '${toJson(v)}' of $key does not match the result variable '$value'.\n $result"
+                    )
+                  matches
                 case other =>
                   val matches = obj.value.value == value
                   if (!matches)

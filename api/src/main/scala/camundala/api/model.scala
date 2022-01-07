@@ -218,7 +218,7 @@ object CamundaVariable:
       case "Integer" => anyValue.as[Int].map(CInteger(_))
       case "Long" => anyValue.as[Long].map(CLong(_))
       case "Double" => anyValue.as[Double].map(CDouble(_))
-      case "Json" => anyValue.as[Json].map(json => CJson(json.toString))
+      case "Json" => anyValue.as[String].map(CJson(_))
       case "File" =>
         valueInfo.as[CFileValueInfo].map(vi => CFile("not_set", vi))
       case _ => anyValue.as[String].map(CString(_))
