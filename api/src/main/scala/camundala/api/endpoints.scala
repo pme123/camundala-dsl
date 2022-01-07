@@ -150,11 +150,13 @@ case class ApiEndpoints(
     endpoints: Seq[ApiEndpoint[_, _, _]]
 ):
   def create(): Seq[Endpoint[_, _, _, _]] =
+    println(s"Start API: $tag")
     endpoints.flatMap(_.withTag(tag).create())
 
   def createPostman()(implicit
       tenantId: Option[String]
   ): Seq[Endpoint[_, _, _, _]] =
+    println(s"Start Postman API: $tag")
     endpoints.flatMap(_.withTag(tag).createPostman())
 
 end ApiEndpoints
