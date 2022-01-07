@@ -10,8 +10,6 @@ object InvoiceInitCamundaBpmnApp extends InitCamundaBpmn:
 
   run("Invoice")
 
-
-
 end InvoiceInitCamundaBpmnApp
 
 

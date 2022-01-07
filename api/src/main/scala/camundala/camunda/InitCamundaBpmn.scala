@@ -9,8 +9,11 @@ import sttp.tapir.generic.auto.*
 
 import java.io.File
 import scala.language.implicitConversions
+import scala.util.matching.Regex
 
 trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
+
+  def avoidCreateIdRegex: Regex = "".r
 
   def run(name: String): Unit =
     val bpmns: Seq[(String, Seq[Process[?, ?]])] =
@@ -46,6 +49,7 @@ trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
     val cProcesses = modelInstance
       .getModelElementsByType(classOf[CProcess])
       .asScala
+      .filter(_.isExecutable())
       .toSeq
     CBpmn.writeModelToFile(
       (withIdPath / cawemoFile.getName).toIO,
@@ -125,48 +129,51 @@ trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
       newIdent
 
   def identString(name: Option[String], camObj: CBaseElement): String =
-    val elemKey: String =
-      camObj.getElementType.getTypeName.capitalize.filter(c =>
-        s"$c".matches("[A-Z]")
-      )
+    if (avoidCreateIdRegex.matches(camObj.getId()))
+      camObj.getId() // only adjust id if you want it
+    else
+      val elemKey: String =
+        camObj.getElementType.getTypeName.capitalize.filter(c =>
+          s"$c".matches("[A-Z]")
+        )
 
-    name match
-      case Some(n) =>
-        n.split("[^a-zA-Z0-9]")
-          .map(_.capitalize)
-          .mkString + elemKey
-      case None =>
-        camObj.getId
+      name match
+        case Some(n) =>
+          n.split("[^a-zA-Z0-9]")
+            .map(_.capitalize)
+            .mkString + elemKey
+        case None =>
+          camObj.getId
 
   private def printGenerator(
       name: String,
       bpmns: Seq[(String, Seq[Process[?, ?]])]
   ): Unit =
     println(s"""
-import bpmn.*
-import domain.*
-import camunda.GenerateCamundaBpmn
+import camundala.bpmn.*
+import camundala.domain.*
+import camundala.camunda.GenerateCamundaBpmn
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 
 object ${name}GenerateCamundaBpmnApp extends GenerateCamundaBpmn:
 
-  val projectPath = pwd / ${projectPath
+  val projectPath = ${("pwd" +: projectPath
       .relativeTo(pwd)
       .segments
-      .map(s => s"\"$s\"")
+      .map(s => s"\"$s\""))
       .mkString(" / ")}
   import ${name}Domain.*
   run(${bpmns
       .map { case (fileName, procs) =>
         s"""Bpmn(withIdPath / "$fileName", ${procs
-          .map(_.id)
+          .map(p => identName(p.id))
           .mkString(", ")})"""
       }
       .mkString(",\n         ")})
 
 end ${name}GenerateCamundaBpmnApp
-object ${name}Domain extends PureDsl:
+object ${name}Domain extends BpmnDsl:
 
 ${bpmns
       .map(bpmn =>
@@ -174,10 +181,12 @@ ${bpmns
           bpmn._2
             .map { p =>
               printInOut(p) +
-                p.elements.map{
-                  case io: InOut[?,?,?] => printInOut(io)
-                  case e: ProcessNode => printElem(e)
-                }.mkString("\n", "\n", "")
+                p.elements
+                  .map {
+                    case io: InOut[?, ?, ?] => printInOut(io)
+                    case e: ProcessNode => printElem(e)
+                  }
+                  .mkString("\n", "\n", "")
             }
             .mkString("\n")
       )
@@ -185,11 +194,16 @@ ${bpmns
 
 end ${name}Domain
 """)
+  //only needed if the id was avoided to create!
+  private def identName(id: String) =
+    id.split("[^a-zA-Z0-9]")
+      .map(_.capitalize)
+      .mkString
 
   private def printInOut(inOut: InOut[?, ?, ?]): String =
-    s"""  val ${inOut.id}Ident ="${inOut.id}"
-       |  lazy val ${inOut.id} = ${inOut.label}(
-       |    ${inOut.id}Ident,
+    s"""  val ${identName(inOut.id)}Ident ="${inOut.id}"
+       |  lazy val ${identName(inOut.id)} = ${inOut.label}(
+       |    ${identName(inOut.id)}Ident,
        |    in = NoInput(),
        |    out = NoOutput(),
        |    descr = None
@@ -197,9 +211,9 @@ end ${name}Domain
        |""".stripMargin
 
   private def printElem(processElement: ProcessNode): String =
-    s"""  val ${processElement.id}Ident ="${processElement.id}"
-       |  lazy val ${processElement.id} = ${processElement.label}(
-       |    ${processElement.id}Ident,
+    s"""  val ${identName(processElement.id)}Ident ="${processElement.id}"
+       |  lazy val ${identName(processElement.id)} = ${processElement.label}(
+       |    ${identName(processElement.id)}Ident,
        |    descr = None
        |  )
        |""".stripMargin

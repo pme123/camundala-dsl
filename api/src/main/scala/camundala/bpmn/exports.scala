@@ -29,3 +29,6 @@ export sttp.tapir.query
 export sttp.tapir.Schema
 export sttp.tapir.stringToPath
 export sttp.tapir.Schema.annotations.description
+
+def throwErr(err: String) =
+  throw new IllegalArgumentException(err)

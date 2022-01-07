@@ -7,6 +7,7 @@ import scala.deriving.Mirror
 import scala.compiletime.{constValue, constValueTuple}
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
+import io.circe.{Json, parser}
 
 trait BpmnDsl:
 
@@ -18,7 +19,7 @@ trait BpmnDsl:
       in: In = NoInput(),
       out: Out = NoOutput(),
       descr: Option[String] | String = None
-  ) =
+  ): Process[In, Out] =
     Process(
       InOutDescr(id, in, out, descr)
     )
@@ -57,7 +58,7 @@ trait BpmnDsl:
       in: In = NoInput(),
       out: Out = NoOutput(),
       descr: Option[String] | String = None
-  ) =
+  ): DecisionDmn[In, Out] =
     DecisionDmn[In, Out](
       InOutDescr(decisionDefinitionKey, in, out, descr)
     )
@@ -69,7 +70,7 @@ trait BpmnDsl:
       decisionDefinitionKey: String,
       in: In,
       out: Out
-  ) =
+  ): DecisionDmn[In, Out] =
     require(
       out.isSingleEntry,
       "A singleEntry must look like `case class SingleEntry(result: DmnValueType)`"
@@ -83,7 +84,7 @@ trait BpmnDsl:
       decisionDefinitionKey: String,
       in: In,
       out: Out
-  ) =
+  ): DecisionDmn[In, Out] =
     require(
       out.isCollectEntries,
       "A collectEntries must look like `case class CollectEntries(indexes: Int*)`"
@@ -97,7 +98,7 @@ trait BpmnDsl:
       decisionDefinitionKey: String,
       in: In,
       out: Out
-  ) =
+  ): DecisionDmn[In, Out] =
     require(
       out.isSingleResult,
       """A singleResult must look like `case class SingleResult(result: ManyOutResult)`
@@ -113,7 +114,7 @@ trait BpmnDsl:
       decisionDefinitionKey: String,
       in: In,
       out: Out
-  ) =
+  ): DecisionDmn[In, Out] =
     require(
       out.isResultList,
       """A resultList must look like `case class ResultList(results: ManyOutResult*)`
@@ -151,3 +152,8 @@ trait BpmnDsl:
     descr
       .map(_ + s"\n\n$enumDescription")
       .getOrElse(enumDescription)
+
+  def toJson(json:String): Json =
+    parser.parse(json) match
+      case Right(v) => v
+      case Left(exc) => throwErr("Could not create Json from your String ->")

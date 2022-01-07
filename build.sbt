@@ -84,7 +84,7 @@ val camundaDependencies = Seq(
 )
 val camundaTestDependencies = Seq(
   // provide Camunda interaction
-  "org.camunda.bpm" % "camunda-engine" % camundaVersion % Provided,
+  "org.camunda.bpm" % "camunda-engine" % camundaVersion,
   //
   //"org.camunda.bpm.dmn" % "camunda-engine-dmn" % camundaVersion % Provided,
   // provide test helper

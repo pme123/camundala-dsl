@@ -60,7 +60,14 @@ trait APICreator extends App:
 
   def info(title: String) = Info(title, version, description, contact = contact)
 
-  def apiEndpoints(apiEP: ApiEndpoints*) =
+  def apiEndpoints[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](processes: Process[In, Out]*): Unit =
+    val endpoints = processes.map(_.endpoints())
+    apiEndpoints(endpoints: _*)
+
+  def apiEndpoints(apiEP: ApiEndpoints*): Unit =
     writeOpenApi(openApiPath, openApi(apiEP))
     writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
 
@@ -132,15 +139,18 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: InOut[In, Out, T]
   ](processes: Seq[(String, Process[In, Out])])
-    def endpoints(activities: ApiEndpoint[_, _, _]*) =
+    def endpoint: ApiEndpoints =
+      endpoints()
+
+    def endpoints(activities: ApiEndpoint[_, _, _]*): ApiEndpoints =
       val (name, process) = processes.headOption.getOrElse(
         throwErr("processes must have at least one entry.")
       )
-      val inputExamples = processes.map{
-        case (k, v) => k -> v.in
+      val inputExamples = processes.map { case (k, v) =>
+        k -> v.in
       }.toMap
-      val outputExamples = processes.map{
-        case (k, v) => k -> v.out
+      val outputExamples = processes.map { case (k, v) =>
+        k -> v.out
       }.toMap
       ApiEndpoints(
         process.id,
@@ -161,6 +171,10 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: InOut[In, Out, T]
   ](process: Process[In, Out])
+
+    def endpoint: ApiEndpoints =
+      endpoints()
+
     def endpoints(activities: ApiEndpoint[_, _, _]*) =
       ApiEndpoints(
         process.id,
@@ -227,6 +241,5 @@ trait APICreator extends App:
         )
       )
   end extension
-  private def throwErr(err: String) =
-    throw new IllegalArgumentException(err)
+
 end APICreator
