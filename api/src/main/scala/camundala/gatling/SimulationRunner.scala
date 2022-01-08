@@ -300,17 +300,20 @@ trait SimulationRunner extends Simulation:
 
     private def checkForm(): HttpRequestBuilder =
       http(s"Check Form ${userTask.id}")
-        .get("/task/#{taskId}/form-variables?deserializeValues=false")
+        .get(
+          "/variable-instance?deserializeValues=false&processInstanceId=#{processInstanceId}"
+        )
+        // Removed as Jsons were returned with type String?! Check History 8.1.22 19:00h
+        // .get("/task/#{taskId}/form-variables?deserializeValues=false")
         .auth()
         .check(
           bodyString
             .transform { body =>
               parse(body)
-                .flatMap(_.as[FormVariables]) match {
-                case Right(value) =>
-                  checkProps(userTask.in, CamundaProperty.from(value))
+                .flatMap(_.as[Seq[CamundaProperty]]) match {
+                case Right(value) => checkProps(userTask.in, value)
                 case Left(exc) =>
-                  s"\n!!! Problem parsing Result Body to a List of FormVariables.\n$exc\n$body"
+                  s"\n!!! Problem parsing Result Body to a List of CamundaProperty.\n$exc\n$body"
               }
             }
             .is(true)

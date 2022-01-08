@@ -151,6 +151,7 @@ private def check[T <: Product](
             case other =>
               val matches = obj.value.value == value
               if (!matches)
+                println(s"OTHER: ${other.getClass}")
                 println(
                   s"!!! The value '$value' of $key does not match the result variable '${obj.value.value}'.\n $result"
                 )
