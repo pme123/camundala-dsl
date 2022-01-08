@@ -1,8 +1,8 @@
 package camundala
 package gatling
 
-import camundala.api.{CamundaVariable, *}
-import camundala.api.CamundaVariable.CFile
+import camundala.api.*
+import camundala.api.CamundaVariable.*
 import camundala.bpmn
 import camundala.bpmn.{DecisionDmn, InOut, Process, UserTask, *}
 import camundala.domain.*
@@ -11,7 +11,11 @@ import io.circe.parser.*
 import io.circe.syntax.*
 import io.circe.{Decoder, Encoder, Json}
 import io.gatling.core.Predef.*
-import io.gatling.core.structure.{ChainBuilder, PopulationBuilder, ScenarioBuilder}
+import io.gatling.core.structure.{
+  ChainBuilder,
+  PopulationBuilder,
+  ScenarioBuilder
+}
 import io.gatling.http.Predef.*
 import io.gatling.http.protocol.HttpProtocolBuilder
 import io.gatling.http.request.builder.{HttpRequestBuilder, resolveParamJList}
@@ -157,7 +161,21 @@ trait SimulationRunner extends Simulation:
         key: String,
         value: Any
     ): Process[In, TestOverrides] =
-      testOverride(key, TestOverrideType.IsEquals, Some(CamundaVariable.valueToCamunda(value)))
+      testOverride(
+        key,
+        TestOverrideType.IsEquals,
+        Some(CamundaVariable.valueToCamunda(value))
+      )
+
+    def hasSize(
+        key: String,
+        size: Int
+    ): Process[In, TestOverrides] =
+      testOverride(
+        key,
+        TestOverrideType.HasSize,
+        Some(CInteger(size))
+      )
 
     def testOverride(
         key: String,
