@@ -37,10 +37,10 @@ def taskCondition(): Session => Boolean = session => {
 }
 
 // check if the process is  not active
-def processCondition(): Session => Boolean = session => {
+def processCondition: Session => Boolean = session =>
   println("<<< retryCount: " + session("retryCount").as[Int])
-  session.attributes.get("processState").equals("ACTIVE")
-}
+  val status = session.attributes.get("processState")
+  status.contains("ACTIVE")
 
 def extractJson(path: String, key: String) =
   jsonPath(path)
@@ -90,14 +90,15 @@ private def check(overrides: Seq[TestOverride], result: Seq[CamundaProperty]) =
         matches
       case TestOverride(k, HasSize, Some(value)) =>
         val r = result.find(_.key == k)
-        val matches = r.exists{_.value match
-          case CJson(j,_) =>
-            (toJson(j).asArray, value) match
-              case (Some(vector), CInteger(s,_)) =>
-                vector.size == s
-              case _ =>
-                false
-          case _ => false
+        val matches = r.exists {
+          _.value match
+            case CJson(j, _) =>
+              (toJson(j).asArray, value) match
+                case (Some(vector), CInteger(s, _)) =>
+                  vector.size == s
+                case _ =>
+                  false
+            case _ => false
         }
         if (!matches)
           println(s"!!! $k has NOT Size $value in $r")

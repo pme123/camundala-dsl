@@ -150,7 +150,7 @@ case class ApiEndpoints(
     endpoints: Seq[ApiEndpoint[_, _, _]]
 ):
   def create(): Seq[Endpoint[_, _, _, _]] =
-    println(s"Start API: $tag")
+    println(s"Start API: $tag - ${endpoints.size} Endpoints")
     endpoints.flatMap(_.withTag(tag).create())
 
   def createPostman()(implicit
@@ -169,7 +169,7 @@ trait ApiEndpoint[
   def restApi: CamundaRestApi[In, Out]
 
   def apiName: String
-  lazy val docName: String = s"${restApi.name}: ${apiName}"
+  lazy val docName: String = s"$apiName: ${restApi.name}"
   lazy val postmanName: String =
     s"${restApi.name}: ${getClass.getSimpleName}"
   lazy val valueName: String =
@@ -225,7 +225,7 @@ trait ApiEndpoint[
       endpoint
         .name(docName)
         .tag(tag)
-        .in("api-docs" / tag)
+        .in(apiName / tag / restApi.name )
         .summary(docName)
         .description(descr)
         .head

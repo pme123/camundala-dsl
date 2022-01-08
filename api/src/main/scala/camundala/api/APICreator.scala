@@ -138,7 +138,7 @@ trait APICreator extends App:
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
       T <: InOut[In, Out, T]
-  ](processes: Seq[(String, Process[In, Out])])
+  ](processes: Map[String, Process[In, Out]])
 
     // override the processName
     def endpoint: ApiEndpoints =

@@ -29,13 +29,7 @@ paths:
       tags:
       - InvoiceReceiptP
       summary: 'InvoiceReceiptP: StartProcessInstance'
-      description: "This starts the Invoice Receipt Process.\n\nUsage as _CallActivity_:\n\
-        ```\nlazy val InvoiceReceiptPProcess =\n          callActivity(\"InvoiceReceiptP\"\
-        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"InvoiceReceiptP\"\
-        )\n            .inSource(\"creditor\")\n            .inSource(\"amount\")\n\
-        \            .inSource(\"invoiceCategory\")\n            .inSource(\"invoiceNumber\"\
-        )\n            .inSource(\"invoiceDocument\")\n            .outSource(\"approved\"\
-        )\n            .outSource(\"clarified\")\n```\n"
+      description: This starts the Invoice Receipt Process.
       operationId: 'InvoiceReceiptP: StartProcessInstance'
       parameters:
       - name: key

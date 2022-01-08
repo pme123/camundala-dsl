@@ -94,26 +94,30 @@ trait SimulationRunner extends Simulation:
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
-      examples: Seq[(String, Process[In, Out])]
+      example: Process[In, Out]
   ): Unit =
-    simulate(
-      examples.map { case (k, v) =>
-        processScenario(k)(
-          v
-        )
-      }: _*
-    )
+    simulate("example" -> example)
 
   def simulate[
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema
   ](
-      example: Process[In, Out]
+      examples: (String, Process[In, Out])*
+  ): Unit =
+    simulate(examples.toMap)
+
+  def simulate[
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
+  ](
+      examples: Map[String, Process[In, Out]]
   ): Unit =
     simulate(
-      processScenario("example")(
-        example
-      )
+      examples.toSeq.map { case (k, v) =>
+        processScenario(k)(
+          v
+        )
+      }: _*
     )
 
   def simulate(processScenarios: PopulationBuilder*): Unit =
@@ -206,7 +210,7 @@ trait SimulationRunner extends Simulation:
         exec(_.set("processState", null)),
         retryOrFail(
           exec(checkFinished()).exitHereIfFailed,
-          processCondition()
+          processCondition
         ),
         exec(checkVars()).exitHereIfFailed
       )
