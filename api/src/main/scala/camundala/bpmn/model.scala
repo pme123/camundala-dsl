@@ -26,7 +26,8 @@ trait InOut[
     T <: InOut[In, Out, T]
 ] extends ProcessElement:
   def inOutDescr: InOutDescr[In, Out]
-  def inOutClass: String = this.getClass.getName
+  //def constructor: InOutDescr[In, Out] => T
+  lazy val inOutClass: String = this.getClass.getName
   lazy val id: String = inOutDescr.id
   lazy val descr: Option[String] | String = inOutDescr.descr
   lazy val in: In = inOutDescr.in
@@ -46,7 +47,7 @@ trait InOut[
     withInOutDescr(
       inOutDescr.copy(out = out)
     )
-trait ProcessElement:
+trait ProcessElement extends Product:
   def id: String
   def label: String = getClass.getSimpleName.head.toString.toLowerCase + getClass.getSimpleName.tail
   def descr: Option[String] | String

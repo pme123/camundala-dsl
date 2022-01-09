@@ -8,8 +8,11 @@ import io.gatling.core.structure.ChainBuilder
 import camundala.bpmn.*
 import camundala.domain.*
 import camundala.gatling.TestOverrideType.*
-import io.circe.Encoder
+import io.circe.{Decoder, Encoder}
 import io.circe.Json.JArray
+import sttp.tapir.Schema
+import io.circe.generic.auto.*
+import sttp.tapir.generic.auto.*
 
 import scala.jdk.CollectionConverters.*
 
@@ -23,6 +26,47 @@ case class TestOverrides(overrides: Seq[TestOverride]) //Seq[TestOverride])
 
 enum TestOverrideType:
   case Exists, NotExists, IsEquals, HasSize
+
+/*
+def overrides[
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema,
+    T <: InOut[In, Out, T]
+](
+    inOut: InOut[In, Out, T],
+    key: String,
+    overrideType: TestOverrideType,
+    value: Option[CamundaVariable] = None
+): InOutDescr[In, TestOverrides] =
+  val testOverride = TestOverride(key,overrideType, value)
+  val newOverrides: Seq[TestOverride] = inOut.out match
+    case TestOverrides(overrides) =>
+      overrides :+ testOverride
+    case other =>
+      Seq(testOverride)
+  InOutDescr(
+    inOut.id,
+    inOut.in,
+    TestOverrides(newOverrides),
+    inOut.descr
+  )
+*/
+def addOverride[
+  T <: Product,
+](
+   model: T,
+   key: String,
+   overrideType: TestOverrideType,
+   value: Option[CamundaVariable] = None
+ ): TestOverrides =
+  val testOverride = TestOverride(key,overrideType, value)
+  val newOverrides: Seq[TestOverride] = model match
+    case TestOverrides(overrides) =>
+      overrides :+ testOverride
+    case other =>
+      Seq(testOverride)
+  TestOverrides(newOverrides)
+
 
 def statusCondition(status: Int*): Session => Boolean = session => {
   println("<<< lastStatus: " + session("lastStatus").as[Int])

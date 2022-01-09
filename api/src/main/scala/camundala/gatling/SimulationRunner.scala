@@ -154,18 +154,18 @@ trait SimulationRunner extends Simulation:
     def exists(
         key: String
     ): Process[In, TestOverrides] =
-      testOverride(key, TestOverrideType.Exists)
+      processOverride(key, TestOverrideType.Exists)
 
     def notExists(
         key: String
     ): Process[In, TestOverrides] =
-      testOverride(key, TestOverrideType.NotExists)
+      processOverride(key, TestOverrideType.NotExists)
 
     def isEquals(
         key: String,
         value: Any
     ): Process[In, TestOverrides] =
-      testOverride(
+      processOverride(
         key,
         TestOverrideType.IsEquals,
         Some(CamundaVariable.valueToCamunda(value))
@@ -175,32 +175,22 @@ trait SimulationRunner extends Simulation:
         key: String,
         size: Int
     ): Process[In, TestOverrides] =
-      testOverride(
+      processOverride(
         key,
         TestOverrideType.HasSize,
         Some(CInteger(size))
       )
 
-    def testOverride(
+    def processOverride(
         key: String,
         overrideType: TestOverrideType,
         value: Option[CamundaVariable] = None
     ): Process[In, TestOverrides] =
-      testOverrides(TestOverride(key, overrideType, value))
-
-    def testOverrides(
-        testOverrides: TestOverride*
-    ): Process[In, TestOverrides] =
-      val newOverrides: Seq[TestOverride] = process.out match
-        case TestOverrides(overrides) =>
-          overrides ++ testOverrides
-        case other =>
-          testOverrides
       Process(
         InOutDescr(
           process.id,
           process.in,
-          TestOverrides(newOverrides),
+          addOverride(process, key, overrideType, value),
           process.descr
         )
       )
@@ -272,8 +262,8 @@ trait SimulationRunner extends Simulation:
   end extension
 
   extension [
-      In <: Product: Encoder,
-      Out <: Product: Encoder
+    In <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema
   ](userTask: UserTask[In, Out])
 
     def getAndComplete(): Seq[ChainBuilder] = {
@@ -331,6 +321,50 @@ trait SimulationRunner extends Simulation:
             ).asJson.toString
           )
         )
+
+    def exists(
+                key: String
+              ): UserTask[TestOverrides, Out] =
+      overrideUserTask(key, TestOverrideType.Exists)
+
+    def notExists(
+                   key: String
+                 ): UserTask[TestOverrides, Out] =
+      overrideUserTask(key, TestOverrideType.NotExists)
+
+    def isEquals(
+                  key: String,
+                  value: Any
+                ): UserTask[TestOverrides, Out] =
+      overrideUserTask(
+        key,
+        TestOverrideType.IsEquals,
+        Some(CamundaVariable.valueToCamunda(value))
+      )
+
+    def hasSize(
+                 key: String,
+                 size: Int
+               ): UserTask[TestOverrides, Out] =
+      overrideUserTask(
+        key,
+        TestOverrideType.HasSize,
+        Some(CInteger(size))
+      )
+
+    def overrideUserTask(
+                      key: String,
+                      overrideType: TestOverrideType,
+                      value: Option[CamundaVariable] = None
+                    ): UserTask[TestOverrides, Out] =
+      UserTask(
+        InOutDescr(
+          userTask.id,
+          addOverride(userTask, key, overrideType, value),
+          userTask.out,
+          userTask.descr
+        )
+      )
 
   end extension
 
