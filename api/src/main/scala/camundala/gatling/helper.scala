@@ -173,12 +173,13 @@ private def check[T <: Product](
               true
             case CJson(v, _) =>
               import io.circe.syntax.*
-              val json: Json = value match
+              val matches = value match
                 case it: java.lang.Iterable[?] =>
-                  toJson(
-                    it.asScala.toSeq.map(_.toString).mkString("[", ",", "]")
-                  )
-                case s: Json => s
+                  val setJson = toJson(v).as[Set[Json]].toOption
+                    .getOrElse(s"Could not create Set of Json from $v")
+                  setJson == it.asScala.toSet
+                case s: Json =>
+                  toJson(v) == s
                 case other =>
                   println(
                     s"!!! Not expected Type: ${other.getClass} / $other"
@@ -186,10 +187,9 @@ private def check[T <: Product](
                   throwErr(
                     s"Only Json and java.lang.Iterable[Json] allowed here. But was: ${other.getClass}."
                   )
-              val matches = toJson(v) == json
               if (!matches)
                 println(
-                  s"!!! The Json value '${toJson(v).getClass} / ${toJson(v)}' of $key does not match the result variable ${json.getClass} / '$json'.\n $result"
+                  s"!!! The Json value '${toJson(v).getClass} / ${toJson(v)}' of $key does not match the result variable ${value.getClass} / '$value'.\n $result"
                 )
               matches
             case other =>
