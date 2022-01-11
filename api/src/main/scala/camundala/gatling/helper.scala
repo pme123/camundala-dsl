@@ -50,23 +50,22 @@ def overrides[
     TestOverrides(newOverrides),
     inOut.descr
   )
-*/
+ */
 def addOverride[
-  T <: Product,
+    T <: Product
 ](
-   model: T,
-   key: String,
-   overrideType: TestOverrideType,
-   value: Option[CamundaVariable] = None
- ): TestOverrides =
-  val testOverride = TestOverride(key,overrideType, value)
+    model: T,
+    key: String,
+    overrideType: TestOverrideType,
+    value: Option[CamundaVariable] = None
+): TestOverrides =
+  val testOverride = TestOverride(key, overrideType, value)
   val newOverrides: Seq[TestOverride] = model match
     case TestOverrides(overrides) =>
       overrides :+ testOverride
     case other =>
       Seq(testOverride)
   TestOverrides(newOverrides)
-
 
 def statusCondition(status: Int*): Session => Boolean = session => {
   println("<<< lastStatus: " + session("lastStatus").as[Int])
@@ -103,7 +102,7 @@ val printSession: ChainBuilder =
     session
   }
 
-def checkProps[T <: Product](
+def checkProps[T <: Product: Encoder](
     out: T,
     result: Seq[CamundaProperty]
 ): Boolean =
@@ -155,52 +154,33 @@ private def check(overrides: Seq[TestOverride], result: Seq[CamundaProperty]) =
     }
     .forall(_ == true)
 
-private def check[T <: Product](
+private def check[T <: Product: Encoder](
     product: T,
     result: Seq[CamundaProperty]
 ): Boolean =
-  println(s"PRODUCT: $product")
-  product
-    .asVarsWithoutEnums()
-    .map { case key -> value =>
+  CamundaVariable
+    .toCamunda(product)
+    .map { case key -> pValue =>
       result
         .find(_.key == key)
-        .map { obj =>
-          obj.value match
-            case _: CFile =>
+        .map {
+          case CamundaProperty(_, CJson(cValue, _)) =>
+            val matches: Boolean =
+              toJson(cValue) == toJson(pValue.value.toString)
+            if (!matches)
+              println(s"OTHER JSON: ${cValue.getClass} / ${pValue.value.getClass}")
               println(
-                s"<<< Files cannot be tested as its content is _null_ ('$key')."
+                s"!!! The Json value '${toJson(pValue.value.toString)}' of $key does not match the result variable '${toJson(cValue)}'."
               )
-              true
-            case CJson(v, _) =>
-              import io.circe.syntax.*
-              val matches = value match
-                case it: java.lang.Iterable[?] =>
-                  val setJson = toJson(v).as[Set[Json]].toOption
-                    .getOrElse(s"Could not create Set of Json from $v")
-                  setJson == it.asScala.map{t => toJson(t.toString)}.toSet
-                case s: Json =>
-                  toJson(v) == s
-                case other =>
-                  println(
-                    s"!!! Not expected Type: ${other.getClass} / $other"
-                  )
-                  throwErr(
-                    s"Only Json and java.lang.Iterable[Json] allowed here. But was: ${other.getClass}."
-                  )
-              if (!matches)
-                println(
-                  s"!!! The Json value '${toJson(v).getClass} / ${toJson(v)}' of $key does not match the result variable ${value.getClass} / '$value'.\n $result"
-                )
-              matches
-            case other =>
-              val matches = obj.value.value == value
-              if (!matches)
-                println(s"OTHER: ${other.getClass} / ${value.getClass}")
-                println(
-                  s"!!! The value '$value' of $key does not match the result variable '${obj.value.value}'.\n $result"
-                )
-              matches
+            matches
+          case CamundaProperty(_, cValue) =>
+            val matches: Boolean = cValue == pValue
+            if (!matches)
+              println(s"OTHER: ${cValue.getClass} / ${pValue.getClass}")
+              println(
+                s"!!! The value '$pValue' of $key does not match the result variable '${cValue}'.\n $result"
+              )
+            matches
         }
         .getOrElse {
           println(
