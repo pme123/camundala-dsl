@@ -67,9 +67,13 @@ trait APICreator extends App:
     val endpoints = processes.map(_.endpoints())
     apiEndpoints(endpoints: _*)
 
-  def apiEndpoints(apiEP: ApiEndpoints*): Unit =
-    writeOpenApi(openApiPath, openApi(apiEP))
-    writeOpenApi(postmanOpenApiPath, postmanOpenApi(apiEP))
+  def apiEndpoints(apiEP: (Seq[ApiEndpoints] | ApiEndpoints)*): Unit =
+    val ep: Seq[ApiEndpoints] = apiEP.flatMap {
+      case s: Seq[ApiEndpoints] => s
+      case s: ApiEndpoints => Seq(s)
+    }
+    writeOpenApi(openApiPath, openApi(ep))
+    writeOpenApi(postmanOpenApiPath, postmanOpenApi(ep))
 
   def openApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
@@ -144,29 +148,34 @@ trait APICreator extends App:
     def endpoint: ApiEndpoints =
       endpoints()
 
-    def endpoint(processName: String): ApiEndpoints =
-      endpoints(Nil, Some(processName))
+    // override the processName / tag
+    def endpoint(tag: String, processName: String): ApiEndpoints =
+      endpoints(Nil, Some(tag), Some(processName))
 
     def endpoints(activities: ApiEndpoint[_, _, _]*): ApiEndpoints =
-      endpoints(activities, None)
+      endpoints(activities, None, None)
 
     def endpoints(
         activities: Seq[ApiEndpoint[_, _, _]],
-        tag: Option[String] = None
+        tag: Option[String] = None,
+        processName: Option[String] = None
     ): ApiEndpoints =
       val (name, process) = processes.headOption.getOrElse(
         throwErr("processes must have at least one entry.")
       )
       val inputExamples = processes.map { case (k, v) =>
         k -> v.in
-      }.toMap
+      }
       val outputExamples = processes.map { case (k, v) =>
         k -> v.out
-      }.toMap
+      }
       ApiEndpoints(
-        tag.getOrElse(process.id),
+        tag
+          .orElse(processName)
+          .getOrElse(process.id),
         StartProcessInstance(
-          process.id,
+          processName
+            .getOrElse(process.id),
           CamundaRestApi(
             process.id,
             tag.getOrElse(process.id),
@@ -182,24 +191,26 @@ trait APICreator extends App:
       Out <: Product: Encoder: Decoder: Schema,
       T <: InOut[In, Out, T]
   ](process: Process[In, Out])
-    // override the processName
-    def endpoint(processName: String): ApiEndpoints =
-      endpoints(Nil, processName)
+
+    // override the processName / tag
+    def endpoint(tag: String, processName: String): ApiEndpoints =
+      endpoints(Nil, tag, processName)
 
     def endpoint: ApiEndpoints =
       endpoints()
 
     def endpoints(activities: ApiEndpoint[_, _, _]*): ApiEndpoints =
-      endpoints(activities, process.id)
+      endpoints(activities, process.id, process.id)
 
     def endpoints(
         activities: Seq[ApiEndpoint[_, _, _]],
-        tag: String
+        tag: String,
+        processName: String
     ): ApiEndpoints =
       ApiEndpoints(
         tag,
         StartProcessInstance(
-          process.id,
+          processName,
           CamundaRestApi(
             process.inOutDescr,
             tag,

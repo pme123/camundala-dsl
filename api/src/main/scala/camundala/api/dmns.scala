@@ -18,8 +18,8 @@ case class EvaluateDecision[
 ) extends ApiEndpoint[In, Out, EvaluateDecision[In, Out]]:
 
   val outStatusCode = StatusCode.Ok
-  val apiName = "DecisionDmn"
-  val decisionDefinitionKey = decisionDmn.decisionDefinitionKey
+  val endpointType = "DecisionDmn"
+  val apiName = decisionDmn.decisionDefinitionKey
 
   def withRestApi(
       restApi: CamundaRestApi[In, Out]
@@ -30,7 +30,7 @@ case class EvaluateDecision[
     s"""
        |
        |Decision DMN:
-       |- _decisionDefinitionKey_: `$decisionDefinitionKey`,
+       |- _decisionDefinitionKey_: `$apiName`,
        |""".stripMargin
 
   def createPostman()(implicit
@@ -38,7 +38,7 @@ case class EvaluateDecision[
   ): Seq[Endpoint[?, ?, ?, ?]] =
     Seq(
       postmanBaseEndpoint
-        .in(postPath(decisionDefinitionKey))
+        .in(postPath(apiName))
         .post
     )
 

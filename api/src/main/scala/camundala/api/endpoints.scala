@@ -168,12 +168,10 @@ trait ApiEndpoint[
 ] extends Product:
   def restApi: CamundaRestApi[In, Out]
 
+  def endpointType: String
   def apiName: String
-  lazy val docName: String = s"$apiName: ${restApi.name}"
   lazy val postmanName: String =
     s"${restApi.name}: ${getClass.getSimpleName}"
-  lazy val valueName: String =
-    docName.replace(": ", "")
   lazy val tag: String = restApi.tag
   def descr: String = restApi.maybeDescr.getOrElse("")
   lazy val inExample: In = restApi.requestInput.examples.values.head
@@ -223,10 +221,10 @@ trait ApiEndpoint[
   def create(): Seq[Endpoint[_, _, _, _]] =
     Seq(
       endpoint
-        .name(docName)
+        .name(s"$endpointType: $apiName")
         .tag(tag)
-        .in(apiName / tag / restApi.name )
-        .summary(docName)
+        .in(endpointType / apiName)
+        .summary(apiName)
         .description(descr)
         .head
     ).map(ep => inMapper().map(ep.in).getOrElse(ep))
@@ -252,7 +250,9 @@ case class StartProcessInstance[
     processDefinitionKey: String,
     restApi: CamundaRestApi[In, Out]
 ) extends ApiEndpoint[In, Out, StartProcessInstance[In, Out]]:
-  val apiName = "Process"
+  val endpointType = "Process"
+  val apiName = processDefinitionKey
+
   val outStatusCode = StatusCode.Ok
 
   def withRestApi(
@@ -344,6 +344,7 @@ case class GetTaskFormVariables[
 ) extends ApiEndpoint[NoInput, Out, GetTaskFormVariables[Out]]:
 
   val apiName = "no API!"
+  val endpointType = "no API!"
 
   val outStatusCode = StatusCode.Ok
 
@@ -394,6 +395,7 @@ case class CompleteTask[
 ) extends ApiEndpoint[In, NoOutput, CompleteTask[In]]:
 
   val outStatusCode = StatusCode.Ok
+  val endpointType = "no API!"
   val apiName = "no API!"
 
   def withRestApi(
@@ -424,6 +426,7 @@ case class GetActiveTask(
     restApi: CamundaRestApi[NoInput, NoOutput]
 ) extends ApiEndpoint[NoInput, NoOutput, GetActiveTask]:
 
+  val endpointType = "no Api!"
   val apiName = "no API!"
   val outStatusCode = StatusCode.Ok
 
@@ -458,7 +461,8 @@ case class UserTaskEndpoint[
     completeTask: CompleteTask[Out]
 ) extends ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]]:
   val outStatusCode = StatusCode.Ok //not used
-  val apiName = "UserTask"
+  val endpointType = "UserTask"
+  val apiName = restApi.name
 
   def withRestApi(
       restApi: CamundaRestApi[In, Out]
