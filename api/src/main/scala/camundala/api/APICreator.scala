@@ -141,7 +141,6 @@ trait APICreator extends App:
   extension [
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
-      T <: InOut[In, Out, T]
   ](processes: Map[String, Process[In, Out]])
 
     // override the processName
@@ -189,7 +188,6 @@ trait APICreator extends App:
   extension [
       In <: Product: Encoder: Decoder: Schema,
       Out <: Product: Encoder: Decoder: Schema,
-      T <: InOut[In, Out, T]
   ](process: Process[In, Out])
 
     // override the processName / tag

@@ -159,6 +159,7 @@ private def check[T <: Product](
     product: T,
     result: Seq[CamundaProperty]
 ): Boolean =
+  println(s"PRODUCT: $product")
   product
     .asVarsWithoutEnums()
     .map { case key -> value =>
@@ -177,7 +178,7 @@ private def check[T <: Product](
                 case it: java.lang.Iterable[?] =>
                   val setJson = toJson(v).as[Set[Json]].toOption
                     .getOrElse(s"Could not create Set of Json from $v")
-                  setJson == it.asScala.toSet
+                  setJson == it.asScala.map{t => toJson(t.toString)}.toSet
                 case s: Json =>
                   toJson(v) == s
                 case other =>
@@ -195,7 +196,7 @@ private def check[T <: Product](
             case other =>
               val matches = obj.value.value == value
               if (!matches)
-                println(s"OTHER: ${other.getClass}")
+                println(s"OTHER: ${other.getClass} / ${value.getClass}")
                 println(
                   s"!!! The value '$value' of $key does not match the result variable '${obj.value.value}'.\n $result"
                 )

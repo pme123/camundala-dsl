@@ -33,9 +33,10 @@ export sttp.tapir.stringToPath
 export sttp.tapir.Schema.annotations.description
 
 def throwErr(err: String) =
+  println(s"ERROR: $err")
   throw new IllegalArgumentException(err)
 
 def toJson(json:String): Json =
   parser.parse(json) match
     case Right(v) => v
-    case Left(exc) => throwErr("Could not create Json from your String ->")
+    case Left(exc) => throwErr(s"Could not create Json from your String -> $exc")
