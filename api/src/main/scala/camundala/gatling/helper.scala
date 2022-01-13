@@ -165,18 +165,21 @@ private def check[T <: Product: Encoder](
         .find(_.key == key)
         .map {
           case CamundaProperty(_, CJson(cValue, _)) =>
-            val matches: Boolean =
-              toJson(cValue) == toJson(pValue.value.toString)
+            val cJson = toJson(cValue).deepDropNullValues
+            val pJson = toJson(pValue.value.toString).deepDropNullValues
+            val setCJson = cJson.as[Set[Json]].toOption.getOrElse(cJson)
+            val setPJson = pJson.as[Set[Json]].toOption.getOrElse(pJson)
+            val matches: Boolean = setCJson == setPJson
             if (!matches)
-              println(s"OTHER JSON: ${cValue.getClass} / ${pValue.value.getClass}")
+              println(s"cJson: ${cValue.getClass} / pJson: ${pValue.value.getClass}")
               println(
-                s"!!! The Json value '${toJson(pValue.value.toString)}' of $key does not match the result variable '${toJson(cValue)}'."
+                s"!!! The pJson value '${toJson(pValue.value.toString)}' of $key does not match the result variable cJson: '${toJson(cValue)}'."
               )
             matches
           case CamundaProperty(_, cValue) =>
-            val matches: Boolean = cValue == pValue
+            val matches: Boolean = cValue.value == pValue.value
             if (!matches)
-              println(s"OTHER: ${cValue.getClass} / ${pValue.getClass}")
+              println(s"cValue: ${cValue.getClass} / pValue ${pValue.getClass}")
               println(
                 s"!!! The value '$pValue' of $key does not match the result variable '${cValue}'.\n $result"
               )

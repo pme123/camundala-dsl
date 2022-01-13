@@ -138,7 +138,7 @@ object CamundaVariable:
         )
       case v: Product if !v.isInstanceOf[scala.reflect.Enum] =>
         CJson(
-          product.asJson.hcursor
+          product.asJson.deepDropNullValues.hcursor
             .downField(key)
             .as[Json]
             .toOption
