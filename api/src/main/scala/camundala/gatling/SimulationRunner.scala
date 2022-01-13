@@ -70,7 +70,7 @@ trait SimulationRunner extends Simulation:
       requests: (ChainBuilder | Seq[ChainBuilder])*
   ): PopulationBuilder =
     processScenario(scenarioName)(
-      (process.start() +:
+      (process.start(scenarioName) +:
         flatten(requests)) ++
         process.check(): _*
     )
@@ -132,8 +132,8 @@ trait SimulationRunner extends Simulation:
       process: Process[In, Out]
   )
 
-    def start()(implicit
-        tenantId: Option[String]
+    def start(scenario: String)(implicit
+                                tenantId: Option[String]
     ): ChainBuilder =
       exec(
         http(s"Start Process ${process.id}")
@@ -144,7 +144,8 @@ trait SimulationRunner extends Simulation:
           .body(
             StringBody(
               StartProcessIn(
-                CamundaVariable.toCamunda(process.in)
+                CamundaVariable.toCamunda(process.in),
+                businessKey = Some(scenario)
               ).asJson.toString
             )
           ) //.check(printBody)
