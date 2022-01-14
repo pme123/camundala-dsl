@@ -9,14 +9,10 @@ import sttp.tapir.generic.auto.*
 
 object InvoiceApi extends BpmnDsl:
 
-  val invoiceCategoryDescr: String =
-    enumDescr[InvoiceCategory](Some("There are three possible Categories"))
-
   @description("Received Invoice that need approval.")
   case class InvoiceReceipt(
       creditor: String = "Great Pizza for Everyone Inc.",
       amount: Double = 300.0,
-      @description(invoiceCategoryDescr)
       invoiceCategory: InvoiceCategory = InvoiceCategory.`Travel Expenses`,
       invoiceNumber: String = "I-12345",
       invoiceDocument: FileInOut = FileInOut(
@@ -28,6 +24,10 @@ object InvoiceApi extends BpmnDsl:
       )
   )
 
+  val invoiceCategoryDescr: String =
+    enumDescr[InvoiceCategory]("There are three possible Categories")
+
+  @description(invoiceCategoryDescr)
   enum InvoiceCategory derives JsonTaggedAdt.PureEncoder:
     case `Travel Expenses`
     case Misc
@@ -35,24 +35,20 @@ object InvoiceApi extends BpmnDsl:
 
   case class SelectApproverGroup(
       amount: Double = 30.0,
-      @description(invoiceCategoryDescr)
       invoiceCategory: InvoiceCategory =
         InvoiceCategory.`Software License Costs`
   )
 
-  val approverGroupDescr: String = enumDescr[ApproverGroup](
-    Some("The following Groups can approve the invoice:")
-  )
-
   case class AssignApproverGroups(
-      @description(approverGroupDescr)
       approverGroups: Seq[ApproverGroup] = Seq(ApproverGroup.management)
   )
 
+  val approverGroupDescr: String = enumDescr[ApproverGroup](
+    "The following Groups can approve the invoice:"
+  )
+  @description(approverGroupDescr)
   enum ApproverGroup derives JsonTaggedAdt.PureEncoder:
-    case accounting
-    case sales
-    case management
+    case accounting, sales, management
 
   @description("""Every Invoice has to be accepted by the Boss.""")
   case class ApproveInvoice(

@@ -7,24 +7,25 @@ import camundala.examples.invoice.bpmn.ExampleInvoice2.*
 import camundala.examples.invoice.bpmn.InvoiceApi.*
 import camundala.examples.invoice.bpmn.InvoiceDomain.ReviewInvoiceP
 import camundala.examples.invoice.dsl.ProjectDSL
+import camundala.test.*
 import org.camunda.bpm.engine.runtime.ProcessInstance
+import org.camunda.bpm.engine.task.IdentityLink
+import org.camunda.bpm.engine.test.assertions.bpmn.AbstractAssertions.processEngine
 import org.camunda.bpm.engine.test.assertions.bpmn.BpmnAwareTests.*
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.engine.test.{Deployment, ProcessEngineRule, ProcessEngineTestCase}
-import org.junit.{After, Before, Rule, Test}
-import org.mockito.{Mock, MockitoAnnotations}
-import camundala.test.*
-import camundala.test.{TestConfig, TestDsl, TestRunner}
-import org.camunda.bpm.engine.task.IdentityLink
-import org.camunda.bpm.engine.test.assertions.bpmn.AbstractAssertions.processEngine
 import org.camunda.bpm.engine.variable.VariableMap
 import org.camunda.bpm.engine.variable.impl.VariableMapImpl
-import org.junit.Assert.{assertEquals, assertTrue}
-import org.mockito.Mockito.mock
 import org.camunda.bpm.extension.mockito.ProcessExpressions.registerCallActivityMock
+import org.junit.Assert.{assertEquals, assertTrue}
+import org.junit.{After, Before, Rule, Test}
+import org.mockito.Mockito.mock
+import org.mockito.{Mock, MockitoAnnotations}
 
 import java.util
 import java.util.{HashSet, List, Set}
+import scala.compiletime.{constValue, constValueTuple}
+import scala.deriving.Mirror
 
 class ExampleInvoiceTest extends TestRunner, ProjectDSL:
 

@@ -3,8 +3,6 @@ package bpmn
 
 import domain.*
 
-import scala.deriving.Mirror
-import scala.compiletime.{constValue, constValueTuple}
 import io.circe.generic.auto.*
 import sttp.tapir.generic.auto.*
 import io.circe.{Json, parser}
@@ -38,14 +36,14 @@ trait BpmnDsl:
     )
 
   def callActivity[
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
+      In <: Product: Encoder: Decoder: Schema,
+      Out <: Product: Encoder: Decoder: Schema
   ](
-     id: String,
-     in: In = NoInput(),
-     out: Out = NoOutput(),
-     descr: Option[String] | String = None
-   ): CallActivity[In, Out] =
+      id: String,
+      in: In = NoInput(),
+      out: Out = NoOutput(),
+      descr: Option[String] | String = None
+  ): CallActivity[In, Out] =
     CallActivity(
       InOutDescr(id, in, out, descr)
     )
@@ -140,15 +138,3 @@ trait BpmnDsl:
       descr: Option[String] | String = None
   ): EndEvent =
     EndEvent(id, descr)
-
-  inline def enumDescr[E](
-      descr: Option[String] = None
-  )(using m: Mirror.SumOf[E]): String =
-    val name = constValue[m.MirroredLabel]
-    val values =
-      constValueTuple[m.MirroredElemLabels].productIterator.mkString(", ")
-    val enumDescription =
-      s"Enumeration $name: \n- $values"
-    descr
-      .map(_ + s"\n\n$enumDescription")
-      .getOrElse(enumDescription)

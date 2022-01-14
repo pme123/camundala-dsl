@@ -22,11 +22,11 @@ info:
     >Semantic Versioning</a>.</p>\n\n<h2 id=\"unreleased\" class=\"section\">Unreleased</h2>\n\
     <p>Initial Version</p>\n\n</p>\n</details>\n\n"
 paths:
-  /Process/InvoiceReceiptP/InvoiceReceiptP:
+  /Process/InvoiceReceiptP:
     head:
       tags:
       - InvoiceReceiptP
-      summary: 'Process: InvoiceReceiptP'
+      summary: InvoiceReceiptP
       description: This starts the Invoice Receipt Process.
       operationId: 'Process: InvoiceReceiptP'
       requestBody:
@@ -6162,11 +6162,11 @@ paths:
                 standard:
                   value:
                     approved: true
-  /DecisionDmn/InvoiceReceiptP/invoice-assign-approver:
+  /DecisionDmn/invoice-assign-approver:
     head:
       tags:
       - InvoiceReceiptP
-      summary: 'DecisionDmn: invoice-assign-approver'
+      summary: invoice-assign-approver
       description: '
 
 
@@ -6200,11 +6200,11 @@ paths:
                     approverGroups:
                     - accounting
                     - sales
-  /UserTask/InvoiceReceiptP/ApproveInvoiceUT:
+  /UserTask/ApproveInvoiceUT:
     head:
       tags:
       - InvoiceReceiptP
-      summary: 'UserTask: ApproveInvoiceUT'
+      summary: ApproveInvoiceUT
       description: Approve the invoice (or not).
       operationId: 'UserTask: ApproveInvoiceUT'
       requestBody:
@@ -12346,11 +12346,11 @@ paths:
                 Invoice NOT approved:
                   value:
                     approved: false
-  /UserTask/InvoiceReceiptP/PrepareBankTransferUT:
+  /UserTask/PrepareBankTransferUT:
     head:
       tags:
       - InvoiceReceiptP
-      summary: 'UserTask: PrepareBankTransferUT'
+      summary: PrepareBankTransferUT
       description: Prepare the bank transfer in the Financial Accounting System.
       operationId: 'UserTask: PrepareBankTransferUT'
       requestBody:
@@ -18485,11 +18485,11 @@ paths:
               examples:
                 standard:
                   value: {}
-  /Process/ReviewInvoiceP/ReviewInvoiceP:
+  /Process/ReviewInvoiceP:
     head:
       tags:
       - ReviewInvoiceP
-      summary: 'Process: ReviewInvoiceP'
+      summary: ReviewInvoiceP
       description: This starts the Review Invoice Process.
       operationId: 'Process: ReviewInvoiceP'
       requestBody:
@@ -24625,11 +24625,11 @@ paths:
                 standard:
                   value:
                     clarified: true
-  /UserTask/ReviewInvoiceP/AssignReviewerUT:
+  /UserTask/AssignReviewerUT:
     head:
       tags:
       - ReviewInvoiceP
-      summary: 'UserTask: AssignReviewerUT'
+      summary: AssignReviewerUT
       description: Select the Reviewer.
       operationId: 'UserTask: AssignReviewerUT'
       requestBody:
@@ -30765,11 +30765,11 @@ paths:
                 standard:
                   value:
                     reviewer: John
-  /UserTask/ReviewInvoiceP/ReviewInvoiceUT:
+  /UserTask/ReviewInvoiceUT:
     head:
       tags:
       - ReviewInvoiceP
-      summary: 'UserTask: ReviewInvoiceUT'
+      summary: ReviewInvoiceUT
       description: Review Invoice and approve.
       operationId: 'UserTask: ReviewInvoiceUT'
       requestBody:
