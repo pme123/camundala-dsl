@@ -12,10 +12,13 @@ import sttp.tapir.generic.auto.*
 import sttp.tapir.openapi.circe.yaml.*
 import sttp.tapir.openapi.{Contact, Info, OpenAPI, Server}
 
+import scala.reflect.ClassTag
+
 trait APICreator extends App:
 
   def basePath: Path = pwd
   def openApiPath: Path = basePath / "openApi.yml"
+  def openApiDocuPath: Path = basePath / "OpenApi.html"
   def postmanOpenApiPath: Path = basePath / "postmanOpenApi.yml"
   implicit def tenantId: Option[String] = None
 
@@ -61,8 +64,8 @@ trait APICreator extends App:
   def info(title: String) = Info(title, version, description, contact = contact)
 
   def apiEndpoints[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+      In <: Product: Encoder: Decoder: Schema: ClassTag,
+      Out <: Product: Encoder: Decoder: Schema: ClassTag
   ](processes: Process[In, Out]*): Unit =
     val endpoints = processes.map(_.endpoints())
     apiEndpoints(endpoints: _*)
@@ -74,6 +77,8 @@ trait APICreator extends App:
     }
     writeOpenApi(openApiPath, openApi(ep))
     writeOpenApi(postmanOpenApiPath, postmanOpenApi(ep))
+    println(s"Check Open API Docu: $openApiDocuPath")
+
 
   def openApi(apiEP: Seq[ApiEndpoints]): OpenAPI =
     openAPIDocsInterpreter
@@ -139,8 +144,8 @@ trait APICreator extends App:
            |$value""".stripMargin
 
   extension [
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema,
+      In <: Product: Encoder: Decoder: Schema: ClassTag,
+      Out <: Product: Encoder: Decoder: Schema: ClassTag
   ](processes: Map[String, Process[In, Out]])
 
     // override the processName
@@ -186,8 +191,8 @@ trait APICreator extends App:
         ) +: activities
       )
   extension [
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema,
+      In <: Product: Encoder: Decoder: Schema: ClassTag,
+      Out <: Product: Encoder: Decoder: Schema: ClassTag
   ](process: Process[In, Out])
 
     // override the processName / tag
@@ -219,8 +224,8 @@ trait APICreator extends App:
   end extension
 
   extension [
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+      In <: Product: Encoder: Decoder: Schema: ClassTag,
+      Out <: Product: Encoder: Decoder: Schema: ClassTag
   ](userTask: UserTask[In, Out])
     def endpoint: ApiEndpoint[In, Out, UserTaskEndpoint[In, Out]] =
       UserTaskEndpoint(
@@ -257,8 +262,8 @@ trait APICreator extends App:
   end extension
 
   extension [
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+      In <: Product: Encoder: Decoder: Schema: ClassTag,
+      Out <: Product: Encoder: Decoder: Schema: ClassTag
   ](dmn: DecisionDmn[In, Out])
     def endpoint: ApiEndpoint[In, Out, EvaluateDecision[In, Out]] =
       EvaluateDecision(

@@ -39,7 +39,7 @@ lazy val dsl = project
     // To cross compile with Dotty and Scala 2
   )
 
-val tapirVersion = "0.18.3"
+val tapirVersion = "0.19.3"
 val tapirDependencies = Seq(
   "com.softwaremill.sttp.tapir" %% "tapir-openapi-docs" % tapirVersion,
   "com.softwaremill.sttp.tapir" %% "tapir-openapi-circe-yaml" % tapirVersion,

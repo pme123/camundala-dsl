@@ -27,11 +27,7 @@ paths:
       tags:
       - TwitterDemoP
       summary: 'TwitterDemoP: StartProcessInstance'
-      description: "This runs the Twitter Approvement Process.\n\nUsage as _CallActivity_:\n\
-        ```\nlazy val TwitterDemoPProcess =\n          callActivity(\"TwitterDemoP\"\
-        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"TwitterDemoP\"\
-        )\n            .inSource(\"email\")\n            .inSource(\"content\")\n\
-        \            .outSource(\"approved\")\n```\n"
+      description: This runs the Twitter Approvement Process.
       operationId: 'TwitterDemoP: StartProcessInstance'
       parameters:
       - name: key
@@ -62,7 +58,7 @@ paths:
       responses:
         '200':
           description: ''
-  /task/--REMOVE%3AReviewTweetUT--:
+  /task/--REMOVE:ReviewTweetUT--:
     post:
       tags:
       - TwitterDemoP
@@ -72,41 +68,33 @@ paths:
       responses:
         '200':
           description: ''
-  /task/{taskId}/form-variables/--REMOVE%3AReviewTweetUT--:
+  /task/{taskId}/form-variables/--REMOVE:ReviewTweetUT--:
     get:
       tags:
       - TwitterDemoP
       summary: 'ReviewTweetUT: GetTaskFormVariables'
-      description: Retrieves the form variables for a task.
-
+      description: |+
+        Retrieves the form variables for a task.
         The form variables take form data specified on the task into account.
+        If form fields are defined, the variable types and default values of the form fields are taken into account.
 
-        If form fields are defined, the variable types and default values of the form
-        fields are taken into account.
       operationId: 'ReviewTweetUT: GetTaskFormVariables'
       parameters:
       - name: taskId
         in: path
-        description: 'The taskId of the Form.
-
+        description: |
+          The taskId of the Form.
           > This is the result id of the `GetActiveTask`
-
-          '
         required: true
         schema:
           type: string
           default: '{{taskId}}'
       - name: variableNames
         in: query
-        description: A comma-separated list of variable names. Allows restricting
-          the list of requested variables to the variable names in the list.
-
-          It is best practice to restrict the list of variables to the variables actually
-          required by the form in order to minimize fetching of data. If the query
-          parameter is ommitted all variables are fetched.
-
-          If the query parameter contains non-existent variable names, the variable
-          names are ignored.
+        description: |-
+          A comma-separated list of variable names. Allows restricting the list of requested variables to the variable names in the list.
+          It is best practice to restrict the list of variables to the variables actually required by the form in order to minimize fetching of data. If the query parameter is ommitted all variables are fetched.
+          If the query parameter contains non-existent variable names, the variable names are ignored.
         required: false
         schema:
           type: string
@@ -120,7 +108,7 @@ paths:
       responses:
         '200':
           description: ''
-  /task/{taskId}/complete/--REMOVE%3AReviewTweetUT--:
+  /task/{taskId}/complete/--REMOVE:ReviewTweetUT--:
     post:
       tags:
       - TwitterDemoP
@@ -130,11 +118,9 @@ paths:
       parameters:
       - name: taskId
         in: path
-        description: 'The taskId of the Form.
-
+        description: |
+          The taskId of the Form.
           > This is the result id of the `GetActiveTask`
-
-          '
         required: true
         schema:
           type: string

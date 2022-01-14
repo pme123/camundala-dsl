@@ -13,10 +13,11 @@ import sttp.tapir.json.circe.*
 import sttp.tapir.{Endpoint, EndpointInput, EndpointOutput, path}
 
 import java.util.Base64
+import scala.reflect.ClassTag
 
 case class CamundaRestApi[
     In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
+    Out <: Product: Encoder: Decoder: Schema: ClassTag
 ](
     name: String,
     tag: String,
@@ -42,15 +43,13 @@ case class CamundaRestApi[
 
   private def errMapper(
       output: RequestErrorOutput
-  ): EndpointOutput.OneOfMapping[CamundaError] =
-    oneOfMappingValueMatcher(
+  ): EndpointOutput.OneOfVariant[CamundaError] =
+    oneOfVariant(
       output.statusCode,
       jsonBody[CamundaError].examples(output.examples.map { case (name, ex) =>
         Example(ex, Some(name), None)
       }.toList)
-    ) { case _ =>
-      true
-    }
+    )
 
   def inMapper[T <: Product: Encoder: Decoder: Schema](
       createInput: (example: In) => T
@@ -83,7 +82,7 @@ case class CamundaRestApi[
       T <: Product | CamundaVariable | Json | Map[String, CamundaVariable] |
         Seq[
           Product | CamundaVariable | Json | Map[String, CamundaVariable]
-        ]: Encoder: Decoder: Schema
+        ]: Encoder: Decoder: Schema: ClassTag
   ](
       createOutput: (example: Out) => T
   ): Option[EndpointOutput[_]] =
@@ -92,7 +91,7 @@ case class CamundaRestApi[
     else
       Some(
         oneOf[T](
-          oneOfMappingValueMatcher(
+          oneOfVariant(
             requestOutput.statusCode,
             jsonBody[T]
               .examples(requestOutput.examples.map { case (name, ex: Out) =>
@@ -102,16 +101,14 @@ case class CamundaRestApi[
                   None
                 )
               }.toList)
-          ) { case _ =>
-            true
-          }
+          )
         )
       )
   def outMapper[
       T <: Product | Json | Map[String, CamundaVariable] |
         Seq[
           Product | Json | Map[String, CamundaVariable]
-        ]: Encoder: Decoder: Schema
+        ]: Encoder: Decoder: Schema: ClassTag
   ](
       body: T
   ): Option[EndpointOutput[_]] =
@@ -129,7 +126,7 @@ object CamundaRestApi:
 
   def apply[
       In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+      Out <: Product: Encoder: Decoder: Schema:ClassTag
   ](
       e: InOutDescr[In, Out],
       tag: String,
@@ -149,13 +146,13 @@ case class ApiEndpoints(
     tag: String,
     endpoints: Seq[ApiEndpoint[_, _, _]]
 ):
-  def create(): Seq[Endpoint[_, _, _, _]] =
+  def create(): Seq[PublicEndpoint[?, ?, ?, ?]] =
     println(s"Start API: $tag - ${endpoints.size} Endpoints")
     endpoints.flatMap(_.withTag(tag).create())
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     println(s"Start Postman API: $tag")
     endpoints.flatMap(_.withTag(tag).createPostman())
 
@@ -163,7 +160,7 @@ end ApiEndpoints
 
 trait ApiEndpoint[
     In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema,
+    Out <: Product: Encoder: Decoder: Schema:ClassTag,
     T <: ApiEndpoint[In, Out, T]
 ] extends Product:
   def restApi: CamundaRestApi[In, Out]
@@ -207,9 +204,9 @@ trait ApiEndpoint[
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]]
+  ): Seq[PublicEndpoint[?, ?, ?, ?]]
 
-  def postmanBaseEndpoint: Endpoint[_, _, _, _] =
+  def postmanBaseEndpoint: PublicEndpoint[?, ?, ?, ?] =
     Some(
       endpoint
         .name(postmanName)
@@ -218,7 +215,7 @@ trait ApiEndpoint[
         .description(descr)
     ).map(ep => inMapperPostman().map(ep.in).getOrElse(ep)).get
 
-  def create(): Seq[Endpoint[_, _, _, _]] =
+  def create(): Seq[PublicEndpoint[?, ?, ?, ?]] =
     Seq(
       endpoint
         .name(s"$endpointType: $apiName")
@@ -244,8 +241,8 @@ trait ApiEndpoint[
 end ApiEndpoint
 
 case class StartProcessInstance[
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
+    In <: Product: Encoder: Decoder: Schema: ClassTag,
+    Out <: Product: Encoder: Decoder: Schema: ClassTag
 ](
     processDefinitionKey: String,
     restApi: CamundaRestApi[In, Out]
@@ -262,7 +259,7 @@ case class StartProcessInstance[
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     Seq(
       postmanBaseEndpoint
         .in(postPath(processDefinitionKey))
@@ -323,8 +320,8 @@ end StartProcessInstance
 object StartProcessInstance:
 
   def apply[
-      In <: Product: Encoder: Decoder: Schema,
-      Out <: Product: Encoder: Decoder: Schema
+      In <: Product: Encoder: Decoder: Schema: ClassTag,
+      Out <: Product: Encoder: Decoder: Schema: ClassTag
   ](e: InOutDescr[In, Out]): StartProcessInstance[In, Out] =
     StartProcessInstance[In, Out](
       e.id,
@@ -338,13 +335,18 @@ object StartProcessInstance:
 end StartProcessInstance
 
 case class GetTaskFormVariables[
-    Out <: Product: Encoder: Decoder: Schema
+    Out <: Product: Encoder: Decoder: Schema: ClassTag
 ](
     restApi: CamundaRestApi[NoInput, Out]
 ) extends ApiEndpoint[NoInput, Out, GetTaskFormVariables[Out]]:
 
   val apiName = "no API!"
   val endpointType = "no API!"
+  override val descr = s"""Retrieves the form variables for a task.
+                |The form variables take form data specified on the task into account.
+                |If form fields are defined, the variable types and default values of the form fields are taken into account.
+                |
+                |${restApi.maybeDescr.getOrElse("")}""".stripMargin
 
   val outStatusCode = StatusCode.Ok
 
@@ -355,14 +357,10 @@ case class GetTaskFormVariables[
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     Seq(
       postmanBaseEndpoint
-        .description(
-          """Retrieves the form variables for a task.
-            |The form variables take form data specified on the task into account.
-            |If form fields are defined, the variable types and default values of the form fields are taken into account.""".stripMargin
-        )
+        .get
         .in(getPath)
         .in(
           query[String]("variableNames")
@@ -377,7 +375,6 @@ case class GetTaskFormVariables[
           query[Boolean]("deserializeValues")
             .default(false)
         )
-        .get
     )
 
   private lazy val getPath =
@@ -405,7 +402,7 @@ case class CompleteTask[
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     Seq(
       postmanBaseEndpoint
         .in(postPath)
@@ -436,7 +433,7 @@ case class GetActiveTask(
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     Seq(
       postmanBaseEndpoint
         .in(postPath)
@@ -452,8 +449,8 @@ case class GetActiveTask(
 end GetActiveTask
 
 case class UserTaskEndpoint[
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
+    In <: Product: Encoder: Decoder: Schema: ClassTag,
+    Out <: Product: Encoder: Decoder: Schema: ClassTag
 ](
     restApi: CamundaRestApi[In, Out],
     getActiveTask: GetActiveTask,
@@ -470,7 +467,7 @@ case class UserTaskEndpoint[
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[_, _, _, _]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     val in = completeTask.restApi.copy(
       requestInput = RequestInput(restApi.requestOutput.examples)
     )

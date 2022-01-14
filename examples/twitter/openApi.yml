@@ -20,17 +20,13 @@ info:
     \ on this Project: https://github.com/pme123/spring-boot-datakurre-plugins\n\n\
     \nThere is no CHANGELOG.md in the Package.\n"
 paths:
-  /api-docs/TwitterDemoPProcess:
+  /Process/TwitterDemoP:
     head:
       tags:
       - TwitterDemoP
-      summary: 'TwitterDemoP: Process'
-      description: "This runs the Twitter Approvement Process.\n\nUsage as _CallActivity_:\n\
-        ```\nlazy val TwitterDemoPProcess =\n          callActivity(\"TwitterDemoP\"\
-        ) //TODO adjust to your CallActivity id!\n            .calledElement(\"TwitterDemoP\"\
-        )\n            .inSource(\"email\")\n            .inSource(\"content\")\n\
-        \            .outSource(\"approved\")\n```\n"
-      operationId: 'TwitterDemoP: Process'
+      summary: TwitterDemoP
+      description: This runs the Twitter Approvement Process.
+      operationId: 'Process: TwitterDemoP'
       requestBody:
         content:
           application/json:
@@ -53,13 +49,13 @@ paths:
                 standard:
                   value:
                     approved: true
-  /api-docs/ReviewTweetUTUserTask:
+  /UserTask/ReviewTweetUT:
     head:
       tags:
       - TwitterDemoP
-      summary: 'ReviewTweetUT: UserTask'
+      summary: ReviewTweetUT
       description: ''
-      operationId: 'ReviewTweetUT: UserTask'
+      operationId: 'UserTask: ReviewTweetUT'
       requestBody:
         content:
           application/json:
@@ -98,14 +94,11 @@ components:
           type: string
         content:
           type: string
-      description: 'Every employee may create a Tweet.
-
+      description: |
+        Every employee may create a Tweet.
 
         - email:   The email address of the creator.
-
         - content: The content of the Tweet.
-
-        '
     NoInput:
       type: object
     ReviewTweet:

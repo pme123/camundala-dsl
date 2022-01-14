@@ -9,9 +9,11 @@ import io.circe.generic.auto.*
 import io.circe.syntax.*
 import sttp.tapir.generic.auto.*
 
+import scala.reflect.ClassTag
+
 case class EvaluateDecision[
-    In <: Product: Encoder: Decoder: Schema,
-    Out <: Product: Encoder: Decoder: Schema
+    In <: Product: Encoder: Decoder: Schema: ClassTag,
+    Out <: Product: Encoder: Decoder: Schema: ClassTag
 ](
     decisionDmn: DecisionDmn[In, Out],
     restApi: CamundaRestApi[In, Out]
@@ -35,7 +37,7 @@ case class EvaluateDecision[
 
   def createPostman()(implicit
       tenantId: Option[String]
-  ): Seq[Endpoint[?, ?, ?, ?]] =
+  ): Seq[PublicEndpoint[?, ?, ?, ?]] =
     Seq(
       postmanBaseEndpoint
         .in(postPath(apiName))
