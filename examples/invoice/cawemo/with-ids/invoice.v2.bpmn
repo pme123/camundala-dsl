@@ -24,7 +24,9 @@
                    name="Invoice Receipt"
                    processRef="InvoiceReceiptP"/>
    </collaboration>
-   <process camunda:historyTimeToLive="45"
+   <process camunda:candidateStarterGroups=""
+            camunda:candidateStarterUsers=""
+            camunda:historyTimeToLive="45"
             camunda:versionTag="V2.0"
             id="InvoiceReceiptP"
             isClosed="false"
@@ -38,47 +40,67 @@
             <flowNodeRef>ArchiveInvoiceST</flowNodeRef>
          </lane>
          <lane id="teamAssistant" name="Team Assistant">
-            <flowNodeRef>reviewSuccessful_gw</flowNodeRef>
+            <flowNodeRef>ReviewSuccessfulEG</flowNodeRef>
             <flowNodeRef>AssignApproverGroupBRT</flowNodeRef>
-            <flowNodeRef>StartEvent_1</flowNodeRef>
+            <flowNodeRef>InvoiceReceivedSE</flowNodeRef>
             <flowNodeRef>InvoiceNotProcessedEE</flowNodeRef>
             <flowNodeRef>ReviewInvoiceCA</flowNodeRef>
          </lane>
          <lane id="Approver" name="Approver">
             <flowNodeRef>ApproveInvoiceUT</flowNodeRef>
-            <flowNodeRef>invoice_approved</flowNodeRef>
+            <flowNodeRef>InvoiceApprovedEG</flowNodeRef>
          </lane>
       </laneSet>
       <dataStoreReference dataStoreRef="FinancialAccountingSystem"
                           id="DataStoreReference_1"
                           name="Financial Accounting System"/>
-      <userTask completionQuantity="1"
+      <userTask camunda:candidateGroups="${approverGroups}"
+                camunda:candidateUsers=""
+                camunda:dueDate="${dateTime().plusWeeks(1).toDate()}"
+                camunda:exclusive="false"
+                camunda:formKey="embedded:app:forms/approve-invoice.html"
+                completionQuantity="1"
                 id="ApproveInvoiceUT"
                 implementation="##unspecified"
                 isForCompensation="false"
                 name="Approve Invoice"
                 startQuantity="1">
          <documentation textFormat="text/plain">Approve the invoice (or not).</documentation>
-         <incoming>sequenceFlow_178</incoming>
-         <incoming>reviewSuccessful</incoming>
-         <outgoing>sequenceFlow_180</outgoing>
+         <extensionElements>
+            <camunda:taskListener event="create">
+               <camunda:script scriptFormat="Javascript">if(!!task.getVariable('approver')) {
+  task.setAssignee(approver);
+}</camunda:script>
+            </camunda:taskListener>
+            <camunda:taskListener event="assignment">
+               <camunda:script scriptFormat="Javascript">task.setVariable('approver', task.getAssignee());</camunda:script>
+            </camunda:taskListener>
+         </extensionElements>
+         <incoming>sequenceFlow_178__AssignApproverGroupBRT__ApproveInvoiceUT</incoming>
+         <incoming>YesSF__ReviewSuccessfulEG__ApproveInvoiceUT</incoming>
+         <outgoing>sequenceFlow_180__ApproveInvoiceUT__InvoiceApprovedEG</outgoing>
       </userTask>
-      <exclusiveGateway gatewayDirection="Diverging"
-                        id="invoice_approved"
+      <exclusiveGateway camunda:exclusive="false"
+                        gatewayDirection="Diverging"
+                        id="InvoiceApprovedEG"
                         name="Invoice&#xA;approved?">
-         <incoming>sequenceFlow_180</incoming>
-         <outgoing>invoiceNotApproved</outgoing>
-         <outgoing>invoiceApproved</outgoing>
+         <incoming>sequenceFlow_180__ApproveInvoiceUT__InvoiceApprovedEG</incoming>
+         <outgoing>NoSF__InvoiceApprovedEG__ReviewInvoiceCA</outgoing>
+         <outgoing>YesSF__InvoiceApprovedEG__PrepareBankTransferUT</outgoing>
       </exclusiveGateway>
-      <exclusiveGateway gatewayDirection="Diverging"
-                        id="reviewSuccessful_gw"
+      <exclusiveGateway camunda:exclusive="false"
+                        gatewayDirection="Diverging"
+                        id="ReviewSuccessfulEG"
                         name="Review&#xA;successful?">
-         <incoming>sequenceFlow_183</incoming>
-         <outgoing>reviewNotSuccessful</outgoing>
-         <outgoing>reviewSuccessful</outgoing>
+         <incoming>sequenceFlow_183__ReviewInvoiceCA__ReviewSuccessfulEG</incoming>
+         <outgoing>NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE</outgoing>
+         <outgoing>YesSF__ReviewSuccessfulEG__ApproveInvoiceUT</outgoing>
       </exclusiveGateway>
-      <userTask camunda:candidateGroups="accounting"
+      <userTask camunda:candidateGroups=""
+                camunda:candidateUsers=""
                 camunda:dueDate="${dateTime().plusWeeks(1).toDate()}"
+                camunda:exclusive="false"
+                camunda:formKey="embedded:app:forms/prepare-bank-transfer.html"
                 completionQuantity="1"
                 id="PrepareBankTransferUT"
                 implementation="##unspecified"
@@ -86,96 +108,122 @@
                 name="Prepare&#xA;Bank&#xA;Transfer"
                 startQuantity="1">
          <documentation textFormat="text/plain">Prepare the bank transfer.</documentation>
-         <incoming>invoiceApproved</incoming>
-         <outgoing>SequenceFlow_2</outgoing>
+         <incoming>YesSF__InvoiceApprovedEG__PrepareBankTransferUT</incoming>
+         <outgoing>SequenceFlow_2__PrepareBankTransferUT__ArchiveInvoiceST</outgoing>
          <property id="Property_0bzbsgl" name="__targetRef_placeholder"/>
          <dataInputAssociation id="DataInputAssociation_08di2kz">
             <sourceRef>DataStoreReference_1</sourceRef>
             <targetRef>Property_0bzbsgl</targetRef>
          </dataInputAssociation>
       </userTask>
-      <businessRuleTask completionQuantity="1"
+      <businessRuleTask camunda:decisionRef="invoice-assign-approver"
+                        camunda:decisionRefTenantId=""
+                        camunda:exclusive="false"
+                        camunda:mapDecisionResult="collectEntries"
+                        camunda:resultVariable="approverGroups"
+                        completionQuantity="1"
                         id="AssignApproverGroupBRT"
                         implementation="##unspecified"
                         isForCompensation="false"
                         name="Assign Approver Group"
                         startQuantity="1">
-         <incoming>SequenceFlow_1</incoming>
-         <outgoing>sequenceFlow_178</outgoing>
+         <incoming>SequenceFlow_1__InvoiceReceivedSE__AssignApproverGroupBRT</incoming>
+         <outgoing>sequenceFlow_178__AssignApproverGroupBRT__ApproveInvoiceUT</outgoing>
       </businessRuleTask>
-      <startEvent id="StartEvent_1"
+      <startEvent camunda:exclusive="false"
+                  camunda:formKey="embedded:app:forms/start-form.html"
+                  id="InvoiceReceivedSE"
                   isInterrupting="true"
                   name="Invoice&#xA;received"
                   parallelMultiple="false">
-         <outgoing>SequenceFlow_1</outgoing>
+         <outgoing>SequenceFlow_1__InvoiceReceivedSE__AssignApproverGroupBRT</outgoing>
       </startEvent>
-      <endEvent id="InvoiceNotProcessedEE" name="Invoice not&#xA;processed">
-         <incoming>reviewNotSuccessful</incoming>
+      <endEvent camunda:exclusive="false"
+                id="InvoiceNotProcessedEE"
+                name="Invoice not&#xA;processed">
+         <incoming>NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE</incoming>
       </endEvent>
-      <endEvent id="InvoiceProcessedEE" name="Invoice&#xA;processed">
-         <incoming>SequenceFlow_3</incoming>
+      <endEvent camunda:exclusive="false"
+                id="InvoiceProcessedEE"
+                name="Invoice&#xA;processed">
+         <incoming>SequenceFlow_3__ArchiveInvoiceST__InvoiceProcessedEE</incoming>
       </endEvent>
-      <serviceTask completionQuantity="1"
+      <serviceTask camunda:asyncBefore="true"
+                   camunda:class="org.camunda.bpm.example.invoice.service.ArchiveInvoiceService"
+                   completionQuantity="1"
                    id="ArchiveInvoiceST"
                    implementation="##WebService"
                    isForCompensation="false"
                    name="Archive Invoice"
                    startQuantity="1">
-         <incoming>SequenceFlow_2</incoming>
-         <outgoing>SequenceFlow_3</outgoing>
+         <incoming>SequenceFlow_2__PrepareBankTransferUT__ArchiveInvoiceST</incoming>
+         <outgoing>SequenceFlow_3__ArchiveInvoiceST__InvoiceProcessedEE</outgoing>
       </serviceTask>
-      <callActivity completionQuantity="1"
+      <callActivity calledElement="ReviewInvoiceP"
+                    camunda:exclusive="false"
+                    completionQuantity="1"
                     id="ReviewInvoiceCA"
                     isForCompensation="false"
                     name="Review Invoice"
                     startQuantity="1">
-         <incoming>invoiceNotApproved</incoming>
-         <outgoing>sequenceFlow_183</outgoing>
+         <extensionElements>
+            <camunda:in businessKey="#{execution.processBusinessKey}"/>
+         </extensionElements>
+         <incoming>NoSF__InvoiceApprovedEG__ReviewInvoiceCA</incoming>
+         <outgoing>sequenceFlow_183__ReviewInvoiceCA__ReviewSuccessfulEG</outgoing>
       </callActivity>
-      <sequenceFlow id="SequenceFlow_3"
+      <sequenceFlow id="SequenceFlow_3__ArchiveInvoiceST__InvoiceProcessedEE"
                     name=""
                     sourceRef="ArchiveInvoiceST"
                     targetRef="InvoiceProcessedEE"/>
-      <sequenceFlow id="SequenceFlow_1"
+      <sequenceFlow id="SequenceFlow_1__InvoiceReceivedSE__AssignApproverGroupBRT"
                     name=""
-                    sourceRef="StartEvent_1"
+                    sourceRef="InvoiceReceivedSE"
                     targetRef="AssignApproverGroupBRT"/>
-      <sequenceFlow id="SequenceFlow_2"
+      <sequenceFlow id="SequenceFlow_2__PrepareBankTransferUT__ArchiveInvoiceST"
                     name=""
                     sourceRef="PrepareBankTransferUT"
                     targetRef="ArchiveInvoiceST"/>
-      <sequenceFlow id="sequenceFlow_178"
+      <sequenceFlow id="sequenceFlow_178__AssignApproverGroupBRT__ApproveInvoiceUT"
                     isImmediate="true"
                     sourceRef="AssignApproverGroupBRT"
                     targetRef="ApproveInvoiceUT"/>
-      <sequenceFlow id="reviewSuccessful"
+      <sequenceFlow id="YesSF__ReviewSuccessfulEG__ApproveInvoiceUT"
                     isImmediate="true"
                     name="yes"
-                    sourceRef="reviewSuccessful_gw"
-                    targetRef="ApproveInvoiceUT"/>
-      <sequenceFlow id="reviewNotSuccessful"
+                    sourceRef="ReviewSuccessfulEG"
+                    targetRef="ApproveInvoiceUT">
+         <conditionExpression id="conditionExpression_2047b6fc-90c6-4082-b5c7-5af0ba920b20">${clarified}</conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE"
                     isImmediate="true"
                     name="no"
-                    sourceRef="reviewSuccessful_gw"
-                    targetRef="InvoiceNotProcessedEE"/>
-      <sequenceFlow id="invoiceApproved"
+                    sourceRef="ReviewSuccessfulEG"
+                    targetRef="InvoiceNotProcessedEE">
+         <conditionExpression id="conditionExpression_e973e3b2-3861-4f51-ada8-1a42c7df154f">${!clarified}</conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="YesSF__InvoiceApprovedEG__PrepareBankTransferUT"
                     isImmediate="true"
                     name="yes"
-                    sourceRef="invoice_approved"
-                    targetRef="PrepareBankTransferUT"/>
-      <sequenceFlow id="sequenceFlow_183"
+                    sourceRef="InvoiceApprovedEG"
+                    targetRef="PrepareBankTransferUT">
+         <conditionExpression id="conditionExpression_c39e827b-23b9-4990-925b-f549c3e26fb6">${approved}</conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="sequenceFlow_183__ReviewInvoiceCA__ReviewSuccessfulEG"
                     isImmediate="true"
                     sourceRef="ReviewInvoiceCA"
-                    targetRef="reviewSuccessful_gw"/>
-      <sequenceFlow id="sequenceFlow_180"
+                    targetRef="ReviewSuccessfulEG"/>
+      <sequenceFlow id="sequenceFlow_180__ApproveInvoiceUT__InvoiceApprovedEG"
                     isImmediate="true"
                     sourceRef="ApproveInvoiceUT"
-                    targetRef="invoice_approved"/>
-      <sequenceFlow id="invoiceNotApproved"
+                    targetRef="InvoiceApprovedEG"/>
+      <sequenceFlow id="NoSF__InvoiceApprovedEG__ReviewInvoiceCA"
                     isImmediate="true"
                     name="no"
-                    sourceRef="invoice_approved"
-                    targetRef="ReviewInvoiceCA"/>
+                    sourceRef="InvoiceApprovedEG"
+                    targetRef="ReviewInvoiceCA">
+         <conditionExpression id="conditionExpression_3125713b-0ff2-43e0-823f-195862d01fc3">${!approved}</conditionExpression>
+      </sequenceFlow>
    </process>
    <bpmndi:BPMNDiagram id="BPMNDiagram_73">
       <bpmndi:BPMNPlane bpmnElement="collaboration_3" id="BPMNPlane_73">
@@ -199,7 +247,7 @@
                            isHorizontal="true">
             <omgdc:Bounds height="144" width="979" x="190" y="422"/>
          </bpmndi:BPMNShape>
-         <bpmndi:BPMNEdge bpmnElement="invoiceNotApproved"
+         <bpmndi:BPMNEdge bpmnElement="NoSF__InvoiceApprovedEG__ReviewInvoiceCA"
                           id="Nein_182_gui"
                           sourceElement="Freigabe_erfolgt__131_gui"
                           targetElement="Rechnung_kl_ren_148_gui">
@@ -210,7 +258,7 @@
                <omgdc:Bounds height="14" width="13" x="646" y="296"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="sequenceFlow_180"
+         <bpmndi:BPMNEdge bpmnElement="sequenceFlow_180__ApproveInvoiceUT__InvoiceApprovedEG"
                           id="sequenceFlow_180_gui"
                           sourceElement="Rechnung_freigeben_125_gui"
                           targetElement="Freigabe_erfolgt__131_gui">
@@ -220,7 +268,7 @@
                <omgdc:Bounds height="0" width="0" x="471" y="264"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="sequenceFlow_183"
+         <bpmndi:BPMNEdge bpmnElement="sequenceFlow_183__ReviewInvoiceCA__ReviewSuccessfulEG"
                           id="sequenceFlow_183_gui"
                           sourceElement="Rechnung_kl_ren_148_gui"
                           targetElement="Kl_rung_erfolgreich__153_gui">
@@ -230,7 +278,7 @@
                <omgdc:Bounds height="0" width="90" x="625.5" y="77"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="invoiceApproved"
+         <bpmndi:BPMNEdge bpmnElement="YesSF__InvoiceApprovedEG__PrepareBankTransferUT"
                           id="Ja_181_gui"
                           sourceElement="Freigabe_erfolgt__131_gui"
                           targetElement="zberweisung_vorbereiten_169_gui">
@@ -242,7 +290,7 @@
                <omgdc:Bounds height="14" width="17" x="708" y="317"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="reviewNotSuccessful"
+         <bpmndi:BPMNEdge bpmnElement="NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE"
                           id="nein_185_gui"
                           sourceElement="Kl_rung_erfolgreich__153_gui"
                           targetElement="endEvent_165_gui">
@@ -252,7 +300,7 @@
                <omgdc:Bounds height="14" width="13" x="910" y="171"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="reviewSuccessful"
+         <bpmndi:BPMNEdge bpmnElement="YesSF__ReviewSuccessfulEG__ApproveInvoiceUT"
                           id="ja_186_gui"
                           sourceElement="Kl_rung_erfolgreich__153_gui"
                           targetElement="Rechnung_freigeben_125_gui">
@@ -264,7 +312,7 @@
                <omgdc:Bounds height="14" width="17" x="888" y="116"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="sequenceFlow_178"
+         <bpmndi:BPMNEdge bpmnElement="sequenceFlow_178__AssignApproverGroupBRT__ApproveInvoiceUT"
                           id="sequenceFlow_178_gui"
                           sourceElement="Freigebenden_zuordnen_143_gui"
                           targetElement="Rechnung_freigeben_125_gui">
@@ -276,7 +324,7 @@
                <omgdc:Bounds height="0" width="0" x="310" y="185"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2"
+         <bpmndi:BPMNEdge bpmnElement="SequenceFlow_2__PrepareBankTransferUT__ArchiveInvoiceST"
                           id="BPMNEdge_SequenceFlow_1"
                           sourceElement="zberweisung_vorbereiten_169_gui"
                           targetElement="_BPMNShape_ServiceTask_2">
@@ -286,14 +334,14 @@
                <omgdc:Bounds height="6" width="6" x="745" y="423"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1"
+         <bpmndi:BPMNEdge bpmnElement="SequenceFlow_1__InvoiceReceivedSE__AssignApproverGroupBRT"
                           id="BPMNEdge_SequenceFlow_2"
                           sourceElement="_BPMNShape_StartEvent_3"
                           targetElement="Freigebenden_zuordnen_143_gui">
             <omgdi:waypoint x="284" y="172"/>
             <omgdi:waypoint x="340" y="172"/>
          </bpmndi:BPMNEdge>
-         <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3"
+         <bpmndi:BPMNEdge bpmnElement="SequenceFlow_3__ArchiveInvoiceST__InvoiceProcessedEE"
                           id="BPMNEdge_SequenceFlow_3"
                           sourceElement="_BPMNShape_ServiceTask_2"
                           targetElement="Rechnungseingang_abgearbeitet_174_gui">
@@ -308,7 +356,7 @@
                            isHorizontal="true">
             <omgdc:Bounds height="80" width="100" x="513" y="304"/>
          </bpmndi:BPMNShape>
-         <bpmndi:BPMNShape bpmnElement="invoice_approved"
+         <bpmndi:BPMNShape bpmnElement="InvoiceApprovedEG"
                            id="Freigabe_erfolgt__131_gui"
                            isHorizontal="true"
                            isMarkerVisible="true">
@@ -317,7 +365,7 @@
                <omgdc:Bounds height="27" width="52" x="643" y="369"/>
             </bpmndi:BPMNLabel>
          </bpmndi:BPMNShape>
-         <bpmndi:BPMNShape bpmnElement="reviewSuccessful_gw"
+         <bpmndi:BPMNShape bpmnElement="ReviewSuccessfulEG"
                            id="Kl_rung_erfolgreich__153_gui"
                            isHorizontal="true"
                            isMarkerVisible="true">
@@ -336,7 +384,7 @@
                            isHorizontal="true">
             <omgdc:Bounds height="80" width="100" x="340" y="132"/>
          </bpmndi:BPMNShape>
-         <bpmndi:BPMNShape bpmnElement="StartEvent_1" id="_BPMNShape_StartEvent_3">
+         <bpmndi:BPMNShape bpmnElement="InvoiceReceivedSE" id="_BPMNShape_StartEvent_3">
             <omgdc:Bounds height="28" width="28" x="256" y="158"/>
             <bpmndi:BPMNLabel>
                <omgdc:Bounds height="27" width="42" x="249" y="191"/>

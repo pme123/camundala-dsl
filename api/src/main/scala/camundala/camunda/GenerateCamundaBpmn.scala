@@ -21,7 +21,7 @@ trait GenerateCamundaBpmn extends BpmnDsl, ProjectPaths, App:
       )
       println(s"// Generated: ${(generatedPath / bpmn.path.toIO.getName).toIO}")
       CBpmn.writeModelToFile(
-        (generatedPath / os.up / bpmn.path.toIO.getName).toIO,
+        (generatedPath / bpmn.path.toIO.getName).toIO,
         modelInstance
       )
 
@@ -33,38 +33,7 @@ trait GenerateCamundaBpmn extends BpmnDsl, ProjectPaths, App:
 
     bpmn.processes.foreach(_.toCamunda)
     modelInstance
-  /*
-
-  private def fromCamunda(
-      bpmnFile: File,
-      outputPath: BpmnPath
-  ): IO[FromCamundaException, Bpmn] = {
-    (for {
-      modelInstance <- ZIO(
-        CBpmn.readModelFromFile(bpmnFile)
-      )
-      cProcesses <- ZIO(
-        modelInstance
-          .getModelElementsByType(classOf[CProcess])
-          .asScala
-          .toSeq
-      )
-      processes <- ZIO.collect(cProcesses) { p =>
-        p.fromCamunda()(using modelInstance)
-          .mapError(Some(_))
-      }
-      _ <- ZIO(
-        CBpmn.writeModelToFile(new File(outputPath), modelInstance)
-      )
-    } yield bpmn(bpmnFile).processes(processes: _*))
-      .mapError {
-        case Some(ex: FromCamundaException) => ex
-        case t: Throwable =>
-          t.printStackTrace
-          FromCamundaException(t.getMessage)
-      }
-  }
-   */
+    
   extension (process: Process[?,?])
     def toCamunda: FromCamundable[Unit] =
       val cProc: CProcess = summon[CBpmnModelInstance]

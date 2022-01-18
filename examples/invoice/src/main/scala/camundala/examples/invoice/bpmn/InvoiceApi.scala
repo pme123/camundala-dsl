@@ -75,10 +75,11 @@ object InvoiceApi extends BpmnDsl:
       clarified: Option[Boolean] = None
   )
 
+  val InvoiceReceiptPIdent = "InvoiceReceiptP"
+
   lazy val InvoiceReceiptP =
-    val processId = "InvoiceReceiptP"
     process(
-      id = processId,
+      id = InvoiceReceiptPIdent,
       descr = "This starts the Invoice Receipt Process.",
       in = InvoiceReceipt(),
       out = InvoiceReceiptCheck() // just for testing

@@ -54,9 +54,7 @@
       <dataStoreReference dataStoreRef="FinancialAccountingSystem"
                           id="DataStoreReference_1"
                           name="Financial Accounting System"/>
-      <userTask camunda:asyncAfter="false"
-                camunda:asyncBefore="false"
-                camunda:candidateGroups="${approverGroups}"
+      <userTask camunda:candidateGroups="${approverGroups}"
                 camunda:candidateUsers=""
                 camunda:dueDate="${dateTime().plusWeeks(1).toDate()}"
                 camunda:exclusive="false"
@@ -82,9 +80,7 @@
          <incoming>YesSF__ReviewSuccessfulEG__ApproveInvoiceUT</incoming>
          <outgoing>sequenceFlow_180__ApproveInvoiceUT__InvoiceApprovedEG</outgoing>
       </userTask>
-      <exclusiveGateway camunda:asyncAfter="false"
-                        camunda:asyncBefore="false"
-                        camunda:exclusive="false"
+      <exclusiveGateway camunda:exclusive="false"
                         gatewayDirection="Diverging"
                         id="InvoiceApprovedEG"
                         name="Invoice&#xA;approved?">
@@ -92,9 +88,7 @@
          <outgoing>NoSF__InvoiceApprovedEG__ReviewInvoiceCA</outgoing>
          <outgoing>YesSF__InvoiceApprovedEG__PrepareBankTransferUT</outgoing>
       </exclusiveGateway>
-      <exclusiveGateway camunda:asyncAfter="false"
-                        camunda:asyncBefore="false"
-                        camunda:exclusive="false"
+      <exclusiveGateway camunda:exclusive="false"
                         gatewayDirection="Diverging"
                         id="ReviewSuccessfulEG"
                         name="Review&#xA;successful?">
@@ -102,9 +96,7 @@
          <outgoing>NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE</outgoing>
          <outgoing>YesSF__ReviewSuccessfulEG__ApproveInvoiceUT</outgoing>
       </exclusiveGateway>
-      <userTask camunda:asyncAfter="false"
-                camunda:asyncBefore="false"
-                camunda:candidateGroups=""
+      <userTask camunda:candidateGroups=""
                 camunda:candidateUsers=""
                 camunda:dueDate="${dateTime().plusWeeks(1).toDate()}"
                 camunda:exclusive="false"
@@ -124,10 +116,7 @@
             <targetRef>Property_0bzbsgl</targetRef>
          </dataInputAssociation>
       </userTask>
-      <businessRuleTask camunda:asyncAfter="false"
-                        camunda:asyncBefore="false"
-                        camunda:decisionRef="invoice-assign-approver"
-                        camunda:decisionRefBinding="latest"
+      <businessRuleTask camunda:decisionRef="invoice-assign-approver"
                         camunda:decisionRefTenantId=""
                         camunda:exclusive="false"
                         camunda:mapDecisionResult="collectEntries"
@@ -141,9 +130,7 @@
          <incoming>SequenceFlow_1__InvoiceReceivedSE__AssignApproverGroupBRT</incoming>
          <outgoing>sequenceFlow_178__AssignApproverGroupBRT__ApproveInvoiceUT</outgoing>
       </businessRuleTask>
-      <startEvent camunda:asyncAfter="false"
-                  camunda:asyncBefore="false"
-                  camunda:exclusive="false"
+      <startEvent camunda:exclusive="false"
                   camunda:formKey="embedded:app:forms/start-form.html"
                   id="InvoiceReceivedSE"
                   isInterrupting="true"
@@ -151,24 +138,18 @@
                   parallelMultiple="false">
          <outgoing>SequenceFlow_1__InvoiceReceivedSE__AssignApproverGroupBRT</outgoing>
       </startEvent>
-      <endEvent camunda:asyncAfter="false"
-                camunda:asyncBefore="false"
-                camunda:exclusive="false"
+      <endEvent camunda:exclusive="false"
                 id="InvoiceNotProcessedEE"
                 name="Invoice not&#xA;processed">
          <incoming>NoSF__ReviewSuccessfulEG__InvoiceNotProcessedEE</incoming>
       </endEvent>
-      <endEvent camunda:asyncAfter="false"
-                camunda:asyncBefore="false"
-                camunda:exclusive="false"
+      <endEvent camunda:exclusive="false"
                 id="InvoiceProcessedEE"
                 name="Invoice&#xA;processed">
          <incoming>SequenceFlow_3__ArchiveInvoiceST__InvoiceProcessedEE</incoming>
       </endEvent>
-      <serviceTask camunda:asyncAfter="false"
-                   camunda:asyncBefore="true"
+      <serviceTask camunda:asyncBefore="true"
                    camunda:class="org.camunda.bpm.example.invoice.service.ArchiveInvoiceService"
-                   camunda:exclusive="true"
                    completionQuantity="1"
                    id="ArchiveInvoiceST"
                    implementation="##WebService"
@@ -179,9 +160,6 @@
          <outgoing>SequenceFlow_3__ArchiveInvoiceST__InvoiceProcessedEE</outgoing>
       </serviceTask>
       <callActivity calledElement="ReviewInvoiceP"
-                    camunda:asyncAfter="false"
-                    camunda:asyncBefore="false"
-                    camunda:calledElementBinding="latest"
                     camunda:exclusive="false"
                     completionQuantity="1"
                     id="ReviewInvoiceCA"
@@ -190,12 +168,12 @@
                     startQuantity="1">
          <extensionElements>
             <camunda:in businessKey="#{execution.processBusinessKey}"/>
-            <camunda:in local="false" source="invoiceDocument" target="invoiceDocument"/>
-            <camunda:in local="false" source="creditor" target="creditor"/>
-            <camunda:in local="false" source="amount" target="amount"/>
-            <camunda:in local="false" source="invoiceCategory" target="invoiceCategory"/>
-            <camunda:in local="false" source="invoiceNumber" target="invoiceNumber"/>
-            <camunda:out local="false" source="clarified" target="clarified"/>
+            <camunda:in source="creditor" target="creditor"/>
+            <camunda:in source="amount" target="amount"/>
+            <camunda:in source="invoiceCategory" target="invoiceCategory"/>
+            <camunda:in source="invoiceNumber" target="invoiceNumber"/>
+            <camunda:in source="invoiceDocument" target="invoiceDocument"/>
+            <camunda:out source="clarified" target="clarified"/>
          </extensionElements>
          <incoming>NoSF__InvoiceApprovedEG__ReviewInvoiceCA</incoming>
          <outgoing>sequenceFlow_183__ReviewInvoiceCA__ReviewSuccessfulEG</outgoing>
