@@ -51,11 +51,12 @@ trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
       .asScala
       .filter(_.isExecutable())
       .toSeq
+    val processes: Seq[Process[?, ?]] = cProcesses.map(_.fromCamunda())
     CBpmn.writeModelToFile(
       (withIdPath / cawemoFile.getName).toIO,
       modelInstance
     )
-    cProcesses.map(_.fromCamunda())
+    processes
 
   extension (camundaProcess: CProcess)
     def fromCamunda(): FromCamundable[Process[?, ?]] =
@@ -63,6 +64,7 @@ trait InitCamundaBpmn extends BpmnDsl, ProjectPaths, App:
       process(ident).copy(elements =
         createInOuts(classOf[CUserTask], UserTask.init) ++
           createInOuts(classOf[CServiceTask], ServiceTask.init) ++
+          createInOuts(classOf[CCallActivity], CallActivity.init) ++
           createInOuts(classOf[CBusinessRuleTask], DecisionDmn.init) ++
           createElements(classOf[CEndEvent], EndEvent.init)
       )

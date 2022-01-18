@@ -5,7 +5,6 @@ import camundala.dsl.DSL.Givens.*
 import camundala.examples.invoice.bpmn.ExampleInvoice2
 import camundala.examples.invoice.bpmn.ExampleInvoice2.*
 import camundala.examples.invoice.bpmn.InvoiceApi.*
-import camundala.examples.invoice.bpmn.InvoiceDomain.ReviewInvoiceP
 import camundala.examples.invoice.dsl.ProjectDSL
 import camundala.test.*
 import org.camunda.bpm.engine.runtime.ProcessInstance
@@ -45,14 +44,14 @@ class ExampleInvoiceTest extends TestRunner, ProjectDSL:
 
   @Test
   def testReviewReview(): Unit =
-    test(reviewInvoiceProcess)(
+    test(ReviewInvoiceP)(
       assignReviewerUT,
       reviewInvoiceUT
     )
 
   @Test
   def testInvoiceReceipt(): Unit =
-    test(invoiceReceiptProcess)(
+    test(InvoiceReceiptP)(
       invoiceAssignApproverDMN2,
       // checkGroupIds,
       approveInvoiceUT,

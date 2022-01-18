@@ -75,7 +75,7 @@ object InvoiceApi extends BpmnDsl:
       clarified: Option[Boolean] = None
   )
 
-  lazy val invoiceReceiptProcess =
+  lazy val InvoiceReceiptP =
     val processId = "InvoiceReceiptP"
     process(
       id = processId,
@@ -127,7 +127,7 @@ object InvoiceApi extends BpmnDsl:
       out = InvoiceReviewed()
     )
 
-  lazy val reviewInvoiceProcess: Process[InvoiceReceipt, InvoiceReviewed] =
+  lazy val ReviewInvoiceP: Process[InvoiceReceipt, InvoiceReviewed] =
     val processId = "ReviewInvoiceP"
     process(
       id = processId,
@@ -147,47 +147,14 @@ object InvoiceApi extends BpmnDsl:
     in = InvoiceReceipt(),
     out = InvoiceReviewed()
   )
-
-  // CAWEMO: /Users/mpa/dev/Github/pme123/camundala-dsl/examples/invoice/cawemo/invoice.v2.bpmn
-
-  val InvoiceReceiptPIdent = "InvoiceReceiptPIdent"
-  lazy val InvoiceReceiptP = process(
-    InvoiceReceiptPIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-  val ApproveInvoiceUTIdent = "ApproveInvoiceUTIdent"
-  lazy val ApproveInvoiceUT = process(
-    ApproveInvoiceUTIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-  val PrepareBankTransferUTIdent = "PrepareBankTransferUTIdent"
-  lazy val PrepareBankTransferUT = process(
-    PrepareBankTransferUTIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-
-  val ArchiveInvoiceSTIdent = "ArchiveInvoiceSTIdent"
-  lazy val ArchiveInvoiceST = process(
-    ArchiveInvoiceSTIdent,
-    in = NoInput(),
-    out = NoOutput(),
-    descr = None
-  )
-  val InvoiceNotprocessedIdent = "InvoiceNotProcessedEE"
+  
+  val InvoiceNotProcessedIdent = "InvoiceNotProcessedEE"
   lazy val InvoiceNotProcessedEE = endEvent(
-    InvoiceNotprocessedIdent,
+    InvoiceNotProcessedIdent,
     descr = None
   )
-  val InvoiceprocessedIdent = "InvoiceProcessedEE"
+  val InvoiceProcessedIdent = "InvoiceProcessedEE"
   lazy val InvoiceProcessedEE = endEvent(
-    InvoiceprocessedIdent,
+    InvoiceProcessedIdent,
     descr = None
   )

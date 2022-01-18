@@ -19,7 +19,7 @@ object InvoiceApiCreator extends APICreator {
 
 
   apiEndpoints(
-      invoiceReceiptProcess
+      InvoiceReceiptP
         .endpoints(
           invoiceAssignApproverDMN2.endpoint,
           approveInvoiceUT.endpoint
@@ -27,7 +27,7 @@ object InvoiceApiCreator extends APICreator {
             .withOutExample("Invoice NOT approved", ApproveInvoice(false)),
           prepareBankTransferUT.endpoint
         ),
-      reviewInvoiceProcess.endpoints(
+      ReviewInvoiceP.endpoints(
         assignReviewerUT.endpoint,
         reviewInvoiceUT.endpoint
           .withOutExample("Invoice clarified", InvoiceReviewed())
